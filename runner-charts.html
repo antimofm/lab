@@ -77,7 +77,7 @@
     }
     .chart-section .meta a { color: #888; }
     .chart-frame {
-      background: #111;
+      background: #0a0a0a;
       border: 1px solid #222;
       border-radius: 8px;
       overflow: hidden;
@@ -94,6 +94,37 @@
       font-style: italic;
     }
     hr { border: none; border-top: 1px solid #1a1a1a; margin: 2rem 0; }
+
+    /* sparkline section */
+    .sparkline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .content.mobile .sparkline-grid {
+      grid-template-columns: 1fr;
+    }
+    .spark-card {
+      border: 1px solid #222;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+    .spark-card .spark-label {
+      padding: 0.75rem 1rem 0;
+      font-size: 0.75rem;
+      color: #666;
+    }
+    .spark-card svg {
+      display: block;
+      width: 100%;
+    }
+    .spark-loading {
+      color: #444;
+      font-size: 0.8rem;
+      padding: 2rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -111,95 +142,93 @@
 
   <div class="content desktop" id="content">
 
-    <!-- 1. GeckoTerminal — minimal -->
+    <!-- =============================== -->
+    <!-- SPARKLINES (API + SVG)           -->
+    <!-- =============================== -->
     <section class="chart-section">
-      <h2>GeckoTerminal — minimal</h2>
-      <p class="meta">iframe &middot; info off, swaps off &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
-      <div class="chart-frame">
-        <iframe src="https://www.geckoterminal.com/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" height="400" loading="lazy"></iframe>
+      <h2>Sparkline — GeckoTerminal API + SVG</h2>
+      <p class="meta">Custom drawn &middot; zero dependencies &middot; <a href="https://api.geckoterminal.com/api/v2/networks/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119/ohlcv/day?aggregate=1&limit=30" target="_blank">raw data</a></p>
+      <div class="sparkline-grid" id="sparkline-grid">
+        <div class="spark-loading">Loading price data...</div>
       </div>
-      <p class="note">Cleanest option. No chrome, dark theme, just the price chart.</p>
+      <p class="note">Pure SVG — no axes, no labels, no chrome. This is as minimal as it gets.</p>
     </section>
 
-    <!-- 2. GeckoTerminal — with info bar -->
-    <section class="chart-section">
-      <h2>GeckoTerminal — with info</h2>
-      <p class="meta">iframe &middot; info on, swaps off &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
-      <div class="chart-frame">
-        <iframe src="https://www.geckoterminal.com/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&info=1&swaps=0&grayscale=0&light_chart=0" height="420" loading="lazy"></iframe>
-      </div>
-      <p class="note">Adds token name, price, and 24h change header.</p>
-    </section>
+    <hr>
 
-    <!-- 3. GeckoTerminal — custom bg -->
+    <!-- =============================== -->
+    <!-- IFRAME EMBEDS                    -->
+    <!-- =============================== -->
+
+    <!-- GeckoTerminal — max stripped -->
     <section class="chart-section">
-      <h2>GeckoTerminal — custom bg</h2>
-      <p class="meta">iframe &middot; bg_color matched to Runner dark &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
+      <h2>GeckoTerminal — max stripped</h2>
+      <p class="meta">iframe &middot; info=0 swaps=0 bg matched &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
       <div class="chart-frame">
         <iframe src="https://www.geckoterminal.com/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&info=0&swaps=0&grayscale=0&light_chart=0&bg_color=0a0a0a" height="400" loading="lazy"></iframe>
       </div>
-      <p class="note">Same minimal chart but with bg_color=0a0a0a for seamless blending.</p>
+      <p class="note">Floor for GeckoTerminal. Still has axes, grid, timeframe picker — those can't be removed.</p>
+    </section>
+
+    <!-- GeckoTerminal — with info -->
+    <section class="chart-section">
+      <h2>GeckoTerminal — with info bar</h2>
+      <p class="meta">iframe &middot; info=1 swaps=0 bg matched &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
+      <div class="chart-frame">
+        <iframe src="https://www.geckoterminal.com/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&info=1&swaps=0&grayscale=0&light_chart=0&bg_color=0a0a0a" height="420" loading="lazy"></iframe>
+      </div>
+      <p class="note">Adds token name + price + 24h change. Useful if you want a header without building one.</p>
     </section>
 
     <hr>
 
-    <!-- 4. DEXTools — line chart -->
+    <!-- DEXTools — line, max stripped -->
     <section class="chart-section">
-      <h2>DEXTools — line</h2>
-      <p class="meta">iframe &middot; chartType=2 (line), no toolbars &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
+      <h2>DEXTools — line, max stripped</h2>
+      <p class="meta">iframe &middot; chartType=2, toolbars off, colors matched &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
       <div class="chart-frame">
-        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=2&chartResolution=60&drawingToolbars=false" height="400" loading="lazy"></iframe>
+        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=2&chartResolution=1D&drawingToolbars=false&tvPlatformColor=0a0a0a&tvPaneColor=0a0a0a&headerColor=0a0a0a" height="400" loading="lazy"></iframe>
       </div>
-      <p class="note">Line chart, dark theme, toolbars stripped.</p>
+      <p class="note">Floor for DEXTools line chart. Axes and grid still visible.</p>
     </section>
 
-    <!-- 5. DEXTools — area chart -->
+    <!-- DEXTools — area, max stripped -->
     <section class="chart-section">
-      <h2>DEXTools — area</h2>
-      <p class="meta">iframe &middot; chartType=3 (area), no toolbars &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
+      <h2>DEXTools — area, max stripped</h2>
+      <p class="meta">iframe &middot; chartType=3, toolbars off, colors matched &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
       <div class="chart-frame">
-        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=3&chartResolution=60&drawingToolbars=false" height="400" loading="lazy"></iframe>
+        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=3&chartResolution=1D&drawingToolbars=false&tvPlatformColor=0a0a0a&tvPaneColor=0a0a0a&headerColor=0a0a0a" height="400" loading="lazy"></iframe>
       </div>
-      <p class="note">Area fill variant — softer look, still minimal.</p>
-    </section>
-
-    <!-- 6. DEXTools — custom colors -->
-    <section class="chart-section">
-      <h2>DEXTools — custom colors</h2>
-      <p class="meta">iframe &middot; matched bg colors &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
-      <div class="chart-frame">
-        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=3&chartResolution=60&drawingToolbars=false&tvPlatformColor=0a0a0a&tvPaneColor=111111&headerColor=0a0a0a" height="400" loading="lazy"></iframe>
-      </div>
-      <p class="note">Area chart with tvPlatformColor, tvPaneColor, headerColor matched to app dark theme.</p>
+      <p class="note">Area fill — softer. Same stripped params.</p>
     </section>
 
     <hr>
 
-    <!-- 7. DEX Screener -->
+    <!-- DEX Screener -->
     <section class="chart-section">
       <h2>DEX Screener</h2>
-      <p class="meta">iframe attempt &middot; no official embed support &middot; <a href="https://dexscreener.com/base/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119" target="_blank">view on dexscreener</a></p>
+      <p class="meta">iframe test &middot; no official embed &middot; <a href="https://dexscreener.com/base/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119" target="_blank">view on dexscreener</a></p>
       <div class="chart-frame">
         <iframe src="https://dexscreener.com/base/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&theme=dark&info=0" height="400" loading="lazy"></iframe>
       </div>
-      <p class="note">DEX Screener has no official iframe embed — this tests if they allow it. Blank = blocked by X-Frame-Options.</p>
+      <p class="note">No official iframe support. Blank = blocked by X-Frame-Options.</p>
     </section>
 
     <hr>
 
-    <!-- 8. Dune -->
+    <!-- Dune -->
     <section class="chart-section">
       <h2>Dune</h2>
       <p class="meta">dashboard embed &middot; <a href="https://dune.com/runnerbased/runner" target="_blank">Runner dashboard</a></p>
       <div class="chart-frame">
         <iframe src="https://dune.com/embeds/runnerbased/runner" height="500" loading="lazy"></iframe>
       </div>
-      <p class="note">Embeds the full dashboard. For a single chart, grab the query ID from Dune (format: dune.com/embeds/QUERY_ID/VIZ_ID) and replace this URL.</p>
+      <p class="note">Full dashboard embed. For a single chart, grab the query ID from Dune (dune.com/embeds/QUERY_ID/VIZ_ID).</p>
     </section>
 
     <hr>
 
-    <!-- 9. TradingView -->
+    <!-- TradingView -->
     <section class="chart-section">
       <h2>TradingView</h2>
       <p class="meta">widget &middot; requires indexed pair &middot; <a href="https://www.tradingview.com/widget/advanced-chart/" target="_blank">widget builder</a></p>
@@ -210,7 +239,7 @@
           container_id: "tv-chart",
           autosize: true,
           symbol: "UNISWAP3BASE:RUNNERWETH",
-          interval: "60",
+          interval: "D",
           timezone: "Etc/UTC",
           theme: "dark",
           style: "3",
@@ -219,11 +248,14 @@
           enable_publishing: false,
           hide_top_toolbar: true,
           hide_legend: true,
+          hide_side_toolbar: true,
           save_image: false,
           hide_volume: true,
+          backgroundColor: "#0a0a0a",
+          gridColor: "rgba(0,0,0,0)",
         });
       </script>
-      <p class="note">RUNNER probably isn't indexed on TradingView. Error here = not viable for this token.</p>
+      <p class="note">RUNNER probably not indexed on TradingView. Error = not viable for this token.</p>
     </section>
 
   </div>
@@ -243,6 +275,100 @@
         buttons[0].classList.add('active');
       }
     }
+
+    // — Sparklines —
+    const POOL = '0x5cc4a43f2681a03d9187f3ad6934c748a86d6119';
+    const API  = `https://api.geckoterminal.com/api/v2/networks/base/pools/${POOL}/ohlcv/day`;
+
+    async function loadSparklines() {
+      const grid = document.getElementById('sparkline-grid');
+      try {
+        const res = await fetch(`${API}?aggregate=1&limit=90&currency=usd`);
+        const json = await res.json();
+        const ohlcv = json.data.attributes.ohlcv_list;
+        // API returns newest-first, reverse to chronological
+        const all = ohlcv.map(d => d[4]).reverse();
+
+        const last7  = all.slice(-7);
+        const last30 = all.slice(-30);
+        const last90 = all;
+
+        grid.innerHTML = '';
+
+        // Sparkline variants
+        const variants = [
+          { label: '7d — line',         data: last7,  stroke: '#e04040', fill: false, h: 80  },
+          { label: '7d — filled',       data: last7,  stroke: '#e04040', fill: true,  h: 80  },
+          { label: '30d — line',        data: last30, stroke: '#e04040', fill: false, h: 80  },
+          { label: '30d — filled',      data: last30, stroke: '#e04040', fill: true,  h: 80  },
+          { label: '90d — line',        data: last90, stroke: '#e04040', fill: false, h: 80  },
+          { label: '90d — filled',      data: last90, stroke: '#e04040', fill: true,  h: 80  },
+          { label: '30d — white',       data: last30, stroke: '#ffffff', fill: false, h: 80  },
+          { label: '30d — green/red',   data: last30, stroke: 'auto',   fill: true,  h: 80  },
+        ];
+
+        variants.forEach((v, i) => {
+          const card = document.createElement('div');
+          card.className = 'spark-card';
+
+          const lbl = document.createElement('div');
+          lbl.className = 'spark-label';
+          lbl.textContent = v.label;
+          card.appendChild(lbl);
+
+          card.appendChild(buildSparkSVG(v.data, v.stroke, v.fill, v.h));
+          grid.appendChild(card);
+        });
+      } catch (e) {
+        grid.innerHTML = '<div class="spark-loading">Failed to load — check console.</div>';
+        console.error(e);
+      }
+    }
+
+    function buildSparkSVG(data, strokeColor, showFill, h) {
+      const w = 400;
+      const pad = 2;
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const range = max - min || 1;
+
+      // auto color: green if up, red if down
+      if (strokeColor === 'auto') {
+        strokeColor = data[data.length - 1] >= data[0] ? '#22c55e' : '#ef4444';
+      }
+
+      const points = data.map((val, i) => {
+        const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+        const y = pad + (1 - (val - min) / range) * (h - pad * 2);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      });
+
+      const polyline = points.join(' ');
+
+      let fillPath = '';
+      if (showFill) {
+        const firstX = pad;
+        const lastX  = pad + ((data.length - 1) / (data.length - 1)) * (w - pad * 2);
+        fillPath = `<polygon points="${polyline} ${lastX.toFixed(1)},${h} ${firstX.toFixed(1)},${h}" fill="url(#grad-${strokeColor.replace('#','')})" />`;
+      }
+
+      const ns = 'http://www.w3.org/2000/svg';
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="${ns}">
+          <defs>
+            <linearGradient id="grad-${strokeColor.replace('#','')}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          ${fillPath}
+          <polyline points="${polyline}" fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        </svg>`;
+      return wrapper.querySelector('svg');
+    }
+
+    loadSparklines();
   </script>
 
 </body>
