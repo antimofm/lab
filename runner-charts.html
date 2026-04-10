@@ -95,6 +95,33 @@
     }
     hr { border: none; border-top: 1px solid #1a1a1a; margin: 2rem 0; }
 
+    /* liveline section */
+    .ll-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    .ll-card {
+      border: 1px solid #222;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+    .ll-card .ll-label {
+      padding: 0.75rem 1rem 0;
+      font-size: 0.75rem;
+      color: #666;
+    }
+    .ll-card .ll-mount {
+      height: 200px;
+    }
+    .ll-loading {
+      color: #444;
+      font-size: 0.8rem;
+      padding: 2rem;
+      text-align: center;
+    }
+
     /* sparkline section */
     .sparkline-grid {
       display: grid;
@@ -152,6 +179,20 @@
         <div class="spark-loading">Loading price data...</div>
       </div>
       <p class="note">Pure SVG — no axes, no labels, no chrome. This is as minimal as it gets.</p>
+    </section>
+
+    <hr>
+
+    <!-- =============================== -->
+    <!-- LIVELINE (React + Canvas)        -->
+    <!-- =============================== -->
+    <section class="chart-section">
+      <h2>Liveline — React + Canvas</h2>
+      <p class="meta">npm package &middot; 60fps canvas rendering &middot; <a href="https://github.com/benjitaylor/liveline" target="_blank">github</a> &middot; <a href="https://benji.org/liveline" target="_blank">docs</a></p>
+      <div class="ll-grid" id="ll-grid">
+        <div class="ll-loading">Loading liveline...</div>
+      </div>
+      <p class="note">React component via esm.sh CDN. In production this would be a direct npm dependency in the mini-app.</p>
     </section>
 
     <hr>
@@ -369,6 +410,121 @@
     }
 
     loadSparklines();
+  </script>
+
+  <!-- Liveline via ESM CDN -->
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+      "react-dom": "https://esm.sh/react-dom@18.3.1",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+      "liveline": "https://esm.sh/liveline@0.0.7?external=react,react-dom"
+    }
+  }
+  </script>
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import Liveline from 'liveline';
+
+    const POOL = '0x5cc4a43f2681a03d9187f3ad6934c748a86d6119';
+    const API  = `https://api.geckoterminal.com/api/v2/networks/base/pools/${POOL}/ohlcv`;
+
+    async function fetchData() {
+      // Fetch daily for line charts
+      const dayRes = await fetch(`${API}/day?aggregate=1&limit=90&currency=usd`);
+      const dayJson = await dayRes.json();
+      const dayOhlcv = dayJson.data.attributes.ohlcv_list;
+
+      // Chronological order
+      const lineData = dayOhlcv.map(d => ({ time: d[0], value: d[4] })).reverse();
+      const candleData = dayOhlcv.map(d => ({
+        time: d[0], open: d[1], high: d[2], low: d[3], close: d[4]
+      })).reverse();
+
+      return { lineData, candleData };
+    }
+
+    function mount(container, label, props) {
+      const card = document.createElement('div');
+      card.className = 'll-card';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'll-label';
+      lbl.textContent = label;
+      card.appendChild(lbl);
+
+      const el = document.createElement('div');
+      el.className = 'll-mount';
+      card.appendChild(el);
+      container.appendChild(card);
+
+      const root = createRoot(el);
+      root.render(React.createElement(Liveline, props));
+    }
+
+    async function initLiveline() {
+      const grid = document.getElementById('ll-grid');
+      try {
+        const { lineData, candleData } = await fetchData();
+        const latest = lineData[lineData.length - 1].value;
+        const last30 = lineData.slice(-30);
+
+        grid.innerHTML = '';
+
+        // 1. Minimal line
+        mount(grid, 'Minimal — line only', {
+          data: lineData, value: latest,
+          color: '#e04040', theme: 'dark',
+        });
+
+        // 2. Filled + momentum
+        mount(grid, 'Filled + momentum indicator', {
+          data: lineData, value: latest,
+          color: '#e04040', theme: 'dark',
+          fill: true, momentum: true,
+        });
+
+        // 3. With value overlay
+        mount(grid, 'Value overlay + fill', {
+          data: lineData, value: latest,
+          color: '#e04040', theme: 'dark',
+          fill: true, showValue: true,
+          formatValue: v => '$' + v.toFixed(4),
+        });
+
+        // 4. With scrub + grid
+        mount(grid, 'Scrub + grid + fill', {
+          data: lineData, value: latest,
+          color: '#e04040', theme: 'dark',
+          fill: true, grid: true, scrub: true,
+          formatValue: v => '$' + v.toFixed(4),
+        });
+
+        // 5. 30d zoomed, exaggerated Y
+        mount(grid, '30d zoomed + exaggerate', {
+          data: last30, value: latest,
+          color: '#e04040', theme: 'dark',
+          fill: true, exaggerate: true,
+        });
+
+        // 6. Candlestick
+        mount(grid, 'Candlestick (daily)', {
+          data: lineData, value: latest,
+          mode: 'candle', candles: candleData,
+          candleWidth: 86400,
+          color: '#e04040', theme: 'dark',
+        });
+
+      } catch (e) {
+        grid.innerHTML = '<div class="ll-loading">Failed to load liveline — check console.</div>';
+        console.error('Liveline error:', e);
+      }
+    }
+
+    initLiveline();
   </script>
 
 </body>
