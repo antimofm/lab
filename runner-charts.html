@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>$RUNNER chart embeds — lab.slash.red</title>
+  <link rel="modulepreload" href="https://esm.sh/react@18.3.1">
+  <link rel="modulepreload" href="https://esm.sh/react@18.3.1/jsx-runtime">
+  <link rel="modulepreload" href="https://esm.sh/react-dom@18.3.1/client">
+  <link rel="modulepreload" href="https://esm.sh/liveline@0.0.7?external=react,react-dom">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -170,20 +174,6 @@
   <div class="content desktop" id="content">
 
     <!-- =============================== -->
-    <!-- SPARKLINES (API + SVG)           -->
-    <!-- =============================== -->
-    <section class="chart-section">
-      <h2>Sparkline — GeckoTerminal API + SVG</h2>
-      <p class="meta">Custom drawn &middot; zero dependencies &middot; <a href="https://api.geckoterminal.com/api/v2/networks/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119/ohlcv/day?aggregate=1&limit=30" target="_blank">raw data</a></p>
-      <div class="sparkline-grid" id="sparkline-grid">
-        <div class="spark-loading">Loading price data...</div>
-      </div>
-      <p class="note">Pure SVG — no axes, no labels, no chrome. This is as minimal as it gets.</p>
-    </section>
-
-    <hr>
-
-    <!-- =============================== -->
     <!-- LIVELINE (React + Canvas)        -->
     <!-- =============================== -->
     <section class="chart-section">
@@ -297,6 +287,20 @@
         });
       </script>
       <p class="note">RUNNER probably not indexed on TradingView. Error = not viable for this token.</p>
+    </section>
+
+    <hr>
+
+    <!-- =============================== -->
+    <!-- SPARKLINES (API + SVG)           -->
+    <!-- =============================== -->
+    <section class="chart-section">
+      <h2>Sparkline — GeckoTerminal API + SVG</h2>
+      <p class="meta">Custom drawn &middot; zero dependencies &middot; static on load &middot; <a href="https://api.geckoterminal.com/api/v2/networks/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119/ohlcv/day?aggregate=1&limit=30" target="_blank">raw data</a></p>
+      <div class="sparkline-grid" id="sparkline-grid">
+        <div class="spark-loading">Loading price data...</div>
+      </div>
+      <p class="note">Pure SVG — no axes, no labels, no chrome. Static snapshot, no live updates.</p>
     </section>
 
   </div>
