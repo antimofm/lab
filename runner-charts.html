@@ -11,18 +11,60 @@
       background: #0a0a0a;
       color: #e0e0e0;
       min-height: 100vh;
-      padding: 2rem;
-      max-width: 960px;
-      margin: 0 auto;
     }
     a { color: #e04040; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    header { margin-bottom: 2rem; }
-    header h1 { font-size: 1.25rem; font-weight: 600; }
-    header p { color: #888; margin-top: 0.25rem; font-size: 0.875rem; }
-    .chart-section {
-      margin-bottom: 3rem;
+
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0a0a0a;
+      border-bottom: 1px solid #1a1a1a;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
     }
+    .sticky-bar h1 { font-size: 1rem; font-weight: 600; white-space: nowrap; }
+    .sticky-bar p { color: #888; font-size: 0.8rem; }
+    .toggle-group {
+      display: flex;
+      gap: 0;
+      border: 1px solid #333;
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .toggle-group button {
+      background: transparent;
+      color: #888;
+      border: none;
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+    .toggle-group button.active {
+      background: #e04040;
+      color: #fff;
+    }
+    .toggle-group button:not(.active):hover {
+      background: #1a1a1a;
+      color: #ccc;
+    }
+
+    .content {
+      padding: 2rem;
+      margin: 0 auto;
+      transition: max-width 0.3s ease;
+    }
+    .content.desktop { max-width: 960px; }
+    .content.mobile { max-width: 390px; }
+
+    .chart-section { margin-bottom: 3rem; }
     .chart-section h2 {
       font-size: 1rem;
       font-weight: 600;
@@ -55,95 +97,153 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1><a href="/">slash.red</a> / lab / runner charts</h1>
-    <p>Comparing embeddable chart options for $RUNNER on Base</p>
-  </header>
 
-  <!-- GeckoTerminal — minimal (no info, no volume) -->
-  <section class="chart-section">
-    <h2>GeckoTerminal — minimal</h2>
-    <p class="meta">iframe embed, info bar off, volume off &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
-    <div class="chart-frame">
-      <iframe src="https://www.geckoterminal.com/base/pools/0x18b6f6049a0af4ed2bbe0090319174eeef89f53a?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" height="400" loading="lazy"></iframe>
+  <div class="sticky-bar">
+    <div>
+      <h1><a href="/">slash.red</a> / lab / runner charts</h1>
+      <p>Comparing embeddable chart options for $RUNNER on Base</p>
     </div>
-    <p class="note">Cleanest out-of-the-box. No chrome, dark theme, just price.</p>
-  </section>
-
-  <!-- GeckoTerminal — with info bar -->
-  <section class="chart-section">
-    <h2>GeckoTerminal — with info</h2>
-    <p class="meta">Same embed, info bar on &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
-    <div class="chart-frame">
-      <iframe src="https://www.geckoterminal.com/base/pools/0x18b6f6049a0af4ed2bbe0090319174eeef89f53a?embed=1&info=1&swaps=0&grayscale=0&light_chart=0" height="420" loading="lazy"></iframe>
+    <div class="toggle-group">
+      <button class="active" onclick="setWidth('desktop')">Desktop</button>
+      <button onclick="setWidth('mobile')">Mobile</button>
     </div>
-    <p class="note">Adds token name, price, 24h change at the top.</p>
-  </section>
+  </div>
 
-  <hr>
+  <div class="content desktop" id="content">
 
-  <!-- DEXTools -->
-  <section class="chart-section">
-    <h2>DEXTools</h2>
-    <p class="meta">Chart widget iframe &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
-    <div class="chart-frame">
-      <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x18b6f6049a0af4ed2bbe0090319174eeef89f53a?theme=dark&chartType=2&chartResolution=60&drawingToolbars=false" height="400" loading="lazy"></iframe>
-    </div>
-    <p class="note">chartType=2 is line, drawingToolbars=false strips tools. Dark theme.</p>
-  </section>
+    <!-- 1. GeckoTerminal — minimal -->
+    <section class="chart-section">
+      <h2>GeckoTerminal — minimal</h2>
+      <p class="meta">iframe &middot; info off, swaps off &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
+      <div class="chart-frame">
+        <iframe src="https://www.geckoterminal.com/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&info=0&swaps=0&grayscale=0&light_chart=0" height="400" loading="lazy"></iframe>
+      </div>
+      <p class="note">Cleanest option. No chrome, dark theme, just the price chart.</p>
+    </section>
 
-  <hr>
+    <!-- 2. GeckoTerminal — with info bar -->
+    <section class="chart-section">
+      <h2>GeckoTerminal — with info</h2>
+      <p class="meta">iframe &middot; info on, swaps off &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
+      <div class="chart-frame">
+        <iframe src="https://www.geckoterminal.com/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&info=1&swaps=0&grayscale=0&light_chart=0" height="420" loading="lazy"></iframe>
+      </div>
+      <p class="note">Adds token name, price, and 24h change header.</p>
+    </section>
 
-  <!-- DEX Screener -->
-  <section class="chart-section">
-    <h2>DEX Screener</h2>
-    <p class="meta">iframe embed &middot; <a href="https://docs.dexscreener.com/" target="_blank">docs</a></p>
-    <div class="chart-frame">
-      <iframe src="https://dexscreener.com/base/0x18b6f6049a0af4ed2bbe0090319174eeef89f53a?embed=1&theme=dark&info=0" height="400" loading="lazy"></iframe>
-    </div>
-    <p class="note">DEX Screener may block iframe embedding — check if it loads.</p>
-  </section>
+    <!-- 3. GeckoTerminal — custom bg -->
+    <section class="chart-section">
+      <h2>GeckoTerminal — custom bg</h2>
+      <p class="meta">iframe &middot; bg_color matched to Runner dark &middot; <a href="https://about.geckoterminal.com/embed-charts" target="_blank">docs</a></p>
+      <div class="chart-frame">
+        <iframe src="https://www.geckoterminal.com/base/pools/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&info=0&swaps=0&grayscale=0&light_chart=0&bg_color=0a0a0a" height="400" loading="lazy"></iframe>
+      </div>
+      <p class="note">Same minimal chart but with bg_color=0a0a0a for seamless blending.</p>
+    </section>
 
-  <hr>
+    <hr>
 
-  <!-- Dune -->
-  <section class="chart-section">
-    <h2>Dune</h2>
-    <p class="meta">Existing Runner dashboard embed &middot; <a href="https://dune.com/runnerbased/runner" target="_blank">dashboard</a></p>
-    <div class="chart-frame">
-      <iframe src="https://dune.com/embeds/runnerbased/runner" height="400" loading="lazy"></iframe>
-    </div>
-    <p class="note">Embeds a specific query visualization. You may need to grab a specific query ID from your Dune dashboard for a chart-only embed (format: dune.com/embeds/QUERY_ID/VIZ_ID).</p>
-  </section>
+    <!-- 4. DEXTools — line chart -->
+    <section class="chart-section">
+      <h2>DEXTools — line</h2>
+      <p class="meta">iframe &middot; chartType=2 (line), no toolbars &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
+      <div class="chart-frame">
+        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=2&chartResolution=60&drawingToolbars=false" height="400" loading="lazy"></iframe>
+      </div>
+      <p class="note">Line chart, dark theme, toolbars stripped.</p>
+    </section>
 
-  <hr>
+    <!-- 5. DEXTools — area chart -->
+    <section class="chart-section">
+      <h2>DEXTools — area</h2>
+      <p class="meta">iframe &middot; chartType=3 (area), no toolbars &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
+      <div class="chart-frame">
+        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=3&chartResolution=60&drawingToolbars=false" height="400" loading="lazy"></iframe>
+      </div>
+      <p class="note">Area fill variant — softer look, still minimal.</p>
+    </section>
 
-  <!-- TradingView -->
-  <section class="chart-section">
-    <h2>TradingView</h2>
-    <p class="meta">Lightweight widget — needs a listed pair to work &middot; <a href="https://www.tradingview.com/widget/advanced-chart/" target="_blank">widget builder</a></p>
-    <div class="chart-frame" id="tv-chart" style="height: 400px;"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script type="text/javascript">
-      new TradingView.widget({
-        container_id: "tv-chart",
-        autosize: true,
-        symbol: "UNISWAP3BASE:RUNNERUSDC",
-        interval: "60",
-        timezone: "Etc/UTC",
-        theme: "dark",
-        style: "3",
-        locale: "en",
-        toolbar_bg: "#0a0a0a",
-        enable_publishing: false,
-        hide_top_toolbar: true,
-        hide_legend: true,
-        save_image: false,
-        hide_volume: true,
-      });
-    </script>
-    <p class="note">Requires a valid TradingView symbol. If RUNNERUSDC isn't listed, this will show an error — that tells you TradingView isn't viable for this token.</p>
-  </section>
+    <!-- 6. DEXTools — custom colors -->
+    <section class="chart-section">
+      <h2>DEXTools — custom colors</h2>
+      <p class="meta">iframe &middot; matched bg colors &middot; <a href="https://github.com/dextools-io/chart-widget" target="_blank">docs</a></p>
+      <div class="chart-frame">
+        <iframe src="https://www.dextools.io/widget-chart/en/base/pe-light/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?theme=dark&chartType=3&chartResolution=60&drawingToolbars=false&tvPlatformColor=0a0a0a&tvPaneColor=111111&headerColor=0a0a0a" height="400" loading="lazy"></iframe>
+      </div>
+      <p class="note">Area chart with tvPlatformColor, tvPaneColor, headerColor matched to app dark theme.</p>
+    </section>
+
+    <hr>
+
+    <!-- 7. DEX Screener -->
+    <section class="chart-section">
+      <h2>DEX Screener</h2>
+      <p class="meta">iframe attempt &middot; no official embed support &middot; <a href="https://dexscreener.com/base/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119" target="_blank">view on dexscreener</a></p>
+      <div class="chart-frame">
+        <iframe src="https://dexscreener.com/base/0x5cc4a43f2681a03d9187f3ad6934c748a86d6119?embed=1&theme=dark&info=0" height="400" loading="lazy"></iframe>
+      </div>
+      <p class="note">DEX Screener has no official iframe embed — this tests if they allow it. Blank = blocked by X-Frame-Options.</p>
+    </section>
+
+    <hr>
+
+    <!-- 8. Dune -->
+    <section class="chart-section">
+      <h2>Dune</h2>
+      <p class="meta">dashboard embed &middot; <a href="https://dune.com/runnerbased/runner" target="_blank">Runner dashboard</a></p>
+      <div class="chart-frame">
+        <iframe src="https://dune.com/embeds/runnerbased/runner" height="500" loading="lazy"></iframe>
+      </div>
+      <p class="note">Embeds the full dashboard. For a single chart, grab the query ID from Dune (format: dune.com/embeds/QUERY_ID/VIZ_ID) and replace this URL.</p>
+    </section>
+
+    <hr>
+
+    <!-- 9. TradingView -->
+    <section class="chart-section">
+      <h2>TradingView</h2>
+      <p class="meta">widget &middot; requires indexed pair &middot; <a href="https://www.tradingview.com/widget/advanced-chart/" target="_blank">widget builder</a></p>
+      <div class="chart-frame" id="tv-chart" style="height: 400px;"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+      <script type="text/javascript">
+        new TradingView.widget({
+          container_id: "tv-chart",
+          autosize: true,
+          symbol: "UNISWAP3BASE:RUNNERWETH",
+          interval: "60",
+          timezone: "Etc/UTC",
+          theme: "dark",
+          style: "3",
+          locale: "en",
+          toolbar_bg: "#0a0a0a",
+          enable_publishing: false,
+          hide_top_toolbar: true,
+          hide_legend: true,
+          save_image: false,
+          hide_volume: true,
+        });
+      </script>
+      <p class="note">RUNNER probably isn't indexed on TradingView. Error here = not viable for this token.</p>
+    </section>
+
+  </div>
+
+  <script>
+    function setWidth(mode) {
+      const content = document.getElementById('content');
+      const buttons = document.querySelectorAll('.toggle-group button');
+      buttons.forEach(b => b.classList.remove('active'));
+      if (mode === 'mobile') {
+        content.classList.remove('desktop');
+        content.classList.add('mobile');
+        buttons[1].classList.add('active');
+      } else {
+        content.classList.remove('mobile');
+        content.classList.add('desktop');
+        buttons[0].classList.add('active');
+      }
+    }
+  </script>
 
 </body>
 </html>
