@@ -435,25 +435,18 @@
     import { createRoot } from 'react-dom/client';
     import { Liveline } from 'liveline';
 
-    const POOL = '0x5cc4a43f2681a03d9187f3ad6934c748a86d6119';
-    const API  = `https://api.geckoterminal.com/api/v2/networks/base/pools/${POOL}/ohlcv`;
+    const TOKEN = '0x18b6f6049a0af4ed2bbe0090319174eeef89f53a';
+    const PRICE_API = `https://api.geckoterminal.com/api/v2/simple/networks/base/token_price/${TOKEN}`;
+    const POLL_MS = 3000; // 3 seconds — well within 30/min rate limit
 
-    async function fetchData() {
-      // Fetch daily for line charts
-      const dayRes = await fetch(`${API}/day?aggregate=1&limit=90&currency=usd`);
-      const dayJson = await dayRes.json();
-      const dayOhlcv = dayJson.data.attributes.ohlcv_list;
-
-      // Chronological order
-      const lineData = dayOhlcv.map(d => ({ time: d[0], value: d[4] })).reverse();
-      const candleData = dayOhlcv.map(d => ({
-        time: d[0], open: d[1], high: d[2], low: d[3], close: d[4]
-      })).reverse();
-
-      return { lineData, candleData };
+    async function fetchPrice() {
+      const res = await fetch(PRICE_API);
+      const json = await res.json();
+      return parseFloat(json.data.attributes.token_prices[TOKEN]);
     }
 
-    function mount(container, label, props) {
+    // Reactive wrapper — each chart instance gets its own updater
+    function createLiveMount(container, label, makeProps) {
       const card = document.createElement('div');
       card.className = 'll-card';
 
@@ -468,71 +461,81 @@
       container.appendChild(card);
 
       const root = createRoot(el);
-      root.render(React.createElement(Liveline, props));
+
+      return {
+        update(data, value) {
+          root.render(React.createElement(Liveline, makeProps(data, value)));
+        }
+      };
     }
 
     async function initLiveline() {
       const grid = document.getElementById('ll-grid');
       try {
-        const { lineData, candleData } = await fetchData();
-        const latest = lineData[lineData.length - 1].value;
-        const last30 = lineData.slice(-30);
-
-        // Time ranges in seconds for the window prop
-        const W90 = 90 * 86400;  // 90 days
-        const W30 = 30 * 86400;  // 30 days
+        // Seed with first price
+        const firstPrice = await fetchPrice();
+        const now = Date.now() / 1000;
+        const data = [{ time: now, value: firstPrice }];
 
         grid.innerHTML = '';
 
-        // 1. Minimal line
-        mount(grid, 'Minimal — line only', {
-          data: lineData, value: latest,
-          color: '#e04040', theme: 'dark',
-          window: W90,
-        });
+        const fmt = v => '$' + v.toFixed(4);
 
-        // 2. Filled + momentum
-        mount(grid, 'Filled + momentum indicator', {
-          data: lineData, value: latest,
-          color: '#e04040', theme: 'dark',
-          fill: true, momentum: true,
-          window: W90,
-        });
+        // Mount all variants — each gets a function that builds props from live data
+        const charts = [
+          createLiveMount(grid, 'Minimal — 30s window', (d, v) => ({
+            data: d, value: v,
+            color: '#e04040', theme: 'dark',
+          })),
+          createLiveMount(grid, 'Filled + momentum', (d, v) => ({
+            data: d, value: v,
+            color: '#e04040', theme: 'dark',
+            fill: true, momentum: true,
+          })),
+          createLiveMount(grid, 'Value overlay + fill', (d, v) => ({
+            data: d, value: v,
+            color: '#e04040', theme: 'dark',
+            fill: true, showValue: true,
+            formatValue: fmt,
+          })),
+          createLiveMount(grid, 'Scrub + grid', (d, v) => ({
+            data: d, value: v,
+            color: '#e04040', theme: 'dark',
+            fill: true, grid: true, scrub: true,
+            formatValue: fmt,
+          })),
+          createLiveMount(grid, '2 min window + exaggerate', (d, v) => ({
+            data: d, value: v,
+            color: '#e04040', theme: 'dark',
+            fill: true, exaggerate: true,
+            window: 120,
+          })),
+          createLiveMount(grid, '5 min window + value', (d, v) => ({
+            data: d, value: v,
+            color: '#e04040', theme: 'dark',
+            fill: true, showValue: true,
+            formatValue: fmt,
+            window: 300,
+          })),
+        ];
 
-        // 3. With value overlay
-        mount(grid, 'Value overlay + fill', {
-          data: lineData, value: latest,
-          color: '#e04040', theme: 'dark',
-          fill: true, showValue: true,
-          formatValue: v => '$' + v.toFixed(4),
-          window: W90,
-        });
+        // Initial render
+        charts.forEach(c => c.update(data, firstPrice));
 
-        // 4. With scrub + grid
-        mount(grid, 'Scrub + grid + fill', {
-          data: lineData, value: latest,
-          color: '#e04040', theme: 'dark',
-          fill: true, grid: true, scrub: true,
-          formatValue: v => '$' + v.toFixed(4),
-          window: W90,
-        });
-
-        // 5. 30d zoomed, exaggerated Y
-        mount(grid, '30d zoomed + exaggerate', {
-          data: last30, value: latest,
-          color: '#e04040', theme: 'dark',
-          fill: true, exaggerate: true,
-          window: W30,
-        });
-
-        // 6. Candlestick
-        mount(grid, 'Candlestick (daily)', {
-          data: lineData, value: latest,
-          mode: 'candle', candles: candleData,
-          candleWidth: 86400,
-          color: '#e04040', theme: 'dark',
-          window: W90,
-        });
+        // Poll and push new prices
+        setInterval(async () => {
+          try {
+            const price = await fetchPrice();
+            const t = Date.now() / 1000;
+            data.push({ time: t, value: price });
+            // Keep last 10 min of data
+            const cutoff = t - 600;
+            while (data.length > 1 && data[0].time < cutoff) data.shift();
+            charts.forEach(c => c.update(data, price));
+          } catch (e) {
+            // Skip failed polls silently
+          }
+        }, POLL_MS);
 
       } catch (e) {
         grid.innerHTML = '<div class="ll-loading">Failed to load liveline — check console.</div>';
