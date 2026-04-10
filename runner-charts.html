@@ -478,12 +478,17 @@
         const latest = lineData[lineData.length - 1].value;
         const last30 = lineData.slice(-30);
 
+        // Time ranges in seconds for the window prop
+        const W90 = 90 * 86400;  // 90 days
+        const W30 = 30 * 86400;  // 30 days
+
         grid.innerHTML = '';
 
         // 1. Minimal line
         mount(grid, 'Minimal — line only', {
           data: lineData, value: latest,
           color: '#e04040', theme: 'dark',
+          window: W90,
         });
 
         // 2. Filled + momentum
@@ -491,6 +496,7 @@
           data: lineData, value: latest,
           color: '#e04040', theme: 'dark',
           fill: true, momentum: true,
+          window: W90,
         });
 
         // 3. With value overlay
@@ -499,6 +505,7 @@
           color: '#e04040', theme: 'dark',
           fill: true, showValue: true,
           formatValue: v => '$' + v.toFixed(4),
+          window: W90,
         });
 
         // 4. With scrub + grid
@@ -507,6 +514,7 @@
           color: '#e04040', theme: 'dark',
           fill: true, grid: true, scrub: true,
           formatValue: v => '$' + v.toFixed(4),
+          window: W90,
         });
 
         // 5. 30d zoomed, exaggerated Y
@@ -514,6 +522,7 @@
           data: last30, value: latest,
           color: '#e04040', theme: 'dark',
           fill: true, exaggerate: true,
+          window: W30,
         });
 
         // 6. Candlestick
@@ -522,6 +531,7 @@
           mode: 'candle', candles: candleData,
           candleWidth: 86400,
           color: '#e04040', theme: 'dark',
+          window: W90,
         });
 
       } catch (e) {
