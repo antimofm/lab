@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>$RUNNER chart embeds — lab.slash.red</title>
-  <link rel="modulepreload" href="https://esm.sh/react@18.3.1">
-  <link rel="modulepreload" href="https://esm.sh/react@18.3.1/jsx-runtime">
-  <link rel="modulepreload" href="https://esm.sh/react-dom@18.3.1/client">
-  <link rel="modulepreload" href="https://esm.sh/liveline@0.0.7?external=react,react-dom">
+  <link rel="modulepreload" href="vendor/react.mjs">
+  <link rel="modulepreload" href="vendor/jsx-runtime.mjs">
+  <link rel="modulepreload" href="vendor/react-dom.mjs">
+  <link rel="modulepreload" href="vendor/react-dom-client.mjs">
+  <link rel="modulepreload" href="vendor/scheduler.mjs">
+  <link rel="modulepreload" href="vendor/liveline.mjs">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -416,15 +418,15 @@
     loadSparklines();
   </script>
 
-  <!-- Liveline via ESM CDN -->
+  <!-- Liveline (vendored) -->
   <script type="importmap">
   {
     "imports": {
-      "react": "https://esm.sh/react@18.3.1",
-      "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
-      "react-dom": "https://esm.sh/react-dom@18.3.1",
-      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-      "liveline": "https://esm.sh/liveline@0.0.7?external=react,react-dom"
+      "react": "./vendor/react.mjs",
+      "react/jsx-runtime": "./vendor/jsx-runtime.mjs",
+      "react-dom": "./vendor/react-dom.mjs",
+      "react-dom/client": "./vendor/react-dom-client.mjs",
+      "liveline": "./vendor/liveline.mjs"
     }
   }
   </script>
