@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=600">
+<title>Night</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  color: #999;
+  font-family: Georgia, serif;
+  padding: 40px 30px;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+.date {
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 50px;
+}
+.quote {
+  font-size: 22px;
+  font-style: italic;
+  color: #bbb;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.author {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 60px;
+}
+.divider {
+  border: none;
+  border-top: 1px solid #222;
+  margin: 40px 0;
+}
+.section-title {
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #444;
+  margin-bottom: 20px;
+}
+.note {
+  font-size: 16px;
+  color: #888;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.gentle {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.footer {
+  margin-top: 60px;
+  font-size: 12px;
+  color: #333;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="date" id="date"></div>
+
+<div id="quote-block">
+  <div class="quote" id="quote"></div>
+  <div class="author" id="author"></div>
+</div>
+
+<hr class="divider">
+
+<div class="section-title">Tonight</div>
+<div class="gentle">Everything that needed doing today is done, or it can wait.</div>
+<div class="gentle">The kids are safe. Chiara is close. The house is quiet.</div>
+<div class="gentle">Nothing requires your attention right now.</div>
+
+<hr class="divider">
+
+<div class="section-title">Remember</div>
+<div class="note">You built something real today, even if it felt small.</div>
+<div class="note">Rest is not lost time. It's where the next move comes from.</div>
+<div class="note">Tomorrow has its own energy. Let it come.</div>
+
+<hr class="divider">
+
+<div class="section-title">Breath</div>
+<div class="gentle">In through the nose. Slow. Four counts.</div>
+<div class="gentle">Hold. Four counts.</div>
+<div class="gentle">Out through the mouth. Six counts.</div>
+<div class="gentle">Again, if you want.</div>
+
+<div class="footer">be still</div>
+
+<script>
+var quotes = [
+  ["We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "Aristotle"],
+  ["The best time to plant a tree was twenty years ago. The second best time is now.", "Chinese proverb"],
+  ["He who has a why to live can bear almost any how.", "Nietzsche"],
+  ["The only way to do great work is to love what you do.", "Steve Jobs"],
+  ["In the middle of difficulty lies opportunity.", "Einstein"],
+  ["The soul becomes dyed with the colour of its thoughts.", "Marcus Aurelius"],
+  ["Everything passes. Joy. Pain. The moment of triumph; the sigh of despair. Nothing lasts forever.", "Paul Auster"],
+  ["Have patience with everything unresolved in your heart.", "Rilke"],
+  ["The wound is the place where the Light enters you.", "Rumi"],
+  ["To live is the rarest thing in the world. Most people exist, that is all.", "Oscar Wilde"],
+  ["What we achieve inwardly will change outer reality.", "Plutarch"],
+  ["Almost everything will work again if you unplug it for a few minutes. Including you.", "Anne Lamott"],
+  ["The afternoon knows what the morning never suspected.", "Robert Frost"],
+  ["Vita brevis, ars longa.", "Hippocrates"],
+  ["Man is not worried by real problems so much as by his imagined anxieties about real problems.", "Epictetus"],
+  ["Chi dorme non piglia pesci, ma chi non dorme non piglia sogni.", ""],
+  ["Rest is not idleness, and to lie sometimes on the grass under trees on a summer day is by no means a waste of time.", "John Lubbock"],
+  ["The quieter you become, the more you can hear.", "Ram Dass"],
+  ["Sleep is the best meditation.", "Dalai Lama"],
+  ["Night is the other half of life, and the better half.", "Goethe"]
+];
+var now = new Date();
+var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+document.getElementById("date").textContent = days[now.getDay()] + ", " + now.getDate() + " " + months[now.getMonth()] + " " + now.getFullYear();
+var idx = now.getDate() % quotes.length;
+document.getElementById("quote").textContent = "\u201C" + quotes[idx][0] + "\u201D";
+document.getElementById("author").textContent = quotes[idx][1] ? "\u2014 " + quotes[idx][1] : "";
+</script>
+
+</body>
+</html>
