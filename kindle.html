@@ -8,99 +8,72 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   background: #000;
-  color: #999;
-  font-family: Georgia, serif;
-  padding: 40px 30px;
+  color: #fff;
+  font-family: "Courier New", Courier, monospace;
+  padding: 20px 16px;
   max-width: 600px;
   margin: 0 auto;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.4;
   -webkit-text-size-adjust: 100%;
 }
-.date {
-  font-size: 14px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 50px;
-}
-.quote {
-  font-size: 22px;
-  font-style: italic;
-  color: #bbb;
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-.author {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 60px;
-}
-.divider {
-  border: none;
-  border-top: 1px solid #222;
-  margin: 40px 0;
-}
-.section-title {
-  font-size: 12px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #444;
-  margin-bottom: 20px;
-}
-.note {
-  font-size: 16px;
-  color: #888;
-  margin-bottom: 14px;
-  line-height: 1.5;
-}
-.gentle {
-  font-size: 15px;
-  color: #666;
-  line-height: 1.7;
-  margin-bottom: 10px;
-}
-.footer {
-  margin-top: 60px;
-  font-size: 12px;
-  color: #333;
-  text-align: center;
-}
+.weather { margin-bottom: 12px; }
+.weather-row { margin-bottom: 2px; }
+.dim { color: #888; }
+.date { margin-bottom: 12px; }
+.divider { border: none; border-top: 1px solid #444; margin: 10px 0; }
+.label { color: #888; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.line { margin-bottom: 4px; }
+.footer { margin-top: 16px; font-size: 11px; color: #555; text-align: center; }
 </style>
 </head>
 <body>
 
-<div class="date" id="date"></div>
-
-<div id="quote-block">
-  <div class="quote" id="quote"></div>
-  <div class="author" id="author"></div>
+<div class="weather" id="weather">
+<div class="weather-row dim">loading weather...</div>
 </div>
 
 <hr class="divider">
 
-<div class="section-title">Tonight</div>
-<div class="gentle">Everything that needed doing today is done, or it can wait.</div>
-<div class="gentle">The kids are safe. Chiara is close. The house is quiet.</div>
-<div class="gentle">Nothing requires your attention right now.</div>
+<div class="date" id="date"></div>
 
 <hr class="divider">
 
-<div class="section-title">Remember</div>
-<div class="note">You built something real today, even if it felt small.</div>
-<div class="note">Rest is not lost time. It's where the next move comes from.</div>
-<div class="note">Tomorrow has its own energy. Let it come.</div>
+<div id="quote-block">
+  <div class="line" id="quote"></div>
+  <div class="dim" id="author"></div>
+</div>
 
 <hr class="divider">
 
-<div class="section-title">Breath</div>
-<div class="gentle">In through the nose. Slow. Four counts.</div>
-<div class="gentle">Hold. Four counts.</div>
-<div class="gentle">Out through the mouth. Six counts.</div>
-<div class="gentle">Again, if you want.</div>
+<div class="label">Tonight</div>
+<div class="line">Everything that needed doing today is done, or it can wait.</div>
+<div class="line">The kids are safe. Chiara is close. The house is quiet.</div>
+<div class="line">Nothing requires your attention right now.</div>
+
+<hr class="divider">
+
+<div class="label">Remember</div>
+<div class="line">You built something real today, even if it felt small.</div>
+<div class="line">Rest is not lost time. It's where the next move comes from.</div>
+<div class="line">Tomorrow has its own energy. Let it come.</div>
+
+<hr class="divider">
+
+<div class="label">Breath</div>
+<div class="line">In through the nose. Slow. Four counts.</div>
+<div class="line">Hold. Four counts.</div>
+<div class="line">Out through the mouth. Six counts.</div>
+<div class="line">Again, if you want.</div>
 
 <div class="footer">be still</div>
 
 <script>
+var now = new Date();
+var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+document.getElementById("date").textContent = days[now.getDay()] + " " + now.getDate() + " " + months[now.getMonth()] + " " + now.getFullYear();
+
 var quotes = [
   ["We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "Aristotle"],
   ["The best time to plant a tree was twenty years ago. The second best time is now.", "Chinese proverb"],
@@ -123,13 +96,37 @@ var quotes = [
   ["Sleep is the best meditation.", "Dalai Lama"],
   ["Night is the other half of life, and the better half.", "Goethe"]
 ];
-var now = new Date();
-var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-document.getElementById("date").textContent = days[now.getDay()] + ", " + now.getDate() + " " + months[now.getMonth()] + " " + now.getFullYear();
 var idx = now.getDate() % quotes.length;
 document.getElementById("quote").textContent = "\u201C" + quotes[idx][0] + "\u201D";
 document.getElementById("author").textContent = quotes[idx][1] ? "\u2014 " + quotes[idx][1] : "";
+
+// Weather: Lode, UK (lat 52.24, lon 0.24) via Open-Meteo (no API key needed)
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=52.24&longitude=0.24&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=Europe/London&forecast_days=3", true);
+xhr.onreadystatechange = function() {
+  if (xhr.readyState === 4 && xhr.status === 200) {
+    var d = JSON.parse(xhr.responseText);
+    var c = d.current;
+    var daily = d.daily;
+    var wmo = function(code) {
+      var m = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Rime fog",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",71:"Light snow",73:"Snow",75:"Heavy snow",80:"Light showers",81:"Showers",82:"Heavy showers",95:"Thunderstorm"};
+      return m[code] || "---";
+    };
+    var html = "";
+    html += "LODE  " + Math.round(c.temperature_2m) + "\u00B0C  " + wmo(c.weather_code) + "  " + Math.round(c.wind_speed_10m) + " km/h\n";
+    html += "<div class='dim' style='margin-top:4px'>";
+    for (var i = 0; i < 3; i++) {
+      var dt = daily.time[i];
+      var parts = dt.split("-");
+      var label = i === 0 ? "Today" : i === 1 ? "Tmrw " : parts[2] + "/" + parts[1];
+      html += label + "  " + Math.round(daily.temperature_2m_min[i]) + "-" + Math.round(daily.temperature_2m_max[i]) + "\u00B0  " + wmo(daily.weather_code[i]);
+      if (i < 2) html += "<br>";
+    }
+    html += "</div>";
+    document.getElementById("weather").innerHTML = html;
+  }
+};
+xhr.send();
 </script>
 
 </body>
