@@ -18,11 +18,10 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 .dim { color: #888; }
-.divider { border: none; border-top: 1px solid #444; margin: 10px 0; }
+.spacer { height: 16px; }
 .label { color: #888; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
 .line { margin-bottom: 4px; }
-.prose { line-height: 1.5; margin-bottom: 4px; }
-.footer { margin-top: 16px; font-size: 11px; color: #555; text-align: center; }
+.quote { line-height: 1.55; margin-bottom: 6px; }
 .weather-grid { margin: 6px 0; }
 .weather-grid div { margin-bottom: 2px; }
 </style>
@@ -31,42 +30,22 @@ body {
 
 <div id="date" style="margin-bottom:12px"></div>
 
-<hr class="divider">
+<div class="spacer"></div>
 
 <div id="weather">
 <div class="dim">loading weather...</div>
 </div>
 
-<hr class="divider">
+<div class="spacer"></div>
 
 <div id="quote-block">
-  <div class="line" id="quote"></div>
+  <div class="quote" id="quote"></div>
   <div class="dim" id="author"></div>
 </div>
 
-<hr class="divider">
+<div class="spacer"></div>
 
-<div class="label">Tonight</div>
-<div class="line">Everything that needed doing today is done, or it can wait.</div>
-<div class="line">The kids are safe. Chiara is close. The house is quiet.</div>
-<div class="line">Nothing requires your attention right now.</div>
-
-<hr class="divider">
-
-<div class="label">Remember</div>
-<div class="line">You built something real today, even if it felt small.</div>
-<div class="line">Rest is not lost time. It's where the next move comes from.</div>
-<div class="line">Tomorrow has its own energy. Let it come.</div>
-
-<hr class="divider">
-
-<div class="label">Breath</div>
-<div class="line">In through the nose. Slow. Four counts.</div>
-<div class="line">Hold. Four counts.</div>
-<div class="line">Out through the mouth. Six counts.</div>
-<div class="line">Again, if you want.</div>
-
-<div class="footer">be still</div>
+<div id="breath"></div>
 
 <script>
 var now = new Date();
@@ -75,30 +54,62 @@ var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturda
 document.getElementById("date").textContent = days[now.getDay()] + " " + now.getDate() + " " + months[now.getMonth()] + " " + now.getFullYear();
 
 var quotes = [
-  ["We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "Aristotle"],
-  ["The best time to plant a tree was twenty years ago. The second best time is now.", "Chinese proverb"],
-  ["He who has a why to live can bear almost any how.", "Nietzsche"],
-  ["The only way to do great work is to love what you do.", "Steve Jobs"],
-  ["In the middle of difficulty lies opportunity.", "Einstein"],
-  ["The soul becomes dyed with the colour of its thoughts.", "Marcus Aurelius"],
-  ["Everything passes. Joy. Pain. The moment of triumph; the sigh of despair. Nothing lasts forever.", "Paul Auster"],
-  ["Have patience with everything unresolved in your heart.", "Rilke"],
-  ["The wound is the place where the Light enters you.", "Rumi"],
-  ["To live is the rarest thing in the world. Most people exist, that is all.", "Oscar Wilde"],
-  ["What we achieve inwardly will change outer reality.", "Plutarch"],
-  ["Almost everything will work again if you unplug it for a few minutes. Including you.", "Anne Lamott"],
-  ["The afternoon knows what the morning never suspected.", "Robert Frost"],
-  ["Vita brevis, ars longa.", "Hippocrates"],
-  ["Man is not worried by real problems so much as by his imagined anxieties about real problems.", "Epictetus"],
-  ["Chi dorme non piglia pesci, ma chi non dorme non piglia sogni.", ""],
-  ["Rest is not idleness, and to lie sometimes on the grass under trees on a summer day is by no means a waste of time.", "John Lubbock"],
-  ["The quieter you become, the more you can hear.", "Ram Dass"],
-  ["Sleep is the best meditation.", "Dalai Lama"],
-  ["Night is the other half of life, and the better half.", "Goethe"]
+  ["It is not that we have a short time to live, but that we waste a great deal of it. Life is long enough, and a sufficiently generous amount has been given to us for the highest achievements if it were all well invested.", "Seneca, On the Shortness of Life"],
+  ["Have patience with everything unresolved in your heart and try to love the questions themselves, as if they were locked rooms or books written in a very foreign language. Do not now seek the answers, which cannot be given you because you would not be able to live them.", "Rilke, Letters to a Young Poet"],
+  ["At dawn, when you have trouble getting out of bed, tell yourself: I have to go to work \u2014 as a human being. What do I have to complain of, if I\u2019m going to do what I was born for \u2014 the things I was brought into the world to do? Or is this what I was created for? To huddle under the blankets and stay warm?", "Marcus Aurelius, Meditations"],
+  ["In the middle of winter, I at last discovered that there was in me an invincible summer. And that makes me happy. For it says that no matter how hard the world pushes against me, within me, there\u2019s something stronger \u2014 something better, pushing right back.", "Camus, Return to Tipasa"],
+  ["Colui che sa di non avere tempo da perdere \u00e8 gi\u00e0 salvo, anche se non sa ancora come. Non \u00e8 la certezza che conta, \u00e8 il rifiuto di fermarsi.", "Cesare Pavese, Il mestiere di vivere"],
+  ["The thing about working for yourself is that every morning you wake up unemployed. You have to earn your job all over again. That sounds terrifying, and some days it is. But it also means that every morning you wake up free.", "Paul Graham"],
+  ["A man is worked upon by what he works on. He may carve out his circumstances, but his circumstances will carve him out as well. A small daily task, if it be really daily, will beat the labours of a spasmodic Hercules.", "Anthony Trollope"],
+  ["The years teach much which the days never know. The individual is always mistaken. He designed many things, and drew in other persons as coadjutors, quarrelled with some or all, blundered much, and something is done; all are a little advanced, but the individual is always mistaken.", "Emerson, Experience"],
+  ["Sleep is the interest we have to pay on the capital which is called in at death; and the higher the rate of interest and the more regularly it is paid, the further the date of redemption is postponed. So says Schopenhauer, but I say: sleep is the kindness the body shows the mind, reminding it gently that it is not yet infinite.", "adapted from Schopenhauer"],
+  ["I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived.", "Thoreau, Walden"],
+  ["One must imagine Sisyphus happy. The struggle itself toward the heights is enough to fill a man\u2019s heart.", "Camus, The Myth of Sisyphus"],
+  ["We are not provided with wisdom, we must discover it for ourselves, after a journey through the wilderness which no one else can take for us, an effort which no one can spare us.", "Proust, In Search of Lost Time"],
+  ["Chi vuol muovere il mondo, prima muova s\u00e9 stesso. The work you do on yourself is not separate from the work you do in the world. They are the same work, done in different rooms.", "Socrates, via Plutarch"],
+  ["The secret of getting ahead is getting started. The secret of getting started is breaking your complex overwhelming tasks into small manageable tasks, and then starting on the first one. And then resting. And then starting again.", "Mark Twain"],
+  ["There is a vitality, a life force, an energy that is translated through you into action, and because there is only one of you in all of time, this expression is unique. And if you block it, it will never exist through any other medium and it will be lost. It is not your business to determine how good it is nor how valuable. It is your business to keep the channel open.", "Martha Graham"],
+  ["Ogni mattina in Africa, una gazzella si sveglia. Sa che dovr\u00e0 correre pi\u00f9 del leone o verr\u00e0 uccisa. Ogni mattina un leone si sveglia. Sa che dovr\u00e0 correre pi\u00f9 della gazzella o morir\u00e0 di fame. Non importa che tu sia un leone o una gazzella: quando il sole sorge, \u00e8 meglio che cominci a correre. Ma di notte, anche il leone dorme.", "proverbio africano, con aggiunta"],
+  ["Put your ear down close to your soul and listen hard. The only people for me are the mad ones, the ones who are mad to live, mad to talk, mad to be saved, desirous of everything at the same time, the ones who never yawn or say a commonplace thing, but burn, burn, burn like fabulous yellow roman candles.", "Kerouac, On the Road"],
+  ["You do not need to leave your room. Remain sitting at your table and listen. Do not even listen, simply wait, be quiet, still and solitary. The world will freely offer itself to you to be unmasked. It has no choice; it will roll in ecstasy at your feet.", "Kafka"],
+  ["The miracle is not to walk on water. The miracle is to walk on the green earth, dwelling deeply in the present moment and feeling truly alive.", "Thich Nhat Hanh"],
+  ["L\u2019uomo \u00e8 ci\u00f2 che decide di essere. Non ci\u00f2 che gli accade, ma ci\u00f2 che sceglie di fare con ci\u00f2 che gli accade. Questo \u00e8 il suo privilegio, il suo fardello, e la sua libert\u00e0.", "Primo Levi, Se questo \u00e8 un uomo"]
 ];
 var idx = now.getDate() % quotes.length;
 document.getElementById("quote").textContent = "\u201C" + quotes[idx][0] + "\u201D";
-document.getElementById("author").textContent = quotes[idx][1] ? "\u2014 " + quotes[idx][1] : "";
+document.getElementById("author").textContent = "\u2014 " + quotes[idx][1];
+
+var poems = [
+  ["\u53e4\u6c60\u3084\u86d9\u98db\u3073\u8fbc\u3080\u6c34\u306e\u97f3", "The old pond\u2014\na frog jumps in,\nsound of water.", "Matsuo Bash\u014d"],
+  ["\u6728\u67af\u3089\u3057\u98a8\u306e\u306a\u304d\u306b\u3082\u7d05\u8449\u54c9", "Over the wintry\nforest, winds howl in rage\nwith no leaves to blow.", "Natsume S\u014dseki"],
+  ["\u590f\u8349\u3084\u5175\u3069\u3082\u304c\u5922\u306e\u8de1", "The summer grasses\u2014\nall that remains of the dreams\nof warriors.", "Matsuo Bash\u014d"],
+  ["\u706f\u3092\u6d88\u3057\u3066\u6dbc\u3057\u304d\u661f\u306e\u7a93\u304b\u306a", "The lamp once out\ncool stars enter\nthe window frame.", "Natsume S\u014dseki"],
+  ["\u5750\u7167\u3059\u308c\u3070\u6625\u6765\u305f\u308a\u8349\u81ea\u3089\u751f\u305a", "Sitting quietly, doing nothing,\nspring comes,\nand the grass grows by itself.", "Zenrin Kush\u016b"],
+  ["\u9418\u6d88\u3048\u3066\u82b1\u306e\u9999\u306f\u649e\u304f\u5915\u54c9", "The temple bell stops\u2014\nbut the sound keeps coming\nout of the flowers.", "Matsuo Bash\u014d"],
+  ["\u6708\u5929\u5fc3\u5982\u6c34\u3000\u5f69\u96f2\u6b63\u597d\u7e5e\u9752\u5929", "The moon\u2019s heart is like water,\nbright clouds embroider\nthe blue sky.", "Li Bai"],
+  ["\u4eac\u306b\u3066\u3082\u4eac\u306a\u3064\u304b\u3057\u3084\u307b\u3068\u3068\u304e\u3059", "Even in Kyoto\u2014\nhearing the cuckoo\u2019s cry\u2014\nI long for Kyoto.", "Matsuo Bash\u014d"],
+  ["\u3084\u305b\u86d9\u8ca0\u3051\u308b\u306a\u4e00\u8336\u3053\u308c\u306b\u3042\u308a", "Lean frog,\ndon\u2019t give up the fight!\nIssa is here.", "Kobayashi Issa"],
+  ["\u9732\u306e\u4e16\u306f\u9732\u306e\u4e16\u306a\u304c\u3089\u3055\u308a\u306a\u304c\u3089", "A world of dew,\nand within every dewdrop\na world of struggle.", "Kobayashi Issa"],
+  ["\u96f2\u304a\u308a\u304a\u308a\u4eba\u3092\u4f11\u3081\u308b\u6708\u898b\u304b\u306a", "From time to time\nthe clouds give rest\nto the moon-beholders.", "Matsuo Bash\u014d"],
+  ["\u6708\u6c34\u306b\u7815\u3051\u3066\u7815\u3051\u3066\u306a\u304a\u6708\u3042\u308a", "The moon in the water;\nbroken and broken again,\nstill it is there.", "Chosu"],
+  ["\u6de1\u96ea\u306e\u3046\u3059\u304d\u65e5\u5f71\u306e\u5c71\u8def\u304b\u306a", "Light snow\u2014\nfaint sun-shadows\nalong the mountain path.", "Ry\u014dkan"],
+  ["\u76d7\u4eba\u306b\u53d6\u6b8b\u3055\u308c\u3057\u7a93\u306e\u6708", "The thief left it behind:\nthe moon\nat my window.", "Ry\u014dkan"],
+  ["\u8776\u3005\u306e\u3072\u3089\u3072\u3089\u6e21\u308b\u5922\u306e\u6a4b", "Fluttering, trembling,\nthe butterfly passed over\u2014\nthe bridge of dreams.", "Chiyo-ni"],
+  ["\u53e4\u4eba\u306e\u8de1\u3092\u6c42\u3081\u305a\u53e4\u4eba\u306e\u6c42\u3081\u305f\u308b\u6240\u3092\u6c42\u3081\u3088", "Do not seek to follow\nin the footsteps of the wise.\nSeek what they sought.", "Matsuo Bash\u014d"],
+  ["\u7a7a\u5c71\u4e0d\u898b\u4eba\u3000\u4f46\u805e\u4eba\u8a9e\u58f0\n\u8fd4\u666f\u5165\u6df1\u6797\u3000\u5fa9\u7167\u9752\u82d4\u4e0a", "Empty mountain, no one in sight\u2014\nonly the sound of voices.\nLight returns to the deep forest\nand shines upon the moss.", "Wang Wei, \u9e7f\u67f4"],
+  ["\u540d\u6708\u3084\u6c60\u3092\u3081\u3050\u308a\u3066\u591c\u3082\u3059\u304c\u3089", "Moonlit night\u2014\nI walk around the pond\u2014\nhey, the dawn.", "Matsuo Bash\u014d"],
+  ["\u7269\u8a00\u306f\u305a\u4e3b\u5ba2\u3068\u767d\u83ca\u82b1", "No one spoke.\nThe host, the guest,\nthe white chrysanthemum.", "Oshima Ry\u014dta"],
+  ["\u96c1\u884c\u7121\u610f\u4e0b\u6c60\u5858\u3000\u6c60\u5858\u7121\u5fc3\u7559\u96c1\u5f71", "The wild geese do not intend\nto cast their reflection.\nThe water has no mind\nto receive their image.", "Zenrin Kush\u016b"]
+];
+var pidx = now.getDate() % poems.length;
+var phtml = "<div class='line'>" + poems[pidx][0] + "</div>";
+phtml += "<div style='height:8px'></div>";
+var plines = poems[pidx][1].split("\n");
+for (var p = 0; p < plines.length; p++) {
+  phtml += "<div class='line dim'>" + plines[p] + "</div>";
+}
+phtml += "<div class='dim' style='margin-top:4px'>\u2014 " + poems[pidx][2] + "</div>";
+document.getElementById("breath").innerHTML = phtml;
 
 var xhr = new XMLHttpRequest();
 xhr.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=52.24&longitude=0.24&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,surface_pressure,cloud_cover,precipitation&hourly=precipitation_probability,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max,precipitation_sum,wind_speed_10m_max,wind_direction_10m_dominant&timezone=Europe/London&forecast_days=3", true);
@@ -108,11 +119,6 @@ xhr.onreadystatechange = function() {
   var c = d.current;
   var daily = d.daily;
   var hourly = d.hourly;
-
-  var wmo = function(code) {
-    var m = {0:"clear skies",1:"mostly clear",2:"partly cloudy",3:"overcast",45:"fog",48:"freezing fog",51:"light drizzle",53:"drizzle",55:"heavy drizzle",56:"freezing drizzle",57:"heavy freezing drizzle",61:"light rain",63:"moderate rain",65:"heavy rain",66:"freezing rain",67:"heavy freezing rain",71:"light snow",73:"moderate snow",75:"heavy snow",77:"snow grains",80:"light showers",81:"showers",82:"heavy showers",85:"light snow showers",86:"heavy snow showers",95:"thunderstorm",96:"thunderstorm with hail",99:"thunderstorm with heavy hail"};
-    return m[code] || "---";
-  };
 
   var wmoShort = function(code) {
     var m = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Freezing fog",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",71:"Light snow",73:"Snow",75:"Heavy snow",80:"Light showers",81:"Showers",82:"Heavy showers",95:"Thunderstorm"};
@@ -145,7 +151,6 @@ xhr.onreadystatechange = function() {
     return "very low";
   };
 
-  // Next few hours rain probability
   var currentHour = now.getHours();
   var todayStr = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0") + "-" + String(now.getDate()).padStart(2,"0");
   var rainProbs = [];
@@ -156,65 +161,19 @@ xhr.onreadystatechange = function() {
   }
   var maxRainProb = Math.max.apply(null, rainProbs.length ? rainProbs : [0]);
 
-  // Sunrise/sunset
   var sunrise = daily.sunrise[0].split("T")[1];
   var sunset = daily.sunset[0].split("T")[1];
 
   var html = "";
-
-  // One-liner
   html += "LODE  " + Math.round(c.temperature_2m) + "\u00B0C  " + wmoShort(c.weather_code) + "  " + Math.round(c.wind_speed_10m) + " km/h";
   html += "<br><br>";
-
-  // Detail grid
   html += "<div class='weather-grid'>";
-  html += "<div>Feels like " + Math.round(c.apparent_temperature) + "\u00B0C" + "    Humidity " + c.relative_humidity_2m + "%</div>";
-  html += "<div>Pressure " + Math.round(c.surface_pressure) + " hPa (" + pressureDesc(c.surface_pressure) + ")" + "    Cloud " + c.cloud_cover + "%</div>";
+  html += "<div>Feels like " + Math.round(c.apparent_temperature) + "\u00B0C    Humidity " + c.relative_humidity_2m + "%    Cloud " + c.cloud_cover + "%</div>";
+  html += "<div>Pressure " + Math.round(c.surface_pressure) + " hPa (" + pressureDesc(c.surface_pressure) + ")    Dew point " + Math.round(c.temperature_2m - ((100 - c.relative_humidity_2m) / 5)) + "\u00B0C</div>";
   html += "<div>Wind " + windDir(c.wind_direction_10m) + " " + Math.round(c.wind_speed_10m) + " km/h (" + beaufort(c.wind_speed_10m) + ")</div>";
-  html += "<div>UV index " + Math.round(daily.uv_index_max[0]) + "    Rain chance " + maxRainProb + "% next 6h</div>";
+  html += "<div>UV " + Math.round(daily.uv_index_max[0]) + "    Rain " + maxRainProb + "% next 6h    Precip " + (c.precipitation > 0 ? c.precipitation + " mm" : "none") + "</div>";
   html += "<div>Sunrise " + sunrise + "    Sunset " + sunset + "</div>";
-  html += "</div><br>";
-
-  // Prose forecast - shipping forecast style
-  var prose = "";
-  var tonightWeather = wmo(c.weather_code);
-  var tomorrowWeather = wmo(daily.weather_code[1]);
-  var tomorrowWind = beaufort(daily.wind_speed_10m_max[1]);
-  var tomorrowDir = windDir(daily.wind_direction_10m_dominant[1]);
-  var tomorrowMin = Math.round(daily.temperature_2m_min[1]);
-  var tomorrowMax = Math.round(daily.temperature_2m_max[1]);
-  var tomorrowRain = daily.precipitation_sum[1];
-
-  prose += "Lode, Cambridgeshire. Tonight: " + tonightWeather + ". ";
-  prose += "Wind " + windDir(c.wind_direction_10m) + " " + beaufort(c.wind_speed_10m) + ". ";
-  prose += "Pressure " + Math.round(c.surface_pressure) + " millibars, " + pressureDesc(c.surface_pressure) + ". ";
-  if (maxRainProb > 50) {
-    prose += "Rain likely in the next few hours. ";
-  } else if (maxRainProb > 20) {
-    prose += "Some chance of rain. ";
-  } else {
-    prose += "Dry overnight. ";
-  }
-  prose += "Tomorrow: " + tomorrowWeather + ", " + tomorrowMin + " to " + tomorrowMax + "\u00B0. ";
-  prose += tomorrowDir + " " + tomorrowWind + ". ";
-  if (tomorrowRain > 5) {
-    prose += "Persistent rain expected, " + Math.round(tomorrowRain) + " mm. ";
-  } else if (tomorrowRain > 1) {
-    prose += "Some rain, " + Math.round(tomorrowRain) + " mm. ";
-  } else {
-    prose += "Mainly dry. ";
-  }
-
-  // Day after
-  var d2Weather = wmo(daily.weather_code[2]);
-  var d2Min = Math.round(daily.temperature_2m_min[2]);
-  var d2Max = Math.round(daily.temperature_2m_max[2]);
-  var d2parts = daily.time[2].split("-");
-  var d2label = days[new Date(daily.time[2]).getDay()];
-  prose += d2label + ": " + d2Weather + ", " + d2Min + " to " + d2Max + "\u00B0.";
-
-  html += "<div class='label'>Forecast</div>";
-  html += "<div class='prose'>" + prose + "</div>";
+  html += "</div>";
 
   document.getElementById("weather").innerHTML = html;
 };
