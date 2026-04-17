@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sky Lab — clouds, weather, rays</title>
+<style>
+  :root { --fg:#f0f0f0; --dim:#8a8a8a; --line:rgba(255,255,255,0.12); --panel:rgba(10,10,12,0.55); }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:#000; color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; overflow:hidden; }
+  canvas { display:block; width:100vw; height:100vh; position:fixed; inset:0; z-index:0; }
+
+  .panel {
+    position:fixed; left:16px; bottom:16px; z-index:2; width:min(360px, calc(100vw - 32px));
+    background:var(--panel); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--line); border-radius:14px; padding:16px 18px;
+    font-size:13px;
+  }
+  .panel h2 { margin:0 0 4px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--dim); font-weight:500; }
+  .readout { font-size:13px; color:var(--dim); margin-bottom:14px; }
+  .readout b { color:var(--fg); font-weight:500; }
+
+  .row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .row label { width:58px; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); }
+  .row input[type=range] { flex:1; accent-color:#c8102e; }
+  .row input[type=number], .row select {
+    background:rgba(0,0,0,0.4); color:var(--fg); border:1px solid var(--line);
+    border-radius:6px; padding:4px 8px; font-size:12px; width:84px;
+    font-family:inherit;
+  }
+  .row .val { width:56px; text-align:right; color:var(--fg); font-variant-numeric:tabular-nums; font-size:12px; }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chip { font-size:11px; padding:4px 10px; border:1px solid var(--line); border-radius:999px;
+    color:var(--dim); background:transparent; cursor:pointer; }
+  .chip:hover { color:var(--fg); border-color:var(--fg); }
+  .toggle { display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+  .toggle label { display:flex; gap:6px; align-items:center; cursor:pointer; font-size:12px; color:var(--dim); }
+  .toggle input { accent-color:#c8102e; }
+
+  .actions { display:flex; gap:8px; margin-top:12px; }
+  .btn {
+    flex:1; font-size:12px; padding:8px 10px; border:1px solid var(--line); border-radius:8px;
+    background:rgba(0,0,0,0.3); color:var(--fg); cursor:pointer; font-family:inherit;
+    letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .btn:hover { border-color:var(--fg); }
+  .btn.primary { background:#c8102e; border-color:#c8102e; }
+  .btn.primary:hover { background:#e01538; border-color:#e01538; }
+
+  .palette {
+    position:fixed; bottom:16px; right:16px; z-index:2;
+    display:flex; gap:0; border-radius:8px; overflow:hidden;
+    border:1px solid var(--line);
+    box-shadow:0 4px 20px rgba(0,0,0,0.5);
+  }
+  .palette .sw { width:44px; height:64px; display:flex; align-items:flex-end; justify-content:center;
+    padding:4px; font-size:9px; font-family:ui-monospace,Menlo,monospace; color:rgba(255,255,255,0.9);
+    text-shadow:0 1px 2px rgba(0,0,0,0.8); }
+
+  body.hide-ui .panel, body.hide-ui .top-info, body.hide-ui .palette { opacity:0; pointer-events:none; transition:opacity .25s; }
+  body.hint::after {
+    content:"H to hide UI · S to save PNG"; position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    background:var(--panel); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    color:var(--dim); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    padding:6px 12px; border:1px solid var(--line); border-radius:999px; z-index:3;
+    animation:fadeout 5s forwards;
+  }
+  @keyframes fadeout { 0%,70%{opacity:1} 100%{opacity:0} }
+
+  .top-info {
+    position:fixed; right:16px; top:16px; z-index:2;
+    background:var(--panel); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--dim);
+    font-variant-numeric:tabular-nums;
+  }
+  .top-info b { color:var(--fg); font-weight:500; }
+</style>
+</head>
+<body class="hint">
+<canvas id="c"></canvas>
+
+<div class="top-info" id="info">sun —° · moon —°</div>
+
+<div class="palette" id="palette"></div>
+
+<div class="panel">
+  <h2>Sky</h2>
+  <div class="readout" id="readout">—</div>
+
+  <div class="row">
+    <label>Hour</label>
+    <input id="hour" type="range" min="0" max="24" step="0.05" value="12" />
+    <span class="val" id="hourVal">12:00</span>
+  </div>
+  <div class="row">
+    <label>Date</label>
+    <input id="date" type="date" style="width:130px" />
+  </div>
+  <div class="row">
+    <label>Lat</label>
+    <input id="lat" type="number" step="0.5" value="51.5" />
+    <label style="width:auto">Lon</label>
+    <input id="lon" type="number" step="0.5" value="-0.1" />
+  </div>
+  <div class="presets">
+    <span class="chip" data-lat="51.5" data-lon="-0.1">London</span>
+    <span class="chip" data-lat="41.9" data-lon="12.5">Rome</span>
+    <span class="chip" data-lat="35.7" data-lon="139.7">Tokyo</span>
+    <span class="chip" data-lat="-33.9" data-lon="151.2">Sydney</span>
+    <span class="chip" data-lat="64.1" data-lon="-21.9">Reykjavík</span>
+    <span class="chip" data-lat="0.3" data-lon="32.6">Kampala</span>
+  </div>
+  <div class="row">
+    <label>Cloud</label>
+    <input id="cloud" type="range" min="0" max="1" step="0.01" value="0.3" />
+    <span class="val" id="cloudVal">30%</span>
+  </div>
+  <div class="row">
+    <label>Type</label>
+    <select id="cloudType" style="width:130px">
+      <option value="0">cirrus</option>
+      <option value="1" selected>cumulus</option>
+      <option value="2">stratus</option>
+    </select>
+    <label style="width:auto">Wind</label>
+    <input id="wind" type="number" step="1" value="5" style="width:60px" />
+  </div>
+  <div class="row">
+    <label>Haze</label>
+    <input id="haze" type="range" min="0" max="1" step="0.01" value="0.2" />
+    <span class="val" id="hazeVal">20%</span>
+  </div>
+  <div class="row">
+    <label>Rays</label>
+    <input id="rays" type="range" min="0" max="1" step="0.01" value="0.4" />
+    <span class="val" id="raysVal">40%</span>
+  </div>
+  <div class="toggle">
+    <label><input type="checkbox" id="shimmer" checked /> shimmer</label>
+    <label><input type="checkbox" id="belt" checked /> belt of venus</label>
+    <label><input type="checkbox" id="liveWx" /> live weather</label>
+    <label><input type="checkbox" id="play" /> animate</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="copyLink">Copy link</button>
+    <button class="btn primary" id="savePng">Save PNG</button>
+  </div>
+</div>
+
+<!-- SunCalc for sun + moon positions and phase -->
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+<script>
+// ---------- shader source ----------
+const vsrc = `#version 300 es
+in vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
+
+const fsrc = `#version 300 es
+precision highp float;
+out vec4 outColor;
+
+uniform vec2  uRes;
+uniform float uTime;
+uniform float uSunAlt;      // radians, -pi/2..pi/2
+uniform float uSunAz;       // radians (az around south, we center south)
+uniform float uMoonAlt;
+uniform float uMoonAz;
+uniform float uMoonPhase;   // 0..1 (SunCalc: 0 new, 0.5 full, 1 new)
+uniform float uMoonIllum;   // 0..1 fraction illuminated
+uniform float uShimmer;     // 0 or 1
+uniform float uBelt;        // 0 or 1
+uniform float uCloudCover;  // 0..1
+uniform float uCloudType;   // 0 cirrus, 1 cumulus, 2 stratus
+uniform float uWind;        // wind speed scalar (m/s approx)
+uniform float uHaze;        // 0..1 atmospheric haze
+uniform float uRays;        // 0..1 crepuscular ray strength
+
+#define PI 3.14159265359
+
+// pseudo random / noise for subtle grain and shimmer
+float hash(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+float noise(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  float a = hash(i), b = hash(i+vec2(1,0)), c = hash(i+vec2(0,1)), d = hash(i+vec2(1,1));
+  vec2 u = f*f*(3.0-2.0*f);
+  return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v = 0.0, a = 0.5;
+  for (int i=0; i<5; i++){
+    v += a * noise(p);
+    p *= 2.05; a *= 0.5;
+  }
+  return v;
+}
+
+// angular distance between two sky directions given by (alt, az)
+float angDist(float a1, float z1, float a2, float z2){
+  float c = sin(a1)*sin(a2) + cos(a1)*cos(a2)*cos(z1 - z2);
+  return acos(clamp(c, -1.0, 1.0));
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / uRes;
+  vec2 aspect = vec2(uRes.x/uRes.y, 1.0);
+
+  // Map screen to sky direction:
+  //   horizontal covers +/-90 deg of azimuth around south (so full 180° field)
+  //   vertical covers 0..90 deg altitude (horizon at bottom)
+  float viewAz = (uv.x - 0.5) * PI;            // -pi/2..pi/2, centered on south
+  float viewAlt = uv.y * (PI * 0.5);           // 0..pi/2
+
+  // shimmer: warp viewAz near horizon
+  if (uShimmer > 0.5) {
+    float horizonMask = 1.0 - smoothstep(0.0, 0.12, viewAlt);
+    float n = noise(vec2(uv.x * 60.0, uTime*0.6));
+    float warp = (n - 0.5) * 0.015 * horizonMask;
+    viewAz += warp;
+    viewAlt += warp * 0.5;
+  }
+
+  // sun altitude drives day/night blend
+  float day      = smoothstep(-0.08, 0.18, uSunAlt);           // full day
+  float twilight = smoothstep(-0.35, 0.0, uSunAlt) * (1.0 - smoothstep(0.0, 0.25, uSunAlt));
+  float civilDusk= smoothstep(-0.25, 0.05, uSunAlt);
+
+  // vertical position 0=horizon, 1=zenith
+  float h = clamp(viewAlt / (PI*0.5), 0.0, 1.0);
+
+  // Palettes
+  vec3 dayZenith    = vec3(0.16, 0.38, 0.78);
+  vec3 dayHorizon   = vec3(0.75, 0.88, 1.00);
+  vec3 sunsetZenith = vec3(0.22, 0.18, 0.42);
+  vec3 sunsetHorizon= vec3(1.00, 0.52, 0.22);
+  vec3 nightZenith  = vec3(0.012, 0.018, 0.055);
+  vec3 nightHorizon = vec3(0.04, 0.06, 0.13);
+
+  vec3 dayC    = mix(dayHorizon, dayZenith, pow(h, 0.7));
+  vec3 sunsetC = mix(sunsetHorizon, sunsetZenith, pow(h, 0.55));
+  vec3 nightC  = mix(nightHorizon, nightZenith, pow(h, 0.5));
+
+  // asymmetric sunset tint: hotter near sun azimuth
+  float azDelta = abs(viewAz - uSunAz);
+  float sunsetLean = exp(-azDelta * 1.4);
+  sunsetC = mix(sunsetC, sunsetC * vec3(1.1, 0.95, 0.85) + vec3(0.15,0.05,0.0)*sunsetLean, sunsetLean*0.7);
+
+  // Blend: night -> sunset (twilight) -> day
+  vec3 sky = mix(nightC, sunsetC, twilight);
+  sky = mix(sky, dayC, day);
+
+  // --- Belt of Venus + Earth's shadow ---
+  // Pink band and dark blue shadow appear opposite the sun during civil twilight.
+  if (uBelt > 0.5) {
+    float daz = viewAz - uSunAz;
+    daz = mod(daz + PI, 2.0*PI) - PI;             // wrap to [-pi,pi]
+    float anti = smoothstep(0.6, 0.0, abs(abs(daz) - PI)); // near antisolar azimuth
+    // active when sun between -6° and +3°
+    float beltTime = smoothstep(-0.12, -0.02, uSunAlt) * (1.0 - smoothstep(0.02, 0.09, uSunAlt));
+    // pink belt, centered around altitude of roughly -uSunAlt above horizon
+    float beltC = clamp(-uSunAlt + 0.08, 0.04, 0.22);
+    float pink = exp(-pow((viewAlt - beltC)/0.055, 2.0));
+    vec3 pinkC = vec3(1.0, 0.62, 0.68);
+    sky += pinkC * pink * anti * beltTime * 0.35;
+    // Earth's shadow: dim blue band just below the pink
+    float shadowC = clamp(beltC - 0.08, 0.0, 0.2);
+    float shadow = exp(-pow((viewAlt - shadowC)/0.045, 2.0));
+    vec3 shadowCol = vec3(0.07, 0.1, 0.22);
+    sky = mix(sky, shadowCol, shadow * anti * beltTime * 0.45);
+  }
+
+  // --- Haze / aerosol lift near horizon ---
+  if (uHaze > 0.001) {
+    float horizonMask = 1.0 - smoothstep(0.0, 0.35, viewAlt);
+    vec3 hazeColor = mix(vec3(0.55,0.6,0.65), vec3(1.0,0.7,0.5), twilight);
+    sky = mix(sky, hazeColor, horizonMask * uHaze * 0.45);
+  }
+
+  // --- Clouds (2D fbm on a pseudo-plane) ---
+  if (uCloudCover > 0.005 && viewAlt > 0.0) {
+    // project view ray onto a horizontal plane at some height -> cheap "cloud plane" UV
+    float tanAlt = max(tan(viewAlt), 0.08);
+    vec2 cloudUV;
+    if (uCloudType < 0.5) {
+      // cirrus: wispy, high, streaky
+      cloudUV = vec2(viewAz * 4.0 + uTime * 0.04 * uWind, 1.0 / tanAlt * 0.2);
+    } else if (uCloudType < 1.5) {
+      // cumulus: chunky, mid
+      cloudUV = vec2(viewAz * 2.5 + uTime * 0.03 * uWind, 1.0 / tanAlt * 0.35);
+    } else {
+      // stratus: flat layer
+      cloudUV = vec2(viewAz * 1.4 + uTime * 0.02 * uWind, 1.0 / tanAlt * 0.15);
+    }
+    float n = fbm(cloudUV);
+    // coverage threshold: higher cover → lower threshold
+    float threshold = mix(0.72, 0.25, uCloudCover);
+    float density;
+    if (uCloudType < 0.5) {
+      density = smoothstep(threshold, threshold + 0.12, n) * 0.5;
+    } else if (uCloudType < 1.5) {
+      density = smoothstep(threshold, threshold + 0.18, n);
+    } else {
+      density = smoothstep(threshold - 0.05, threshold + 0.25, n) * 0.85;
+    }
+    // fade clouds at high zenith (they're overhead, less visible in vert view)
+    density *= smoothstep(0.0, 0.1, viewAlt) * (1.0 - smoothstep(0.7, 1.0, viewAlt) * 0.3);
+
+    // cloud lighting: base tone by day/twilight/night
+    vec3 cloudLit   = vec3(1.0, 0.98, 0.95);
+    vec3 cloudShade = vec3(0.35, 0.38, 0.45);
+    vec3 cloudDay   = mix(cloudShade, cloudLit, 0.7);
+    vec3 cloudSunset= mix(vec3(0.6,0.35,0.35), vec3(1.0, 0.75, 0.5), 0.6);
+    vec3 cloudNight = vec3(0.08, 0.1, 0.15);
+    vec3 cloudC = mix(cloudNight, cloudSunset, twilight);
+    cloudC = mix(cloudC, cloudDay, day);
+    // sun-lit edge: brighter near sun azimuth
+    float sunLean = exp(-abs(viewAz - uSunAz) * 1.2);
+    cloudC += vec3(0.3, 0.18, 0.1) * sunLean * (twilight + day*0.4);
+
+    sky = mix(sky, cloudC, density);
+  }
+
+  // --- Crepuscular rays / sun inscattering glow ---
+  if (uRays > 0.001) {
+    float sunAD = angDist(viewAlt, viewAz, uSunAlt, uSunAz);
+    float rayFade = smoothstep(-0.05, 0.2, uSunAlt) * (1.0 - smoothstep(0.3, 0.6, uSunAlt));
+    float radial = pow(max(0.0, 1.0 - sunAD / 1.8), 4.0);
+    // streak modulation: noise along azimuth
+    float streak = fbm(vec2(viewAz * 6.0, viewAlt * 3.0 + uTime*0.08));
+    streak = smoothstep(0.35, 0.75, streak);
+    vec3 rayC = mix(vec3(1.0, 0.7, 0.4), vec3(1.0, 0.95, 0.85), day);
+    sky += rayC * radial * streak * uRays * rayFade * 0.4;
+  }
+
+  // --- Stars at night ---
+  float nightF = 1.0 - civilDusk;
+  if (nightF > 0.001) {
+    vec2 sp = vec2(viewAz * 5.0, viewAlt * 5.0);
+    float star = 0.0;
+    float n1 = hash(floor(sp * 80.0));
+    if (n1 > 0.992) star = pow((n1 - 0.992) / 0.008, 2.0);
+    float twinkle = 0.6 + 0.4 * sin(uTime*2.0 + n1*50.0);
+    sky += vec3(0.9, 0.95, 1.0) * star * twinkle * nightF;
+  }
+
+  // --- Sun disk + glow ---
+  float sunAngDist = angDist(viewAlt, viewAz, uSunAlt, uSunAz);
+  float sunDisk = smoothstep(0.012, 0.008, sunAngDist);
+  float sunGlow = exp(-sunAngDist * 8.0) * 0.5
+                + exp(-sunAngDist * 2.5) * 0.25;
+  // sun color shifts with altitude
+  vec3 sunColor = mix(vec3(1.0, 0.55, 0.25), vec3(1.0, 0.98, 0.92), smoothstep(0.0, 0.35, uSunAlt));
+  // dim when below horizon
+  float sunVisible = smoothstep(-0.03, 0.01, uSunAlt);
+  sky += (sunDisk * 1.8 + sunGlow * 0.7) * sunColor * sunVisible;
+
+  // --- Moon disk + phase ---
+  float moonAngDist = angDist(viewAlt, viewAz, uMoonAlt, uMoonAz);
+  float moonR = 0.013;
+  float moonDisk = smoothstep(moonR, moonR - 0.003, moonAngDist);
+  // phase shadow: offset a dark disk to simulate terminator
+  // phase 0 = new, 0.25 = first qtr, 0.5 = full, 0.75 = last qtr
+  float phase = uMoonPhase;
+  // offset direction: sign flips at 0.5
+  float dir = (phase < 0.5) ? 1.0 : -1.0;
+  float shadowShift = (0.5 - abs(phase - 0.5)) * 2.0; // 0..1..0
+  // coordinate local to moon
+  vec2 moonLocal = vec2(viewAz - uMoonAz, viewAlt - uMoonAlt);
+  float shadowDist = length(moonLocal + vec2(dir * shadowShift * moonR * 0.95, 0.0));
+  float moonLit = moonDisk * smoothstep(moonR - 0.002, moonR + 0.001, shadowDist);
+  // subtle moon glow scales with illumination and darkness of sky
+  float moonGlow = exp(-moonAngDist * 50.0) * 0.35 * uMoonIllum * (1.0 - day);
+  float moonVisible = smoothstep(-0.03, 0.01, uMoonAlt);
+  vec3 moonColor = vec3(0.96, 0.96, 0.92);
+  sky += (moonLit * 1.1 + moonGlow) * moonColor * moonVisible;
+
+  // subtle film grain
+  sky += (hash(gl_FragCoord.xy + uTime) - 0.5) * 0.008;
+
+  outColor = vec4(sky, 1.0);
+}
+`;
+
+// ---------- setup ----------
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2', { antialias: true, preserveDrawingBuffer: true });
+if (!gl) { document.body.innerHTML = "WebGL2 not available."; throw new Error("no webgl2"); }
+
+function compile(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s)); throw new Error("shader compile");
+  }
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsrc));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsrc));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.error(gl.getProgramInfoLog(prog)); }
+gl.useProgram(prog);
+
+const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const U = {
+  res: gl.getUniformLocation(prog, 'uRes'),
+  time: gl.getUniformLocation(prog, 'uTime'),
+  sunAlt: gl.getUniformLocation(prog, 'uSunAlt'),
+  sunAz:  gl.getUniformLocation(prog, 'uSunAz'),
+  moonAlt: gl.getUniformLocation(prog, 'uMoonAlt'),
+  moonAz:  gl.getUniformLocation(prog, 'uMoonAz'),
+  moonPhase: gl.getUniformLocation(prog, 'uMoonPhase'),
+  moonIllum: gl.getUniformLocation(prog, 'uMoonIllum'),
+  shimmer: gl.getUniformLocation(prog, 'uShimmer'),
+  belt: gl.getUniformLocation(prog, 'uBelt'),
+  cloudCover: gl.getUniformLocation(prog, 'uCloudCover'),
+  cloudType: gl.getUniformLocation(prog, 'uCloudType'),
+  wind: gl.getUniformLocation(prog, 'uWind'),
+  haze: gl.getUniformLocation(prog, 'uHaze'),
+  rays: gl.getUniformLocation(prog, 'uRays'),
+};
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width  = Math.floor(window.innerWidth  * dpr);
+  canvas.height = Math.floor(window.innerHeight * dpr);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+}
+window.addEventListener('resize', resize); resize();
+
+// ---------- state ----------
+const el = {
+  hour: document.getElementById('hour'),
+  hourVal: document.getElementById('hourVal'),
+  date: document.getElementById('date'),
+  lat:  document.getElementById('lat'),
+  lon:  document.getElementById('lon'),
+  shimmer: document.getElementById('shimmer'),
+  belt: document.getElementById('belt'),
+  cloud: document.getElementById('cloud'),
+  cloudVal: document.getElementById('cloudVal'),
+  cloudType: document.getElementById('cloudType'),
+  wind: document.getElementById('wind'),
+  haze: document.getElementById('haze'),
+  hazeVal: document.getElementById('hazeVal'),
+  rays: document.getElementById('rays'),
+  raysVal: document.getElementById('raysVal'),
+  liveWx: document.getElementById('liveWx'),
+  play: document.getElementById('play'),
+  readout: document.getElementById('readout'),
+  info: document.getElementById('info'),
+  palette: document.getElementById('palette'),
+  savePng: document.getElementById('savePng'),
+  copyLink: document.getElementById('copyLink'),
+};
+const today = new Date();
+el.date.value = today.toISOString().slice(0,10);
+
+// ---------- URL state ----------
+function loadFromURL(){
+  const p = new URLSearchParams(location.search);
+  if (p.get('h')  !== null) el.hour.value = p.get('h');
+  if (p.get('d'))           el.date.value = p.get('d');
+  if (p.get('lat')!== null) el.lat.value  = p.get('lat');
+  if (p.get('lon')!== null) el.lon.value  = p.get('lon');
+  if (p.get('s')  !== null) el.shimmer.checked = p.get('s') === '1';
+  if (p.get('b')  !== null) el.belt.checked    = p.get('b') === '1';
+  if (p.get('c')  !== null) { el.cloud.value = p.get('c'); el.cloudVal.textContent = Math.round(el.cloud.value*100)+'%'; }
+  if (p.get('ct') !== null) el.cloudType.value = p.get('ct');
+  if (p.get('w')  !== null) el.wind.value = p.get('w');
+  if (p.get('hz') !== null) { el.haze.value = p.get('hz'); el.hazeVal.textContent = Math.round(el.haze.value*100)+'%'; }
+  if (p.get('r')  !== null) { el.rays.value = p.get('r'); el.raysVal.textContent = Math.round(el.rays.value*100)+'%'; }
+}
+function updateURL(){
+  const p = new URLSearchParams({
+    h: parseFloat(el.hour.value).toFixed(2),
+    d: el.date.value,
+    lat: el.lat.value, lon: el.lon.value,
+    s: el.shimmer.checked ? 1 : 0,
+    b: el.belt.checked ? 1 : 0,
+    c: parseFloat(el.cloud.value).toFixed(2),
+    ct: el.cloudType.value,
+    w: el.wind.value,
+    hz: parseFloat(el.haze.value).toFixed(2),
+    r: parseFloat(el.rays.value).toFixed(2),
+  });
+  history.replaceState(null, '', '?' + p.toString());
+}
+loadFromURL();
+['hour','date','lat','lon','shimmer','belt','cloud','cloudType','wind','haze','rays'].forEach(k =>
+  el[k].addEventListener('change', updateURL));
+el.hour.addEventListener('input', updateURL);
+el.cloud.addEventListener('input', () => { el.cloudVal.textContent = Math.round(el.cloud.value*100)+'%'; });
+el.haze.addEventListener('input', () => { el.hazeVal.textContent = Math.round(el.haze.value*100)+'%'; });
+el.rays.addEventListener('input', () => { el.raysVal.textContent = Math.round(el.rays.value*100)+'%'; });
+
+// ---------- Open-Meteo live weather ----------
+let lastWx = null;
+async function fetchWeather(){
+  const lat = parseFloat(el.lat.value), lon = parseFloat(el.lon.value);
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current=cloud_cover,wind_speed_10m,relative_humidity_2m,weather_code`
+    + `&timezone=auto`;
+  try {
+    const r = await fetch(url);
+    const j = await r.json();
+    const c = j.current;
+    lastWx = {
+      cloud: (c.cloud_cover || 0) / 100,
+      wind:  c.wind_speed_10m || 0,
+      humidity: (c.relative_humidity_2m || 0) / 100,
+    };
+    if (el.liveWx.checked) applyWeather();
+  } catch(e){ console.warn('weather fetch failed', e); }
+}
+function applyWeather(){
+  if (!lastWx) return;
+  el.cloud.value = lastWx.cloud;      el.cloudVal.textContent = Math.round(lastWx.cloud*100)+'%';
+  el.wind.value  = Math.round(lastWx.wind);
+  el.haze.value  = Math.min(1, lastWx.humidity * 0.8); el.hazeVal.textContent = Math.round(el.haze.value*100)+'%';
+}
+el.liveWx.addEventListener('change', () => { if (el.liveWx.checked) { fetchWeather(); }});
+['lat','lon'].forEach(k => el[k].addEventListener('change', () => { if (el.liveWx.checked) fetchWeather(); }));
+
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    el.lat.value = c.dataset.lat;
+    el.lon.value = c.dataset.lon;
+  });
+});
+
+function currentDate(){
+  const [y,m,d] = el.date.value.split('-').map(Number);
+  const h = parseFloat(el.hour.value);
+  const hh = Math.floor(h), mm = Math.round((h - hh)*60);
+  return new Date(Date.UTC(y, m-1, d, hh - tzOffsetHours(), mm));
+}
+function tzOffsetHours(){
+  // approximate local timezone from longitude so sliders feel local
+  return Math.round(parseFloat(el.lon.value) / 15);
+}
+
+function fmtHour(h){
+  const hh = Math.floor(h), mm = Math.round((h - hh)*60);
+  return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+function deg(rad){ return rad * 180 / Math.PI; }
+
+function seasonLabel(date, lat){
+  // northern meteorological seasons; flipped for southern
+  const m = date.getUTCMonth() + 1;
+  const north = (m>=3&&m<=5) ? 'spring' : (m>=6&&m<=8) ? 'summer' : (m>=9&&m<=11) ? 'autumn' : 'winter';
+  const south = {spring:'autumn', summer:'winter', autumn:'spring', winter:'summer'}[north];
+  return lat >= 0 ? north : south;
+}
+
+let t0 = performance.now();
+let animTime = 0;
+let lastFrame = t0;
+
+function frame(now){
+  const dt = (now - lastFrame) / 1000; lastFrame = now;
+  if (el.play.checked) {
+    let h = parseFloat(el.hour.value) + dt * 0.5; // 0.5 hours per real second
+    if (h >= 24) h -= 24;
+    el.hour.value = h.toFixed(2);
+  }
+
+  const h = parseFloat(el.hour.value);
+  el.hourVal.textContent = fmtHour(h);
+  const lat = parseFloat(el.lat.value);
+  const lon = parseFloat(el.lon.value);
+  const date = currentDate();
+
+  const sun = SunCalc.getPosition(date, lat, lon);
+  const moon = SunCalc.getMoonPosition(date, lat, lon);
+  const moonI = SunCalc.getMoonIllumination(date);
+
+  gl.uniform2f(U.res, canvas.width, canvas.height);
+  gl.uniform1f(U.time, (now - t0) / 1000);
+  gl.uniform1f(U.sunAlt, sun.altitude);
+  gl.uniform1f(U.sunAz,  sun.azimuth); // SunCalc: 0 = south, +west
+  gl.uniform1f(U.moonAlt, moon.altitude);
+  gl.uniform1f(U.moonAz,  moon.azimuth);
+  gl.uniform1f(U.moonPhase, moonI.phase);
+  gl.uniform1f(U.moonIllum, moonI.fraction);
+  gl.uniform1f(U.shimmer, el.shimmer.checked ? 1.0 : 0.0);
+  gl.uniform1f(U.belt,    el.belt.checked ? 1.0 : 0.0);
+  gl.uniform1f(U.cloudCover, parseFloat(el.cloud.value));
+  gl.uniform1f(U.cloudType,  parseFloat(el.cloudType.value));
+  gl.uniform1f(U.wind,       parseFloat(el.wind.value) || 0);
+  gl.uniform1f(U.haze,       parseFloat(el.haze.value));
+  gl.uniform1f(U.rays,       parseFloat(el.rays.value));
+
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  // palette strip: sample 5 points along a vertical line near sun azimuth
+  samplePalette();
+
+  // readouts
+  const season = seasonLabel(date, lat);
+  el.readout.innerHTML =
+    `<b>${fmtHour(h)}</b> · ${el.date.value} · <b>${season}</b> · ${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
+  el.info.innerHTML =
+    `sun <b>${deg(sun.altitude).toFixed(1)}°</b> alt · ` +
+    `moon <b>${deg(moon.altitude).toFixed(1)}°</b> alt · ` +
+    `illum <b>${Math.round(moonI.fraction*100)}%</b>`;
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---------- palette sampling ----------
+let paletteTick = 0;
+const SWATCHES = 5;
+const swEls = [];
+for (let i=0;i<SWATCHES;i++){
+  const s = document.createElement('div'); s.className='sw'; s.textContent='';
+  el.palette.appendChild(s); swEls.push(s);
+}
+function toHex(r,g,b){
+  const h = n => n.toString(16).padStart(2,'0');
+  return '#' + h(r) + h(g) + h(b);
+}
+function samplePalette(){
+  // sample every 6th frame to keep it cheap
+  if (++paletteTick % 6 !== 0) return;
+  const w = canvas.width, h = canvas.height;
+  const x = Math.floor(w / 2);
+  const pixel = new Uint8Array(4);
+  // y positions from zenith (top) to horizon (bottom); readPixels origin is bottom-left
+  const ys = [0.95, 0.72, 0.5, 0.25, 0.05]; // zenith→horizon
+  ys.forEach((ry, i) => {
+    const y = Math.floor(h * ry);
+    gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+    const hex = toHex(pixel[0], pixel[1], pixel[2]);
+    swEls[i].style.background = hex;
+    swEls[i].textContent = hex.toUpperCase();
+  });
+}
+
+// ---------- PNG export ----------
+el.savePng.addEventListener('click', () => {
+  // hide UI briefly so the PNG is clean, then restore
+  document.body.classList.add('hide-ui');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    canvas.toBlob(b => {
+      const a = document.createElement('a');
+      const h = parseFloat(el.hour.value);
+      const hh = String(Math.floor(h)).padStart(2,'0');
+      const mm = String(Math.round((h-Math.floor(h))*60)).padStart(2,'0');
+      a.download = `sky-${el.date.value}-${hh}${mm}-${el.lat.value}_${el.lon.value}.png`;
+      a.href = URL.createObjectURL(b);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      setTimeout(() => document.body.classList.remove('hide-ui'), 200);
+    }, 'image/png');
+  }));
+});
+
+// ---------- copy link ----------
+el.copyLink.addEventListener('click', async () => {
+  updateURL();
+  try {
+    await navigator.clipboard.writeText(location.href);
+    el.copyLink.textContent = 'Copied';
+    setTimeout(() => el.copyLink.textContent = 'Copy link', 1200);
+  } catch (e) {
+    el.copyLink.textContent = 'Select URL';
+  }
+});
+
+// ---------- keyboard ----------
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'h' || e.key === 'H') document.body.classList.toggle('hide-ui');
+  if (e.key === 's' || e.key === 'S') el.savePng.click();
+});
+</script>
+</body>
+</html>

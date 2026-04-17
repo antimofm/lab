@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mood · Skies of other worlds</title>
+<style>
+  :root { --fg:#f0f0f0; --dim:#8a8a8a; --line:rgba(255,255,255,0.1); }
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:#0a0a0c; color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  header {
+    padding:48px 24px 24px; max-width:1200px; margin:0 auto;
+  }
+  header h1 { margin:0 0 8px; font-size:28px; letter-spacing:-0.01em; font-weight:600; }
+  header p  { margin:0 0 4px; color:var(--dim); max-width:640px; font-size:15px; line-height:1.5; }
+  header .meta { margin-top:12px; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--dim); }
+
+  .queries {
+    display:flex; flex-wrap:wrap; gap:6px; padding:8px 24px 0; max-width:1200px; margin:0 auto;
+  }
+  .q {
+    font-size:11px; padding:5px 11px; border:1px solid var(--line); border-radius:999px;
+    color:var(--dim); background:transparent;
+  }
+
+  main {
+    columns: 4 260px; column-gap: 14px;
+    padding:24px; max-width:1400px; margin:0 auto;
+  }
+  .tile {
+    break-inside:avoid; margin-bottom:14px;
+    border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    background:#111; display:block; color:inherit; text-decoration:none;
+    transition:transform .25s, border-color .25s;
+  }
+  .tile:hover { border-color:#fff; transform:translateY(-2px); }
+  .tile img { display:block; width:100%; height:auto; background:#0a0a0c; }
+  .tile .cap { padding:10px 12px; font-size:12px; color:var(--dim); line-height:1.4; }
+  .tile .cap b { color:var(--fg); font-weight:500; display:block; margin-bottom:4px; font-size:12.5px; line-height:1.3; }
+  .tile .tag { display:inline-block; font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
+    color:#c8102e; margin-top:6px; }
+
+  .loading, .empty {
+    padding:48px 24px; text-align:center; color:var(--dim); font-size:13px;
+  }
+  footer {
+    padding:48px 24px 64px; max-width:1200px; margin:0 auto; color:var(--dim); font-size:11px;
+    letter-spacing:0.12em; text-transform:uppercase; border-top:1px solid var(--line);
+  }
+  footer a { color:var(--dim); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Skies of other worlds</h1>
+  <p>Gradients, sunrises, sunsets, and atmospheres from beyond Earth — pulled from NASA's public image catalog.</p>
+  <p>A research mood board for an ongoing studio exploration into ambient colour.</p>
+  <div class="meta">Mood board · NASA Images · <span id="count">—</span> images</div>
+</header>
+
+<div class="queries" id="queries"></div>
+
+<main id="grid"><div class="loading">Loading images from NASA…</div></main>
+
+<footer>
+  Source: <a href="https://images.nasa.gov" target="_blank" rel="noopener">images.nasa.gov</a> · Public domain (NASA). <br>
+  Studio mood board · <a href="/">lab.slash.red</a>
+</footer>
+
+<script>
+const QUERIES = [
+  { q: "mars sunset",      tag: "Mars",    limit: 6 },
+  { q: "martian sky",      tag: "Mars",    limit: 4 },
+  { q: "titan surface",    tag: "Titan",   limit: 4 },
+  { q: "jupiter atmosphere",tag: "Jupiter",limit: 5 },
+  { q: "saturn atmosphere",tag: "Saturn",  limit: 4 },
+  { q: "venus atmosphere", tag: "Venus",   limit: 3 },
+  { q: "neptune atmosphere",tag:"Neptune", limit: 3 },
+  { q: "moon earthrise",   tag: "Moon",    limit: 3 },
+];
+
+const grid = document.getElementById('grid');
+const queriesEl = document.getElementById('queries');
+const countEl = document.getElementById('count');
+
+QUERIES.forEach(({q, tag}) => {
+  const s = document.createElement('span');
+  s.className = 'q'; s.textContent = `${tag} · ${q}`;
+  queriesEl.appendChild(s);
+});
+
+async function loadAll(){
+  const all = [];
+  for (const {q, tag, limit} of QUERIES) {
+    try {
+      const r = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(q)}&media_type=image&page_size=${limit}`);
+      const j = await r.json();
+      const items = j?.collection?.items ?? [];
+      for (const it of items.slice(0, limit)) {
+        const data = it.data?.[0]; if (!data) continue;
+        const link = it.links?.[0]?.href; if (!link) continue;
+        all.push({
+          title: data.title || '',
+          desc: (data.description_508 || data.description || '').split('\n')[0].slice(0, 240),
+          date: (data.date_created || '').slice(0,10),
+          nasa_id: data.nasa_id,
+          thumb: link,
+          tag,
+        });
+      }
+    } catch(e) { console.warn('query failed', q, e); }
+  }
+  // shuffle a little so tags interleave
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  render(all);
+}
+
+function render(items){
+  grid.innerHTML = '';
+  if (!items.length) { grid.innerHTML = '<div class="empty">No images returned.</div>'; return; }
+  countEl.textContent = items.length;
+  for (const it of items) {
+    const a = document.createElement('a');
+    a.className = 'tile';
+    a.href = `https://images.nasa.gov/details-${it.nasa_id}`;
+    a.target = '_blank'; a.rel = 'noopener';
+    const img = document.createElement('img');
+    img.loading = 'lazy'; img.src = it.thumb; img.alt = it.title;
+    const cap = document.createElement('div'); cap.className = 'cap';
+    const b = document.createElement('b'); b.textContent = it.title;
+    cap.appendChild(b);
+    if (it.desc) { const p = document.createElement('div'); p.textContent = it.desc; cap.appendChild(p); }
+    const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = it.tag;
+    cap.appendChild(tag);
+    a.appendChild(img); a.appendChild(cap);
+    grid.appendChild(a);
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>
