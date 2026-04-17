@@ -34,9 +34,39 @@
   .chip { font-size:11px; padding:4px 10px; border:1px solid var(--line); border-radius:999px;
     color:var(--dim); background:transparent; cursor:pointer; }
   .chip:hover { color:var(--fg); border-color:var(--fg); }
-  .toggle { display:flex; gap:10px; align-items:center; margin-top:10px; }
+  .toggle { display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
   .toggle label { display:flex; gap:6px; align-items:center; cursor:pointer; font-size:12px; color:var(--dim); }
   .toggle input { accent-color:#c8102e; }
+
+  .actions { display:flex; gap:8px; margin-top:12px; }
+  .btn {
+    flex:1; font-size:12px; padding:8px 10px; border:1px solid var(--line); border-radius:8px;
+    background:rgba(0,0,0,0.3); color:var(--fg); cursor:pointer; font-family:inherit;
+    letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .btn:hover { border-color:var(--fg); }
+  .btn.primary { background:#c8102e; border-color:#c8102e; }
+  .btn.primary:hover { background:#e01538; border-color:#e01538; }
+
+  .palette {
+    position:fixed; bottom:16px; right:16px; z-index:2;
+    display:flex; gap:0; border-radius:8px; overflow:hidden;
+    border:1px solid var(--line);
+    box-shadow:0 4px 20px rgba(0,0,0,0.5);
+  }
+  .palette .sw { width:44px; height:64px; display:flex; align-items:flex-end; justify-content:center;
+    padding:4px; font-size:9px; font-family:ui-monospace,Menlo,monospace; color:rgba(255,255,255,0.9);
+    text-shadow:0 1px 2px rgba(0,0,0,0.8); }
+
+  body.hide-ui .panel, body.hide-ui .top-info, body.hide-ui .palette { opacity:0; pointer-events:none; transition:opacity .25s; }
+  body.hint::after {
+    content:"H to hide UI · S to save PNG"; position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    background:var(--panel); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    color:var(--dim); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    padding:6px 12px; border:1px solid var(--line); border-radius:999px; z-index:3;
+    animation:fadeout 5s forwards;
+  }
+  @keyframes fadeout { 0%,70%{opacity:1} 100%{opacity:0} }
 
   .top-info {
     position:fixed; right:16px; top:16px; z-index:2;
@@ -47,10 +77,12 @@
   .top-info b { color:var(--fg); font-weight:500; }
 </style>
 </head>
-<body>
+<body class="hint">
 <canvas id="c"></canvas>
 
 <div class="top-info" id="info">sun —° · moon —°</div>
+
+<div class="palette" id="palette"></div>
 
 <div class="panel">
   <h2>Sky</h2>
@@ -80,8 +112,13 @@
     <span class="chip" data-lat="0.3" data-lon="32.6">Kampala</span>
   </div>
   <div class="toggle">
-    <label><input type="checkbox" id="shimmer" checked /> horizon shimmer</label>
+    <label><input type="checkbox" id="shimmer" checked /> shimmer</label>
+    <label><input type="checkbox" id="belt" checked /> belt of venus</label>
     <label><input type="checkbox" id="play" /> animate</label>
+  </div>
+  <div class="actions">
+    <button class="btn" id="copyLink">Copy link</button>
+    <button class="btn primary" id="savePng">Save PNG</button>
   </div>
 </div>
 
@@ -105,6 +142,7 @@ uniform float uMoonAz;
 uniform float uMoonPhase;   // 0..1 (SunCalc: 0 new, 0.5 full, 1 new)
 uniform float uMoonIllum;   // 0..1 fraction illuminated
 uniform float uShimmer;     // 0 or 1
+uniform float uBelt;        // 0 or 1
 
 #define PI 3.14159265359
 
@@ -171,6 +209,26 @@ void main(){
   vec3 sky = mix(nightC, sunsetC, twilight);
   sky = mix(sky, dayC, day);
 
+  // --- Belt of Venus + Earth's shadow ---
+  // Pink band and dark blue shadow appear opposite the sun during civil twilight.
+  if (uBelt > 0.5) {
+    float daz = viewAz - uSunAz;
+    daz = mod(daz + PI, 2.0*PI) - PI;             // wrap to [-pi,pi]
+    float anti = smoothstep(0.6, 0.0, abs(abs(daz) - PI)); // near antisolar azimuth
+    // active when sun between -6° and +3°
+    float beltTime = smoothstep(-0.12, -0.02, uSunAlt) * (1.0 - smoothstep(0.02, 0.09, uSunAlt));
+    // pink belt, centered around altitude of roughly -uSunAlt above horizon
+    float beltC = clamp(-uSunAlt + 0.08, 0.04, 0.22);
+    float pink = exp(-pow((viewAlt - beltC)/0.055, 2.0));
+    vec3 pinkC = vec3(1.0, 0.62, 0.68);
+    sky += pinkC * pink * anti * beltTime * 0.35;
+    // Earth's shadow: dim blue band just below the pink
+    float shadowC = clamp(beltC - 0.08, 0.0, 0.2);
+    float shadow = exp(-pow((viewAlt - shadowC)/0.045, 2.0));
+    vec3 shadowCol = vec3(0.07, 0.1, 0.22);
+    sky = mix(sky, shadowCol, shadow * anti * beltTime * 0.45);
+  }
+
   // --- Stars at night ---
   float nightF = 1.0 - civilDusk;
   if (nightF > 0.001) {
@@ -222,7 +280,7 @@ void main(){
 
 // ---------- setup ----------
 const canvas = document.getElementById('c');
-const gl = canvas.getContext('webgl2', { antialias: true });
+const gl = canvas.getContext('webgl2', { antialias: true, preserveDrawingBuffer: true });
 if (!gl) { document.body.innerHTML = "WebGL2 not available."; throw new Error("no webgl2"); }
 
 function compile(type, src){
@@ -257,6 +315,7 @@ const U = {
   moonPhase: gl.getUniformLocation(prog, 'uMoonPhase'),
   moonIllum: gl.getUniformLocation(prog, 'uMoonIllum'),
   shimmer: gl.getUniformLocation(prog, 'uShimmer'),
+  belt: gl.getUniformLocation(prog, 'uBelt'),
 };
 
 function resize(){
@@ -275,12 +334,41 @@ const el = {
   lat:  document.getElementById('lat'),
   lon:  document.getElementById('lon'),
   shimmer: document.getElementById('shimmer'),
+  belt: document.getElementById('belt'),
   play: document.getElementById('play'),
   readout: document.getElementById('readout'),
   info: document.getElementById('info'),
+  palette: document.getElementById('palette'),
+  savePng: document.getElementById('savePng'),
+  copyLink: document.getElementById('copyLink'),
 };
 const today = new Date();
 el.date.value = today.toISOString().slice(0,10);
+
+// ---------- URL state ----------
+function loadFromURL(){
+  const p = new URLSearchParams(location.search);
+  if (p.get('h')  !== null) el.hour.value = p.get('h');
+  if (p.get('d'))           el.date.value = p.get('d');
+  if (p.get('lat')!== null) el.lat.value  = p.get('lat');
+  if (p.get('lon')!== null) el.lon.value  = p.get('lon');
+  if (p.get('s')  !== null) el.shimmer.checked = p.get('s') === '1';
+  if (p.get('b')  !== null) el.belt.checked    = p.get('b') === '1';
+}
+function updateURL(){
+  const p = new URLSearchParams({
+    h: parseFloat(el.hour.value).toFixed(2),
+    d: el.date.value,
+    lat: el.lat.value, lon: el.lon.value,
+    s: el.shimmer.checked ? 1 : 0,
+    b: el.belt.checked ? 1 : 0,
+  });
+  history.replaceState(null, '', '?' + p.toString());
+}
+loadFromURL();
+['hour','date','lat','lon','shimmer','belt'].forEach(k =>
+  el[k].addEventListener('change', updateURL));
+el.hour.addEventListener('input', updateURL);
 
 document.querySelectorAll('.chip').forEach(c => {
   c.addEventListener('click', () => {
@@ -345,8 +433,12 @@ function frame(now){
   gl.uniform1f(U.moonPhase, moonI.phase);
   gl.uniform1f(U.moonIllum, moonI.fraction);
   gl.uniform1f(U.shimmer, el.shimmer.checked ? 1.0 : 0.0);
+  gl.uniform1f(U.belt,    el.belt.checked ? 1.0 : 0.0);
 
   gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  // palette strip: sample 5 points along a vertical line near sun azimuth
+  samplePalette();
 
   // readouts
   const season = seasonLabel(date, lat);
@@ -360,6 +452,73 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+
+// ---------- palette sampling ----------
+let paletteTick = 0;
+const SWATCHES = 5;
+const swEls = [];
+for (let i=0;i<SWATCHES;i++){
+  const s = document.createElement('div'); s.className='sw'; s.textContent='';
+  el.palette.appendChild(s); swEls.push(s);
+}
+function toHex(r,g,b){
+  const h = n => n.toString(16).padStart(2,'0');
+  return '#' + h(r) + h(g) + h(b);
+}
+function samplePalette(){
+  // sample every 6th frame to keep it cheap
+  if (++paletteTick % 6 !== 0) return;
+  const w = canvas.width, h = canvas.height;
+  const x = Math.floor(w / 2);
+  const pixel = new Uint8Array(4);
+  // y positions from zenith (top) to horizon (bottom); readPixels origin is bottom-left
+  const ys = [0.95, 0.72, 0.5, 0.25, 0.05]; // zenith→horizon
+  ys.forEach((ry, i) => {
+    const y = Math.floor(h * ry);
+    gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+    const hex = toHex(pixel[0], pixel[1], pixel[2]);
+    swEls[i].style.background = hex;
+    swEls[i].textContent = hex.toUpperCase();
+  });
+}
+
+// ---------- PNG export ----------
+el.savePng.addEventListener('click', () => {
+  // hide UI briefly so the PNG is clean, then restore
+  document.body.classList.add('hide-ui');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    canvas.toBlob(b => {
+      const a = document.createElement('a');
+      const h = parseFloat(el.hour.value);
+      const hh = String(Math.floor(h)).padStart(2,'0');
+      const mm = String(Math.round((h-Math.floor(h))*60)).padStart(2,'0');
+      a.download = `sky-${el.date.value}-${hh}${mm}-${el.lat.value}_${el.lon.value}.png`;
+      a.href = URL.createObjectURL(b);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      setTimeout(() => document.body.classList.remove('hide-ui'), 200);
+    }, 'image/png');
+  }));
+});
+
+// ---------- copy link ----------
+el.copyLink.addEventListener('click', async () => {
+  updateURL();
+  try {
+    await navigator.clipboard.writeText(location.href);
+    el.copyLink.textContent = 'Copied';
+    setTimeout(() => el.copyLink.textContent = 'Copy link', 1200);
+  } catch (e) {
+    el.copyLink.textContent = 'Select URL';
+  }
+});
+
+// ---------- keyboard ----------
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'h' || e.key === 'H') document.body.classList.toggle('hide-ui');
+  if (e.key === 's' || e.key === 'S') el.savePng.click();
+});
 </script>
 </body>
 </html>
