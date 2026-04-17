@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ambient · a sky to work to</title>
+<style>
+  :root { --fg:#f4efe7; --dim:rgba(244,239,231,0.55); --line:rgba(244,239,231,0.14); }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; color:var(--fg); background:#0a0608;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; overflow:hidden; -webkit-font-smoothing:antialiased; }
+  iframe.sky { position:fixed; inset:0; width:100vw; height:100vh; border:0; z-index:0; }
+  .veil { position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0) 50%, rgba(0,0,0,0.45)); }
+
+  .clock {
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    z-index:2; text-align:center;
+    font-variant-numeric:tabular-nums;
+    color:var(--fg);
+    text-shadow:0 2px 30px rgba(0,0,0,0.5);
+    user-select:none;
+  }
+  .clock .t { font-size:clamp(72px, 14vw, 180px); font-weight:300; letter-spacing:-0.04em; line-height:1; }
+  .clock .p { margin-top:14px; font-size:12px; letter-spacing:0.3em; text-transform:uppercase; color:var(--dim); }
+
+  .dock {
+    position:fixed; z-index:3; bottom:20px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px;
+    background:rgba(0,0,0,0.35); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--line); border-radius:999px; padding:6px;
+  }
+  .dock button, .dock a {
+    font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    padding:8px 14px; border:1px solid transparent; border-radius:999px;
+    color:var(--fg); background:transparent; cursor:pointer; text-decoration:none;
+    font-family:inherit;
+  }
+  .dock button:hover, .dock a:hover { background:rgba(255,255,255,0.08); }
+  .dock button.on { background:rgba(255,255,255,0.12); border-color:var(--line); }
+
+  body.breath .clock { animation:breath 11s ease-in-out infinite; }
+  @keyframes breath {
+    0%, 100% { transform:translate(-50%, -50%) scale(1.0); opacity:1; }
+    50%      { transform:translate(-50%, -50%) scale(1.03); opacity:0.82; }
+  }
+
+  @media (max-width:640px) {
+    .clock .t { font-size:20vw; }
+  }
+</style>
+</head>
+<body>
+
+<iframe id="sky" class="sky" src="/sky.html?embed=1"></iframe>
+<div class="veil"></div>
+
+<div class="clock">
+  <div class="t" id="time">—</div>
+  <div class="p" id="place">your sky, now</div>
+</div>
+
+<div class="dock">
+  <button id="breath">Breath</button>
+  <button id="fs">Fullscreen</button>
+  <a href="/sky.html">Controls</a>
+  <a href="/">Lab</a>
+</div>
+
+<script>
+function tick(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('time').textContent = `${hh}:${mm}`;
+}
+tick(); setInterval(tick, 1000);
+
+// Use geolocation to render the local sky, fall back to London.
+async function loadLocalSky(){
+  const nowHour = (() => {
+    const d = new Date(); return d.getHours() + d.getMinutes()/60 + d.getSeconds()/3600;
+  })();
+  const dateStr = new Date().toISOString().slice(0,10);
+  function apply(lat, lon, label){
+    const url = `/sky.html?embed=1&h=${nowHour.toFixed(2)}&d=${dateStr}&lat=${lat.toFixed(3)}&lon=${lon.toFixed(3)}&c=0.3&ct=1&hz=0.25&r=0.4&ss=1.8&hz2=1&b=1&s=1`;
+    document.getElementById('sky').src = url;
+    document.getElementById('place').textContent = label;
+  }
+  if (!navigator.geolocation) return apply(51.5, -0.1, 'London · fallback');
+  navigator.geolocation.getCurrentPosition(
+    pos => apply(pos.coords.latitude, pos.coords.longitude, `${pos.coords.latitude.toFixed(1)}°, ${pos.coords.longitude.toFixed(1)}°`),
+    () => apply(51.5, -0.1, 'London · fallback'),
+    { timeout: 4000 }
+  );
+}
+loadLocalSky();
+// refresh the sky every 2 minutes so sun moves in real time
+setInterval(loadLocalSky, 120000);
+
+document.getElementById('breath').addEventListener('click', e => {
+  document.body.classList.toggle('breath');
+  e.currentTarget.classList.toggle('on');
+});
+document.getElementById('fs').addEventListener('click', () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+});
+</script>
+
+</body>
+</html>

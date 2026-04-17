@@ -1,39 +1,179 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>lab — slash.red</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: #0a0a0a;
-      color: #e0e0e0;
-      min-height: 100vh;
-      padding: 2rem;
-    }
-    a { color: #e04040; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    header { margin-bottom: 3rem; }
-    header h1 { font-size: 1.25rem; font-weight: 600; }
-    header p { color: #888; margin-top: 0.25rem; font-size: 0.875rem; }
-    .items { list-style: none; }
-    .items li { padding: 0.5rem 0; border-bottom: 1px solid #1a1a1a; }
-    .items li .date { color: #555; font-size: 0.8rem; margin-left: 0.5rem; }
-    .empty { color: #444; font-style: italic; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>lab — slash.red</title>
+<style>
+  :root { --fg:#f0eae2; --dim:rgba(240,234,226,0.55); --line:rgba(240,234,226,0.14); --accent:#ff6a4a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { color:var(--fg); background:#0a0608; min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  iframe.sky {
+    position:fixed; inset:0; width:100vw; height:55vh; border:0; z-index:0;
+    -webkit-mask-image:linear-gradient(to bottom, #000 60%, transparent 100%);
+    mask-image:linear-gradient(to bottom, #000 60%, transparent 100%);
+  }
+  .bgfade { position:fixed; left:0; right:0; top:35vh; bottom:0; z-index:0;
+    background:linear-gradient(to bottom, rgba(10,6,8,0) 0%, #0a0608 18%); }
+
+  main { position:relative; z-index:1; max-width:980px; margin:0 auto; padding:28vh 28px 80px; }
+
+  header { display:flex; justify-content:space-between; align-items:baseline; padding-bottom:36px; border-bottom:1px solid var(--line); margin-bottom:40px; }
+  .brand { font-size:14px; letter-spacing:0.24em; font-weight:600; }
+  .brand a { color:var(--fg); text-decoration:none; }
+  .brand .slash { color:var(--accent); }
+  nav a { color:var(--dim); text-decoration:none; font-size:12px; letter-spacing:0.16em; text-transform:uppercase; margin-left:22px; }
+  nav a:hover { color:var(--fg); }
+
+  .intro { max-width:640px; margin:0 0 48px; }
+  .intro h1 { font-size:clamp(34px, 4.4vw, 54px); font-weight:500; letter-spacing:-0.01em; line-height:1.04; margin-bottom:12px; }
+  .intro p { color:rgba(240,234,226,0.8); font-size:15px; line-height:1.6; margin:0; }
+
+  section h2 {
+    font-size:11px; letter-spacing:0.24em; text-transform:uppercase; color:var(--dim);
+    margin:40px 0 14px; font-weight:500;
+  }
+  .items { list-style:none; }
+  .items li {
+    display:grid; grid-template-columns:1fr auto; gap:16px; align-items:baseline;
+    padding:16px 0; border-bottom:1px solid var(--line);
+  }
+  .items a {
+    color:var(--fg); text-decoration:none; font-size:16px; font-weight:500; letter-spacing:-0.005em;
+  }
+  .items a:hover { color:var(--accent); }
+  .items .desc { color:var(--dim); font-size:13px; line-height:1.5; margin-top:4px; }
+  .items .date { color:var(--dim); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+  footer { margin-top:64px; padding-top:22px; border-top:1px solid var(--line);
+    color:var(--dim); font-size:11px; letter-spacing:0.18em; text-transform:uppercase;
+    display:flex; justify-content:space-between; }
+  footer a { color:var(--dim); text-decoration:none; }
+  footer a:hover { color:var(--fg); }
+</style>
 </head>
 <body>
+
+<iframe class="sky" src="/sky.html?embed=1&h=5.9&c=0.38&ct=1&hz=0.38&r=0.55&ss=2.3&hz2=2&b=1"></iframe>
+<div class="bgfade"></div>
+
+<main>
   <header>
-    <h1><a href="https://slash.red">slash.red</a> / lab</h1>
-    <p>Guides, prototypes, and ideas. Built in the open.</p>
+    <div class="brand"><a href="https://slash.red">slash<span class="slash">/</span></a> lab</div>
+    <nav>
+      <a href="/studio/">Studio</a>
+      <a href="/dispatch/">Dispatch</a>
+      <a href="/portfolio/">Work</a>
+    </nav>
   </header>
-  <main>
+
+  <div class="intro">
+    <h1>Prototypes, open studio.</h1>
+    <p>
+      Visual experiments and tools out of RED. Each page is its own sky, its own hour, its own small argument about how product can feel. Built in the open.
+    </p>
+  </div>
+
+  <section>
+    <h2>Studio suite</h2>
     <ul class="items">
-      <li><a href="/flow/">flow — agentic auction console (v10)</a> — inset-modal prototype for an agent-first token auction protocol <span class="date">2026-04-15</span></li>
-      <li><a href="/neynar-mockup/">neynar cast mockup</a> — animated cast with hearts climbing to billions <span class="date">2026-04-15</span></li>
+      <li>
+        <div>
+          <a href="/studio/">Studio — homepage</a>
+          <div class="desc">Living studio front door. Dawn sky, project grid, dragable sun.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
+      <li>
+        <div>
+          <a href="/redshift/">Redshift — ambient</a>
+          <div class="desc">Permanent-dawn atmosphere tuned for a long tab. Cycles slowly.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
+      <li>
+        <div>
+          <a href="/portfolio/">Work — projects under their own sky</a>
+          <div class="desc">Six project cards, each carrying the sky of the city it shipped in.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
+      <li>
+        <div>
+          <a href="/dispatch/">Dispatch № 001 — On permanent dawn</a>
+          <div class="desc">A short studio note on dawn as a working stance.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
+      <li>
+        <div>
+          <a href="/when/">The sky when — gift tool</a>
+          <div class="desc">Render the sky for an exact moment and place. Share, download.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
+      <li>
+        <div>
+          <a href="/ambient/">Ambient — clock + your sky</a>
+          <div class="desc">Fullscreen local-time clock over a live sky tuned to your location.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
     </ul>
-  </main>
+  </section>
+
+  <section>
+    <h2>Engine</h2>
+    <ul class="items">
+      <li>
+        <div>
+          <a href="/sky.html">Sky — the stable engine</a>
+          <div class="desc">Time, season, place. Real astronomy, clouds, weather, belt of Venus, aurora, timelapse.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
+      <li>
+        <div>
+          <a href="/sky-next.html">Sky Next — interactive</a>
+          <div class="desc">Drag the sun, scroll to scrub time, click to spawn shooting stars, cursor-as-light.</div>
+        </div>
+        <div class="date">2026-04-18</div>
+      </li>
+      <li>
+        <div>
+          <a href="/mood/other-planets/">Mood · Skies of other worlds</a>
+          <div class="desc">Companion mood board. NASA images of sunrises and atmospheres beyond Earth.</div>
+        </div>
+        <div class="date">2026-04-17</div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Earlier prototypes</h2>
+    <ul class="items">
+      <li>
+        <div>
+          <a href="/flow/">Flow — agentic auction console (v10)</a>
+          <div class="desc">Inset-modal prototype for an agent-first token auction protocol.</div>
+        </div>
+        <div class="date">2026-04-15</div>
+      </li>
+      <li>
+        <div>
+          <a href="/neynar-mockup/">Neynar cast mockup</a>
+          <div class="desc">Animated cast with hearts climbing to billions.</div>
+        </div>
+        <div class="date">2026-04-15</div>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>RED · tactical product design studio</span>
+    <span><a href="mailto:hi@red.studio">hi@red.studio</a></span>
+  </footer>
+</main>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Sky — time, season, place</title>
+<title>Sky Next — drag the sun</title>
 <style>
   :root { --fg:#f0f0f0; --dim:#8a8a8a; --line:rgba(255,255,255,0.12); --panel:rgba(10,10,12,0.55); }
   * { box-sizing: border-box; }
@@ -78,7 +78,7 @@
   body.embed .panel, body.embed .top-info, body.embed .palette { display:none !important; }
   body.embed { background:transparent; }
   body.hint::after {
-    content:"H to hide UI · S to save PNG"; position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    content:"drag the sun · scroll = time · click = star · R reset · H hide UI"; position:fixed; top:16px; left:50%; transform:translateX(-50%);
     background:var(--panel); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
     color:var(--dim); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
     padding:6px 12px; border:1px solid var(--line); border-radius:999px; z-index:3;
@@ -228,6 +228,9 @@ uniform float uSunSize;
 uniform float uHorizon;    // 0 none, 1 sea, 2 mountains, 3 city
 uniform float uAurora;     // 0..1
 uniform float uLat;        // absolute latitude in degrees, for aurora gating
+uniform vec2  uPointer;    // -1..1 in screen space, origin at center
+uniform float uPointerActive; // 1 if cursor is on canvas, 0 otherwise
+uniform float uGrain;      // film grain strength 0..1
 
 #define PI 3.14159265359
 
@@ -444,7 +447,18 @@ void main(){
     }
   }
 
-  sky += (hash(gl_FragCoord.xy + uTime) - 0.5) * 0.008;
+  // --- Cursor-as-light-source (soft warm lift near pointer) ---
+  if (uPointerActive > 0.5) {
+    vec2 ndc = (uv - 0.5) * vec2(uRes.x/uRes.y, 1.0);   // aspect-corrected
+    vec2 pp  = uPointer * vec2(0.5 * uRes.x/uRes.y, 0.5);
+    float d = length(ndc - pp);
+    float lift = exp(-d * 7.0);
+    vec3 warm = mix(vec3(1.0, 0.85, 0.6), vec3(0.9, 0.95, 1.1), day);
+    sky += warm * lift * 0.18;
+  }
+
+  // film grain
+  sky += (hash(gl_FragCoord.xy + uTime) - 0.5) * (0.008 + uGrain * 0.06);
 
   outColor = vec4(sky, 1.0);
 }
@@ -497,6 +511,9 @@ const U = {
   horizon: gl.getUniformLocation(prog, 'uHorizon'),
   aurora: gl.getUniformLocation(prog, 'uAurora'),
   lat: gl.getUniformLocation(prog, 'uLat'),
+  pointer: gl.getUniformLocation(prog, 'uPointer'),
+  pointerActive: gl.getUniformLocation(prog, 'uPointerActive'),
+  grain: gl.getUniformLocation(prog, 'uGrain'),
 };
 
 function resize(){
@@ -709,9 +726,14 @@ function frame(now){
   const lon = parseFloat(el.lon.value);
   const date = currentDate();
 
-  const sun = SunCalc.getPosition(date, lat, lon);
+  const astroSun = SunCalc.getPosition(date, lat, lon);
   const moon = SunCalc.getMoonPosition(date, lat, lon);
   const moonI = SunCalc.getMoonIllumination(date);
+
+  // If user is dragging the sun, override astronomy
+  const sun = sunOverride
+    ? { altitude: sunOverride.alt, azimuth: sunOverride.az }
+    : astroSun;
 
   gl.uniform2f(U.res, canvas.width, canvas.height);
   gl.uniform1f(U.time, (now - t0) / 1000);
@@ -732,8 +754,12 @@ function frame(now){
   gl.uniform1f(U.horizon,    parseFloat(el.horizon.value));
   gl.uniform1f(U.aurora,     el.aurora.checked ? 1.0 : 0.0);
   gl.uniform1f(U.lat,        Math.abs(lat));
+  gl.uniform2f(U.pointer,    pointer.x, pointer.y);
+  gl.uniform1f(U.pointerActive, pointer.active ? 1.0 : 0.0);
+  gl.uniform1f(U.grain,      grainLevel);
 
   gl.drawArrays(gl.TRIANGLES, 0, 3);
+  drawStarsOverlay();
 
   samplePalette();
 
@@ -864,7 +890,144 @@ window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.key === 'h' || e.key === 'H') document.body.classList.toggle('hide-ui');
   if (e.key === 's' || e.key === 'S') el.savePng.click();
+  if (e.key === 'r' || e.key === 'R') { sunOverride = null; }
+  if (e.key === ' ') { spawnShootingStar(); e.preventDefault(); }
 });
+
+// ---------- interactive layer: pointer drag sun, wheel scrub time, shooting stars ----------
+const pointer = { x: 0, y: 0, active: false };
+let sunOverride = null;
+let dragging = false;
+let dragStartPos = null;
+const DRAG_THRESHOLD = 6; // px — below this, treat as click
+const grainLevel = 0.0;
+
+function setPointerFromEvent(clientX, clientY){
+  const rect = canvas.getBoundingClientRect();
+  const px = (clientX - rect.left) / rect.width;
+  const py = 1.0 - (clientY - rect.top) / rect.height;
+  pointer.x = (px - 0.5) * 2;
+  pointer.y = (py - 0.5) * 2;
+  pointer.active = true;
+  return { px, py };
+}
+function applyDrag(px, py){
+  // map screen position to sun altitude/azimuth in the view's angular window
+  const az = (px - 0.5) * Math.PI;               // matches shader's ±π/2 azimuth window
+  const alt = (py * 1.1 - 0.05) * (Math.PI / 2); // allow just-below-horizon drag
+  sunOverride = { alt, az };
+}
+
+canvas.addEventListener('mousedown', e => {
+  dragging = true;
+  dragStartPos = { x: e.clientX, y: e.clientY };
+});
+window.addEventListener('mouseup', e => {
+  if (dragging && dragStartPos) {
+    const dx = e.clientX - dragStartPos.x, dy = e.clientY - dragStartPos.y;
+    if (Math.hypot(dx, dy) < DRAG_THRESHOLD) {
+      // treated as a click — spawn a shooting star at that position
+      spawnShootingStarAt(e.clientX, e.clientY);
+    }
+  }
+  dragging = false;
+  dragStartPos = null;
+});
+canvas.addEventListener('mousemove', e => {
+  const { px, py } = setPointerFromEvent(e.clientX, e.clientY);
+  if (dragging) applyDrag(px, py);
+});
+canvas.addEventListener('mouseleave', () => { pointer.active = false; });
+canvas.addEventListener('dblclick', () => { sunOverride = null; });
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = -e.deltaY * 0.0015;
+  let h = parseFloat(el.hour.value) + delta;
+  if (h < 0) h += 24; if (h >= 24) h -= 24;
+  el.hour.value = h.toFixed(2);
+  el.hour.dispatchEvent(new Event('input'));
+  el.hour.dispatchEvent(new Event('change'));
+}, { passive: false });
+
+// Touch
+canvas.addEventListener('touchstart', e => {
+  if (!e.touches[0]) return;
+  dragging = true;
+  dragStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  setPointerFromEvent(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: true });
+canvas.addEventListener('touchmove', e => {
+  if (!e.touches[0]) return;
+  const { px, py } = setPointerFromEvent(e.touches[0].clientX, e.touches[0].clientY);
+  if (dragging) applyDrag(px, py);
+}, { passive: true });
+canvas.addEventListener('touchend', e => { dragging = false; dragStartPos = null; });
+
+// ---------- shooting stars overlay ----------
+const overlay = document.createElement('canvas');
+overlay.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:1;';
+document.body.appendChild(overlay);
+const ox = overlay.getContext('2d');
+function resizeOverlay(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  overlay.width  = Math.floor(window.innerWidth  * dpr);
+  overlay.height = Math.floor(window.innerHeight * dpr);
+  ox.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resizeOverlay); resizeOverlay();
+
+const stars = [];
+function spawnShootingStarAt(clientX, clientY){
+  // angle: mostly downward-left or downward-right for a natural streak
+  const theta = (Math.random() < 0.5 ? -1 : 1) * (0.6 + Math.random() * 0.5);
+  const len = 180 + Math.random() * 180;
+  const vx = Math.cos(theta) * len;
+  const vy = Math.sin(theta) * len * 0.6 + 40;
+  stars.push({
+    x: clientX, y: clientY,
+    dx: vx, dy: vy,
+    born: performance.now(),
+    life: 900 + Math.random() * 400,
+  });
+}
+function spawnShootingStar(){
+  // random position in upper half of screen
+  const x = Math.random() * window.innerWidth;
+  const y = Math.random() * window.innerHeight * 0.55;
+  spawnShootingStarAt(x, y);
+}
+function drawStarsOverlay(){
+  ox.clearRect(0, 0, overlay.width, overlay.height);
+  const now = performance.now();
+  for (let i = stars.length - 1; i >= 0; i--) {
+    const s = stars[i];
+    const t = (now - s.born) / s.life;
+    if (t >= 1) { stars.splice(i, 1); continue; }
+    const alpha = (1 - t) * 0.95;
+    const headX = s.x + s.dx * t;
+    const headY = s.y + s.dy * t;
+    const tailX = s.x + s.dx * Math.max(0, t - 0.12);
+    const tailY = s.y + s.dy * Math.max(0, t - 0.12);
+    const grad = ox.createLinearGradient(tailX, tailY, headX, headY);
+    grad.addColorStop(0, `rgba(255,255,255,0)`);
+    grad.addColorStop(1, `rgba(255,250,235,${alpha})`);
+    ox.strokeStyle = grad;
+    ox.lineWidth = 2.4;
+    ox.lineCap = 'round';
+    ox.beginPath(); ox.moveTo(tailX, tailY); ox.lineTo(headX, headY); ox.stroke();
+    // tiny head glow
+    ox.fillStyle = `rgba(255,255,255,${alpha*0.9})`;
+    ox.beginPath(); ox.arc(headX, headY, 1.8, 0, Math.PI*2); ox.fill();
+  }
+}
+
+// Ambient shooting stars at night: check every few seconds
+setInterval(() => {
+  // rough: spawn more often at night by reading current sun altitude from last frame readout (cheap)
+  const nightish = Math.random() < 0.28;
+  if (nightish) spawnShootingStar();
+}, 4000);
 </script>
 </body>
 </html>
