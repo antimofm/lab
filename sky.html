@@ -12,25 +12,27 @@
   canvas { display:block; width:100vw; height:100vh; position:fixed; inset:0; z-index:0; }
 
   .panel {
-    position:fixed; left:16px; bottom:16px; z-index:2; width:min(360px, calc(100vw - 32px));
+    position:fixed; left:16px; bottom:16px; z-index:2; width:min(380px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px); overflow-y:auto;
     background:var(--panel); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
     border:1px solid var(--line); border-radius:14px; padding:16px 18px;
     font-size:13px;
   }
   .panel h2 { margin:0 0 4px; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--dim); font-weight:500; }
+  .panel h3 { margin:12px 0 6px; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--dim); font-weight:500; opacity:0.7; }
   .readout { font-size:13px; color:var(--dim); margin-bottom:14px; }
   .readout b { color:var(--fg); font-weight:500; }
 
   .row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
   .row label { width:58px; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--dim); }
   .row input[type=range] { flex:1; accent-color:#c8102e; }
-  .row input[type=number], .row select {
+  .row input[type=number], .row input[type=text], .row input[type=search], .row select {
     background:rgba(0,0,0,0.4); color:var(--fg); border:1px solid var(--line);
     border-radius:6px; padding:4px 8px; font-size:12px; width:84px;
     font-family:inherit;
   }
   .row .val { width:56px; text-align:right; color:var(--fg); font-variant-numeric:tabular-nums; font-size:12px; }
-  .presets { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; margin-bottom:6px; }
   .chip { font-size:11px; padding:4px 10px; border:1px solid var(--line); border-radius:999px;
     color:var(--dim); background:transparent; cursor:pointer; }
   .chip:hover { color:var(--fg); border-color:var(--fg); }
@@ -38,15 +40,29 @@
   .toggle label { display:flex; gap:6px; align-items:center; cursor:pointer; font-size:12px; color:var(--dim); }
   .toggle input { accent-color:#c8102e; }
 
-  .actions { display:flex; gap:8px; margin-top:12px; }
+  .actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
   .btn {
-    flex:1; font-size:12px; padding:8px 10px; border:1px solid var(--line); border-radius:8px;
+    flex:1; min-width:80px; font-size:12px; padding:8px 10px; border:1px solid var(--line); border-radius:8px;
     background:rgba(0,0,0,0.3); color:var(--fg); cursor:pointer; font-family:inherit;
     letter-spacing:0.08em; text-transform:uppercase;
   }
   .btn:hover { border-color:var(--fg); }
   .btn.primary { background:#c8102e; border-color:#c8102e; }
   .btn.primary:hover { background:#e01538; border-color:#e01538; }
+  .btn.recording { background:#e01538; border-color:#e01538; animation:pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity:0.6; } }
+
+  .search-wrap { position:relative; flex:1; }
+  .search-wrap input { width:100% !important; }
+  .sugg {
+    position:absolute; left:0; right:0; top:100%; margin-top:4px;
+    background:rgba(20,20,22,0.95); backdrop-filter:blur(14px);
+    border:1px solid var(--line); border-radius:8px; overflow:hidden; z-index:3;
+    max-height:180px; overflow-y:auto;
+  }
+  .sugg div { padding:6px 10px; font-size:12px; cursor:pointer; color:var(--fg); border-bottom:1px solid var(--line); }
+  .sugg div:last-child { border-bottom:none; }
+  .sugg div:hover { background:rgba(200,16,46,0.25); }
 
   .palette {
     position:fixed; bottom:16px; right:16px; z-index:2;
@@ -97,6 +113,15 @@
     <label>Date</label>
     <input id="date" type="date" style="width:130px" />
   </div>
+
+  <h3>Place</h3>
+  <div class="row">
+    <label>Search</label>
+    <div class="search-wrap">
+      <input id="city" type="search" placeholder="city, country…" autocomplete="off" />
+      <div class="sugg" id="sugg" style="display:none"></div>
+    </div>
+  </div>
   <div class="row">
     <label>Lat</label>
     <input id="lat" type="number" step="0.5" value="51.5" />
@@ -111,13 +136,62 @@
     <span class="chip" data-lat="64.1" data-lon="-21.9">Reykjavík</span>
     <span class="chip" data-lat="0.3" data-lon="32.6">Kampala</span>
   </div>
+
+  <h3>Atmosphere</h3>
+  <div class="row">
+    <label>Cloud</label>
+    <input id="cloud" type="range" min="0" max="1" step="0.01" value="0.3" />
+    <span class="val" id="cloudVal">30%</span>
+  </div>
+  <div class="row">
+    <label>Type</label>
+    <select id="cloudType" style="width:130px">
+      <option value="0">cirrus</option>
+      <option value="1" selected>cumulus</option>
+      <option value="2">stratus</option>
+    </select>
+    <label style="width:auto">Wind</label>
+    <input id="wind" type="number" step="1" value="5" style="width:60px" />
+  </div>
+  <div class="row">
+    <label>Haze</label>
+    <input id="haze" type="range" min="0" max="1" step="0.01" value="0.2" />
+    <span class="val" id="hazeVal">20%</span>
+  </div>
+  <div class="row">
+    <label>Rays</label>
+    <input id="rays" type="range" min="0" max="1" step="0.01" value="0.4" />
+    <span class="val" id="raysVal">40%</span>
+  </div>
+
+  <h3>Bodies</h3>
+  <div class="row">
+    <label>Sun</label>
+    <input id="sunSize" type="range" min="0.003" max="0.08" step="0.001" value="0.012" />
+    <span class="val" id="sunSizeVal">1.0×</span>
+  </div>
+
+  <h3>Horizon</h3>
+  <div class="row">
+    <label>Scene</label>
+    <select id="horizon" style="width:130px">
+      <option value="0" selected>none</option>
+      <option value="1">sea</option>
+      <option value="2">mountains</option>
+      <option value="3">city</option>
+    </select>
+  </div>
+
   <div class="toggle">
     <label><input type="checkbox" id="shimmer" checked /> shimmer</label>
     <label><input type="checkbox" id="belt" checked /> belt of venus</label>
+    <label><input type="checkbox" id="aurora" /> aurora</label>
+    <label><input type="checkbox" id="liveWx" /> live weather</label>
     <label><input type="checkbox" id="play" /> animate</label>
   </div>
   <div class="actions">
     <button class="btn" id="copyLink">Copy link</button>
+    <button class="btn" id="timelapse">Timelapse</button>
     <button class="btn primary" id="savePng">Save PNG</button>
   </div>
 </div>
@@ -135,18 +209,26 @@ out vec4 outColor;
 
 uniform vec2  uRes;
 uniform float uTime;
-uniform float uSunAlt;      // radians, -pi/2..pi/2
-uniform float uSunAz;       // radians (az around south, we center south)
+uniform float uSunAlt;
+uniform float uSunAz;
 uniform float uMoonAlt;
 uniform float uMoonAz;
-uniform float uMoonPhase;   // 0..1 (SunCalc: 0 new, 0.5 full, 1 new)
-uniform float uMoonIllum;   // 0..1 fraction illuminated
-uniform float uShimmer;     // 0 or 1
-uniform float uBelt;        // 0 or 1
+uniform float uMoonPhase;
+uniform float uMoonIllum;
+uniform float uShimmer;
+uniform float uBelt;
+uniform float uCloudCover;
+uniform float uCloudType;
+uniform float uWind;
+uniform float uHaze;
+uniform float uRays;
+uniform float uSunSize;
+uniform float uHorizon;    // 0 none, 1 sea, 2 mountains, 3 city
+uniform float uAurora;     // 0..1
+uniform float uLat;        // absolute latitude in degrees, for aurora gating
 
 #define PI 3.14159265359
 
-// pseudo random / noise for subtle grain and shimmer
 float hash(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
 float noise(vec2 p){
   vec2 i = floor(p), f = fract(p);
@@ -154,24 +236,53 @@ float noise(vec2 p){
   vec2 u = f*f*(3.0-2.0*f);
   return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;
 }
+float fbm(vec2 p){
+  float v = 0.0, a = 0.5;
+  for (int i=0; i<5; i++){
+    v += a * noise(p);
+    p *= 2.05; a *= 0.5;
+  }
+  return v;
+}
 
-// angular distance between two sky directions given by (alt, az)
 float angDist(float a1, float z1, float a2, float z2){
   float c = sin(a1)*sin(a2) + cos(a1)*cos(a2)*cos(z1 - z2);
   return acos(clamp(c, -1.0, 1.0));
 }
 
+// silhouette height at screen x (0..1), for chosen horizon scene
+float silhouette(float x, float scene){
+  if (scene < 0.5) return -1.0;
+  if (scene < 1.5) {
+    // sea: very low flat line with gentle swell
+    return 0.01 + sin(x*8.0)*0.003 + noise(vec2(x*20.0, 0.5))*0.004;
+  }
+  if (scene < 2.5) {
+    // mountains: fbm ridges
+    float n1 = fbm(vec2(x*3.5, 1.7)) * 0.16;
+    float n2 = fbm(vec2(x*8.0, 4.2)) * 0.06;
+    return 0.02 + n1 + n2;
+  }
+  // city: rectangular blocks
+  float n = 0.0;
+  float scale = 22.0;
+  float xs = x * scale;
+  float i = floor(xs);
+  float seed = hash(vec2(i, 7.0));
+  float w = mix(0.5, 1.0, hash(vec2(i, 11.0)));
+  float h = mix(0.03, 0.11, seed);
+  // spires
+  if (hash(vec2(i, 3.0)) > 0.88) h += 0.05;
+  n = h;
+  return 0.015 + n;
+}
+
 void main(){
   vec2 uv = gl_FragCoord.xy / uRes;
-  vec2 aspect = vec2(uRes.x/uRes.y, 1.0);
 
-  // Map screen to sky direction:
-  //   horizontal covers +/-90 deg of azimuth around south (so full 180° field)
-  //   vertical covers 0..90 deg altitude (horizon at bottom)
-  float viewAz = (uv.x - 0.5) * PI;            // -pi/2..pi/2, centered on south
-  float viewAlt = uv.y * (PI * 0.5);           // 0..pi/2
+  float viewAz = (uv.x - 0.5) * PI;
+  float viewAlt = uv.y * (PI * 0.5);
 
-  // shimmer: warp viewAz near horizon
   if (uShimmer > 0.5) {
     float horizonMask = 1.0 - smoothstep(0.0, 0.12, viewAlt);
     float n = noise(vec2(uv.x * 60.0, uTime*0.6));
@@ -180,15 +291,12 @@ void main(){
     viewAlt += warp * 0.5;
   }
 
-  // sun altitude drives day/night blend
-  float day      = smoothstep(-0.08, 0.18, uSunAlt);           // full day
+  float day      = smoothstep(-0.08, 0.18, uSunAlt);
   float twilight = smoothstep(-0.35, 0.0, uSunAlt) * (1.0 - smoothstep(0.0, 0.25, uSunAlt));
   float civilDusk= smoothstep(-0.25, 0.05, uSunAlt);
 
-  // vertical position 0=horizon, 1=zenith
   float h = clamp(viewAlt / (PI*0.5), 0.0, 1.0);
 
-  // Palettes
   vec3 dayZenith    = vec3(0.16, 0.38, 0.78);
   vec3 dayHorizon   = vec3(0.75, 0.88, 1.00);
   vec3 sunsetZenith = vec3(0.22, 0.18, 0.42);
@@ -200,54 +308,106 @@ void main(){
   vec3 sunsetC = mix(sunsetHorizon, sunsetZenith, pow(h, 0.55));
   vec3 nightC  = mix(nightHorizon, nightZenith, pow(h, 0.5));
 
-  // asymmetric sunset tint: hotter near sun azimuth
   float azDelta = abs(viewAz - uSunAz);
   float sunsetLean = exp(-azDelta * 1.4);
   sunsetC = mix(sunsetC, sunsetC * vec3(1.1, 0.95, 0.85) + vec3(0.15,0.05,0.0)*sunsetLean, sunsetLean*0.7);
 
-  // Blend: night -> sunset (twilight) -> day
   vec3 sky = mix(nightC, sunsetC, twilight);
   sky = mix(sky, dayC, day);
 
-  // --- Belt of Venus + Earth's shadow ---
-  // Pink band and dark blue shadow appear opposite the sun during civil twilight.
   if (uBelt > 0.5) {
     float daz = viewAz - uSunAz;
-    daz = mod(daz + PI, 2.0*PI) - PI;             // wrap to [-pi,pi]
-    float anti = smoothstep(0.6, 0.0, abs(abs(daz) - PI)); // near antisolar azimuth
-    // active when sun between -6° and +3°
+    daz = mod(daz + PI, 2.0*PI) - PI;
+    float anti = smoothstep(0.6, 0.0, abs(abs(daz) - PI));
     float beltTime = smoothstep(-0.12, -0.02, uSunAlt) * (1.0 - smoothstep(0.02, 0.09, uSunAlt));
-    // pink belt, centered around altitude of roughly -uSunAlt above horizon
     float beltC = clamp(-uSunAlt + 0.08, 0.04, 0.22);
     float pink = exp(-pow((viewAlt - beltC)/0.055, 2.0));
     vec3 pinkC = vec3(1.0, 0.62, 0.68);
     sky += pinkC * pink * anti * beltTime * 0.35;
-    // Earth's shadow: dim blue band just below the pink
     float shadowC = clamp(beltC - 0.08, 0.0, 0.2);
     float shadow = exp(-pow((viewAlt - shadowC)/0.045, 2.0));
     vec3 shadowCol = vec3(0.07, 0.1, 0.22);
     sky = mix(sky, shadowCol, shadow * anti * beltTime * 0.45);
   }
 
-  // --- Stars at night ---
-  float nightF = 1.0 - civilDusk;
-  if (nightF > 0.001) {
-    vec2 sp = vec2(viewAz * 5.0, viewAlt * 5.0);
-    float star = 0.0;
-    float n1 = hash(floor(sp * 80.0));
-    if (n1 > 0.992) star = pow((n1 - 0.992) / 0.008, 2.0);
-    float twinkle = 0.6 + 0.4 * sin(uTime*2.0 + n1*50.0);
-    sky += vec3(0.9, 0.95, 1.0) * star * twinkle * nightF;
+  if (uHaze > 0.001) {
+    float horizonMask = 1.0 - smoothstep(0.0, 0.35, viewAlt);
+    vec3 hazeColor = mix(vec3(0.55,0.6,0.65), vec3(1.0,0.7,0.5), twilight);
+    sky = mix(sky, hazeColor, horizonMask * uHaze * 0.45);
   }
 
-  // --- Sun disk + glow ---
+  // --- Aurora (high latitude, night) ---
+  if (uAurora > 0.5) {
+    float latGate = smoothstep(45.0, 60.0, uLat);
+    float nightGate = 1.0 - civilDusk;
+    float strength = latGate * nightGate;
+    if (strength > 0.001) {
+      // curtains: vertical streaks shaped by fbm, drifting slowly
+      float band = fbm(vec2(viewAz * 3.0 + uTime*0.06, viewAlt*1.5 + uTime*0.02));
+      float curtain = smoothstep(0.42, 0.62, band);
+      // altitude envelope: brightest between 20..60 deg
+      float altEnv = smoothstep(0.15, 0.45, viewAlt) * (1.0 - smoothstep(0.75, 1.1, viewAlt));
+      // vertical striations
+      float striate = 0.5 + 0.5 * sin(viewAz * 80.0 + fbm(vec2(viewAz*4.0, uTime*0.1))*8.0);
+      vec3 aurGreen = vec3(0.15, 1.0, 0.45);
+      vec3 aurMagenta = vec3(0.9, 0.35, 0.8);
+      float mixC = smoothstep(0.3, 0.7, viewAlt);
+      vec3 aurC = mix(aurGreen, aurMagenta, mixC * 0.5);
+      sky += aurC * curtain * altEnv * striate * strength * 0.55;
+    }
+  }
+
+  if (uCloudCover > 0.005 && viewAlt > 0.0) {
+    float tanAlt = max(tan(viewAlt), 0.08);
+    vec2 cloudUV;
+    if (uCloudType < 0.5) {
+      cloudUV = vec2(viewAz * 4.0 + uTime * 0.04 * uWind, 1.0 / tanAlt * 0.2);
+    } else if (uCloudType < 1.5) {
+      cloudUV = vec2(viewAz * 2.5 + uTime * 0.03 * uWind, 1.0 / tanAlt * 0.35);
+    } else {
+      cloudUV = vec2(viewAz * 1.4 + uTime * 0.02 * uWind, 1.0 / tanAlt * 0.15);
+    }
+    float n = fbm(cloudUV);
+    float threshold = mix(0.72, 0.25, uCloudCover);
+    float density;
+    if (uCloudType < 0.5) {
+      density = smoothstep(threshold, threshold + 0.12, n) * 0.5;
+    } else if (uCloudType < 1.5) {
+      density = smoothstep(threshold, threshold + 0.18, n);
+    } else {
+      density = smoothstep(threshold - 0.05, threshold + 0.25, n) * 0.85;
+    }
+    density *= smoothstep(0.0, 0.1, viewAlt) * (1.0 - smoothstep(0.7, 1.0, viewAlt) * 0.3);
+
+    vec3 cloudLit   = vec3(1.0, 0.98, 0.95);
+    vec3 cloudShade = vec3(0.35, 0.38, 0.45);
+    vec3 cloudDay   = mix(cloudShade, cloudLit, 0.7);
+    vec3 cloudSunset= mix(vec3(0.6,0.35,0.35), vec3(1.0, 0.75, 0.5), 0.6);
+    vec3 cloudNight = vec3(0.08, 0.1, 0.15);
+    vec3 cloudC = mix(cloudNight, cloudSunset, twilight);
+    cloudC = mix(cloudC, cloudDay, day);
+    float sunLean = exp(-abs(viewAz - uSunAz) * 1.2);
+    cloudC += vec3(0.3, 0.18, 0.1) * sunLean * (twilight + day*0.4);
+
+    sky = mix(sky, cloudC, density);
+  }
+
+  if (uRays > 0.001) {
+    float sunAD = angDist(viewAlt, viewAz, uSunAlt, uSunAz);
+    float rayFade = smoothstep(-0.05, 0.2, uSunAlt) * (1.0 - smoothstep(0.3, 0.6, uSunAlt));
+    float radial = pow(max(0.0, 1.0 - sunAD / 1.8), 4.0);
+    float streak = fbm(vec2(viewAz * 6.0, viewAlt * 3.0 + uTime*0.08));
+    streak = smoothstep(0.35, 0.75, streak);
+    vec3 rayC = mix(vec3(1.0, 0.7, 0.4), vec3(1.0, 0.95, 0.85), day);
+    sky += rayC * radial * streak * uRays * rayFade * 0.4;
+  }
+
+  // --- Sun disk + glow (size controllable) ---
   float sunAngDist = angDist(viewAlt, viewAz, uSunAlt, uSunAz);
-  float sunDisk = smoothstep(0.012, 0.008, sunAngDist);
-  float sunGlow = exp(-sunAngDist * 8.0) * 0.5
-                + exp(-sunAngDist * 2.5) * 0.25;
-  // sun color shifts with altitude
+  float sunDisk = smoothstep(uSunSize, uSunSize * 0.75, sunAngDist);
+  float sunGlow = exp(-sunAngDist / max(uSunSize*8.0, 0.08)) * 0.5
+                + exp(-sunAngDist / max(uSunSize*22.0, 0.3)) * 0.25;
   vec3 sunColor = mix(vec3(1.0, 0.55, 0.25), vec3(1.0, 0.98, 0.92), smoothstep(0.0, 0.35, uSunAlt));
-  // dim when below horizon
   float sunVisible = smoothstep(-0.03, 0.01, uSunAlt);
   sky += (sunDisk * 1.8 + sunGlow * 0.7) * sunColor * sunVisible;
 
@@ -255,23 +415,33 @@ void main(){
   float moonAngDist = angDist(viewAlt, viewAz, uMoonAlt, uMoonAz);
   float moonR = 0.013;
   float moonDisk = smoothstep(moonR, moonR - 0.003, moonAngDist);
-  // phase shadow: offset a dark disk to simulate terminator
-  // phase 0 = new, 0.25 = first qtr, 0.5 = full, 0.75 = last qtr
   float phase = uMoonPhase;
-  // offset direction: sign flips at 0.5
   float dir = (phase < 0.5) ? 1.0 : -1.0;
-  float shadowShift = (0.5 - abs(phase - 0.5)) * 2.0; // 0..1..0
-  // coordinate local to moon
+  float shadowShift = (0.5 - abs(phase - 0.5)) * 2.0;
   vec2 moonLocal = vec2(viewAz - uMoonAz, viewAlt - uMoonAlt);
   float shadowDist = length(moonLocal + vec2(dir * shadowShift * moonR * 0.95, 0.0));
   float moonLit = moonDisk * smoothstep(moonR - 0.002, moonR + 0.001, shadowDist);
-  // subtle moon glow scales with illumination and darkness of sky
   float moonGlow = exp(-moonAngDist * 50.0) * 0.35 * uMoonIllum * (1.0 - day);
   float moonVisible = smoothstep(-0.03, 0.01, uMoonAlt);
   vec3 moonColor = vec3(0.96, 0.96, 0.92);
   sky += (moonLit * 1.1 + moonGlow) * moonColor * moonVisible;
 
-  // subtle film grain
+  // --- Horizon silhouette overlay ---
+  if (uHorizon > 0.5) {
+    float sh = silhouette(uv.x, uHorizon);
+    if (uv.y < sh) {
+      // dark silhouette with slight ambient light from sky above
+      vec3 ambient = mix(nightC, sunsetC * 0.35, twilight);
+      ambient = mix(ambient, dayC * 0.12, day);
+      sky = ambient;
+      // city windows: tiny warm glints at night
+      if (uHorizon > 2.5 && (1.0 - civilDusk) > 0.3) {
+        float w = hash(floor(vec2(uv.x * 120.0, uv.y * 200.0)));
+        if (w > 0.985) sky += vec3(1.0, 0.8, 0.4) * (w - 0.985) / 0.015 * 0.8;
+      }
+    }
+  }
+
   sky += (hash(gl_FragCoord.xy + uTime) - 0.5) * 0.008;
 
   outColor = vec4(sky, 1.0);
@@ -316,6 +486,15 @@ const U = {
   moonIllum: gl.getUniformLocation(prog, 'uMoonIllum'),
   shimmer: gl.getUniformLocation(prog, 'uShimmer'),
   belt: gl.getUniformLocation(prog, 'uBelt'),
+  cloudCover: gl.getUniformLocation(prog, 'uCloudCover'),
+  cloudType: gl.getUniformLocation(prog, 'uCloudType'),
+  wind: gl.getUniformLocation(prog, 'uWind'),
+  haze: gl.getUniformLocation(prog, 'uHaze'),
+  rays: gl.getUniformLocation(prog, 'uRays'),
+  sunSize: gl.getUniformLocation(prog, 'uSunSize'),
+  horizon: gl.getUniformLocation(prog, 'uHorizon'),
+  aurora: gl.getUniformLocation(prog, 'uAurora'),
+  lat: gl.getUniformLocation(prog, 'uLat'),
 };
 
 function resize(){
@@ -333,17 +512,40 @@ const el = {
   date: document.getElementById('date'),
   lat:  document.getElementById('lat'),
   lon:  document.getElementById('lon'),
+  city: document.getElementById('city'),
+  sugg: document.getElementById('sugg'),
   shimmer: document.getElementById('shimmer'),
   belt: document.getElementById('belt'),
+  aurora: document.getElementById('aurora'),
+  cloud: document.getElementById('cloud'),
+  cloudVal: document.getElementById('cloudVal'),
+  cloudType: document.getElementById('cloudType'),
+  wind: document.getElementById('wind'),
+  haze: document.getElementById('haze'),
+  hazeVal: document.getElementById('hazeVal'),
+  rays: document.getElementById('rays'),
+  raysVal: document.getElementById('raysVal'),
+  sunSize: document.getElementById('sunSize'),
+  sunSizeVal: document.getElementById('sunSizeVal'),
+  horizon: document.getElementById('horizon'),
+  liveWx: document.getElementById('liveWx'),
   play: document.getElementById('play'),
   readout: document.getElementById('readout'),
   info: document.getElementById('info'),
   palette: document.getElementById('palette'),
   savePng: document.getElementById('savePng'),
   copyLink: document.getElementById('copyLink'),
+  timelapse: document.getElementById('timelapse'),
 };
 const today = new Date();
 el.date.value = today.toISOString().slice(0,10);
+
+function updateSunSizeLabel(){
+  const v = parseFloat(el.sunSize.value);
+  const rel = (v / 0.012).toFixed(1);
+  el.sunSizeVal.textContent = rel + '×';
+}
+updateSunSizeLabel();
 
 // ---------- URL state ----------
 function loadFromURL(){
@@ -354,6 +556,14 @@ function loadFromURL(){
   if (p.get('lon')!== null) el.lon.value  = p.get('lon');
   if (p.get('s')  !== null) el.shimmer.checked = p.get('s') === '1';
   if (p.get('b')  !== null) el.belt.checked    = p.get('b') === '1';
+  if (p.get('a')  !== null) el.aurora.checked  = p.get('a') === '1';
+  if (p.get('c')  !== null) { el.cloud.value = p.get('c'); el.cloudVal.textContent = Math.round(el.cloud.value*100)+'%'; }
+  if (p.get('ct') !== null) el.cloudType.value = p.get('ct');
+  if (p.get('w')  !== null) el.wind.value = p.get('w');
+  if (p.get('hz') !== null) { el.haze.value = p.get('hz'); el.hazeVal.textContent = Math.round(el.haze.value*100)+'%'; }
+  if (p.get('r')  !== null) { el.rays.value = p.get('r'); el.raysVal.textContent = Math.round(el.rays.value*100)+'%'; }
+  if (p.get('ss') !== null) { el.sunSize.value = p.get('ss'); updateSunSizeLabel(); }
+  if (p.get('hz2')!== null) el.horizon.value = p.get('hz2');
 }
 function updateURL(){
   const p = new URLSearchParams({
@@ -362,19 +572,96 @@ function updateURL(){
     lat: el.lat.value, lon: el.lon.value,
     s: el.shimmer.checked ? 1 : 0,
     b: el.belt.checked ? 1 : 0,
+    a: el.aurora.checked ? 1 : 0,
+    c: parseFloat(el.cloud.value).toFixed(2),
+    ct: el.cloudType.value,
+    w: el.wind.value,
+    hz: parseFloat(el.haze.value).toFixed(2),
+    r: parseFloat(el.rays.value).toFixed(2),
+    ss: parseFloat(el.sunSize.value).toFixed(3),
+    hz2: el.horizon.value,
   });
   history.replaceState(null, '', '?' + p.toString());
 }
 loadFromURL();
-['hour','date','lat','lon','shimmer','belt'].forEach(k =>
+['hour','date','lat','lon','shimmer','belt','aurora','cloud','cloudType','wind','haze','rays','sunSize','horizon'].forEach(k =>
   el[k].addEventListener('change', updateURL));
 el.hour.addEventListener('input', updateURL);
+el.cloud.addEventListener('input', () => { el.cloudVal.textContent = Math.round(el.cloud.value*100)+'%'; });
+el.haze.addEventListener('input', () => { el.hazeVal.textContent = Math.round(el.haze.value*100)+'%'; });
+el.rays.addEventListener('input', () => { el.raysVal.textContent = Math.round(el.rays.value*100)+'%'; });
+el.sunSize.addEventListener('input', updateSunSizeLabel);
+
+// ---------- Open-Meteo live weather ----------
+let lastWx = null;
+async function fetchWeather(){
+  const lat = parseFloat(el.lat.value), lon = parseFloat(el.lon.value);
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current=cloud_cover,wind_speed_10m,relative_humidity_2m,weather_code`
+    + `&timezone=auto`;
+  try {
+    const r = await fetch(url);
+    const j = await r.json();
+    const c = j.current;
+    lastWx = {
+      cloud: (c.cloud_cover || 0) / 100,
+      wind:  c.wind_speed_10m || 0,
+      humidity: (c.relative_humidity_2m || 0) / 100,
+    };
+    if (el.liveWx.checked) applyWeather();
+  } catch(e){ console.warn('weather fetch failed', e); }
+}
+function applyWeather(){
+  if (!lastWx) return;
+  el.cloud.value = lastWx.cloud;      el.cloudVal.textContent = Math.round(lastWx.cloud*100)+'%';
+  el.wind.value  = Math.round(lastWx.wind);
+  el.haze.value  = Math.min(1, lastWx.humidity * 0.8); el.hazeVal.textContent = Math.round(el.haze.value*100)+'%';
+}
+el.liveWx.addEventListener('change', () => { if (el.liveWx.checked) { fetchWeather(); }});
+['lat','lon'].forEach(k => el[k].addEventListener('change', () => { if (el.liveWx.checked) fetchWeather(); }));
 
 document.querySelectorAll('.chip').forEach(c => {
   c.addEventListener('click', () => {
     el.lat.value = c.dataset.lat;
     el.lon.value = c.dataset.lon;
+    updateURL();
+    if (el.liveWx.checked) fetchWeather();
   });
+});
+
+// ---------- City search (Nominatim, no key) ----------
+let suggTimer = null;
+el.city.addEventListener('input', () => {
+  clearTimeout(suggTimer);
+  const q = el.city.value.trim();
+  if (q.length < 2) { el.sugg.style.display = 'none'; return; }
+  suggTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}`, {
+        headers: { 'Accept-Language': 'en' }
+      });
+      const j = await r.json();
+      if (!Array.isArray(j) || j.length === 0) { el.sugg.style.display = 'none'; return; }
+      el.sugg.innerHTML = '';
+      j.forEach(row => {
+        const d = document.createElement('div');
+        d.textContent = row.display_name;
+        d.addEventListener('click', () => {
+          el.lat.value = parseFloat(row.lat).toFixed(2);
+          el.lon.value = parseFloat(row.lon).toFixed(2);
+          el.city.value = row.display_name.split(',')[0];
+          el.sugg.style.display = 'none';
+          updateURL();
+          if (el.liveWx.checked) fetchWeather();
+        });
+        el.sugg.appendChild(d);
+      });
+      el.sugg.style.display = 'block';
+    } catch(e){ console.warn('geocode failed', e); }
+  }, 300);
+});
+document.addEventListener('click', (e) => {
+  if (!el.city.contains(e.target) && !el.sugg.contains(e.target)) el.sugg.style.display = 'none';
 });
 
 function currentDate(){
@@ -384,7 +671,6 @@ function currentDate(){
   return new Date(Date.UTC(y, m-1, d, hh - tzOffsetHours(), mm));
 }
 function tzOffsetHours(){
-  // approximate local timezone from longitude so sliders feel local
   return Math.round(parseFloat(el.lon.value) / 15);
 }
 
@@ -395,7 +681,6 @@ function fmtHour(h){
 function deg(rad){ return rad * 180 / Math.PI; }
 
 function seasonLabel(date, lat){
-  // northern meteorological seasons; flipped for southern
   const m = date.getUTCMonth() + 1;
   const north = (m>=3&&m<=5) ? 'spring' : (m>=6&&m<=8) ? 'summer' : (m>=9&&m<=11) ? 'autumn' : 'winter';
   const south = {spring:'autumn', summer:'winter', autumn:'spring', winter:'summer'}[north];
@@ -403,13 +688,12 @@ function seasonLabel(date, lat){
 }
 
 let t0 = performance.now();
-let animTime = 0;
 let lastFrame = t0;
 
 function frame(now){
   const dt = (now - lastFrame) / 1000; lastFrame = now;
   if (el.play.checked) {
-    let h = parseFloat(el.hour.value) + dt * 0.5; // 0.5 hours per real second
+    let h = parseFloat(el.hour.value) + dt * 0.5;
     if (h >= 24) h -= 24;
     el.hour.value = h.toFixed(2);
   }
@@ -427,20 +711,27 @@ function frame(now){
   gl.uniform2f(U.res, canvas.width, canvas.height);
   gl.uniform1f(U.time, (now - t0) / 1000);
   gl.uniform1f(U.sunAlt, sun.altitude);
-  gl.uniform1f(U.sunAz,  sun.azimuth); // SunCalc: 0 = south, +west
+  gl.uniform1f(U.sunAz,  sun.azimuth);
   gl.uniform1f(U.moonAlt, moon.altitude);
   gl.uniform1f(U.moonAz,  moon.azimuth);
   gl.uniform1f(U.moonPhase, moonI.phase);
   gl.uniform1f(U.moonIllum, moonI.fraction);
   gl.uniform1f(U.shimmer, el.shimmer.checked ? 1.0 : 0.0);
   gl.uniform1f(U.belt,    el.belt.checked ? 1.0 : 0.0);
+  gl.uniform1f(U.cloudCover, parseFloat(el.cloud.value));
+  gl.uniform1f(U.cloudType,  parseFloat(el.cloudType.value));
+  gl.uniform1f(U.wind,       parseFloat(el.wind.value) || 0);
+  gl.uniform1f(U.haze,       parseFloat(el.haze.value));
+  gl.uniform1f(U.rays,       parseFloat(el.rays.value));
+  gl.uniform1f(U.sunSize,    parseFloat(el.sunSize.value));
+  gl.uniform1f(U.horizon,    parseFloat(el.horizon.value));
+  gl.uniform1f(U.aurora,     el.aurora.checked ? 1.0 : 0.0);
+  gl.uniform1f(U.lat,        Math.abs(lat));
 
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-  // palette strip: sample 5 points along a vertical line near sun azimuth
   samplePalette();
 
-  // readouts
   const season = seasonLabel(date, lat);
   el.readout.innerHTML =
     `<b>${fmtHour(h)}</b> · ${el.date.value} · <b>${season}</b> · ${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
@@ -466,13 +757,11 @@ function toHex(r,g,b){
   return '#' + h(r) + h(g) + h(b);
 }
 function samplePalette(){
-  // sample every 6th frame to keep it cheap
   if (++paletteTick % 6 !== 0) return;
   const w = canvas.width, h = canvas.height;
   const x = Math.floor(w / 2);
   const pixel = new Uint8Array(4);
-  // y positions from zenith (top) to horizon (bottom); readPixels origin is bottom-left
-  const ys = [0.95, 0.72, 0.5, 0.25, 0.05]; // zenith→horizon
+  const ys = [0.95, 0.72, 0.5, 0.25, 0.05];
   ys.forEach((ry, i) => {
     const y = Math.floor(h * ry);
     gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
@@ -484,7 +773,6 @@ function samplePalette(){
 
 // ---------- PNG export ----------
 el.savePng.addEventListener('click', () => {
-  // hide UI briefly so the PNG is clean, then restore
   document.body.classList.add('hide-ui');
   requestAnimationFrame(() => requestAnimationFrame(() => {
     canvas.toBlob(b => {
@@ -499,6 +787,59 @@ el.savePng.addEventListener('click', () => {
       setTimeout(() => document.body.classList.remove('hide-ui'), 200);
     }, 'image/png');
   }));
+});
+
+// ---------- Timelapse WebM export ----------
+let recorder = null, recChunks = [];
+let tlAnimRaf = null, tlStartHour = 0, tlStartTime = 0;
+el.timelapse.addEventListener('click', () => {
+  if (recorder && recorder.state === 'recording') {
+    recorder.stop();
+    return;
+  }
+  if (!canvas.captureStream || !window.MediaRecorder) {
+    alert('MediaRecorder not supported in this browser');
+    return;
+  }
+  const stream = canvas.captureStream(60);
+  let mime = 'video/webm;codecs=vp9';
+  if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+  recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 12_000_000 });
+  recChunks = [];
+  recorder.ondataavailable = e => { if (e.data.size) recChunks.push(e.data); };
+  recorder.onstop = () => {
+    const blob = new Blob(recChunks, { type: 'video/webm' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `sky-timelapse-${el.date.value}-${el.lat.value}_${el.lon.value}.webm`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    el.timelapse.textContent = 'Timelapse';
+    el.timelapse.classList.remove('recording');
+    cancelAnimationFrame(tlAnimRaf);
+    el.play.checked = false;
+  };
+
+  // drive hour 0 → 24 over ~12 seconds
+  tlStartHour = 0;
+  el.hour.value = 0;
+  el.play.checked = false;
+  tlStartTime = performance.now();
+  const DURATION = 12000;
+  function step(now){
+    const t = (now - tlStartTime) / DURATION;
+    if (t >= 1) {
+      el.hour.value = 24;
+      recorder.stop();
+      return;
+    }
+    el.hour.value = (t * 24).toFixed(2);
+    tlAnimRaf = requestAnimationFrame(step);
+  }
+  recorder.start();
+  el.timelapse.textContent = 'Stop';
+  el.timelapse.classList.add('recording');
+  tlAnimRaf = requestAnimationFrame(step);
 });
 
 // ---------- copy link ----------
