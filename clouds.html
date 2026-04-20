@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>clouds — slash.red/lab</title>
+<style>
+  html,body { margin:0; height:100%; background:#000; overflow:hidden; font-family:ui-monospace,Menlo,monospace; color:#ddd; }
+  canvas { display:block; width:100vw; height:100vh; }
+  #ui {
+    position:fixed; top:10px; left:10px; padding:10px 12px;
+    background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
+    border-radius:8px; font-size:12px; line-height:1.6; user-select:none;
+    max-height:calc(100vh - 20px); overflow:auto;
+  }
+  #ui label { display:flex; align-items:center; gap:8px; }
+  #ui input[type=range] { width:140px; }
+  #ui .row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  #ui .val { opacity:.7; width:42px; text-align:right; }
+  #ui h4 { margin:8px 0 4px; font-weight:600; font-size:11px; letter-spacing:.08em; text-transform:uppercase; opacity:.7; }
+  #ui h4:first-child { margin-top:0; }
+  #ui button { background:#222; color:#ddd; border:1px solid #333; border-radius:4px; padding:4px 8px; font:inherit; cursor:pointer; }
+  #ui button:hover { background:#2c2c2c; }
+  #ui button.rec { background:#5a1a1a; border-color:#7a2a2a; }
+  #rec { font-size:11px; opacity:.8; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <h4>cloud-gen v2</h4>
+  <label>speed <input id="speed" type="range" min="0" max="2" step="0.01" value="0.5"><span class="val" id="speedV">0.50</span></label>
+  <label>period s <input id="period" type="range" min="4" max="60" step="0.5" value="18"><span class="val" id="periodV">18.0</span></label>
+
+  <h4>shape</h4>
+  <label>coverage <input id="cov" type="range" min="0" max="1" step="0.01" value="0.55"><span class="val" id="covV">0.55</span></label>
+  <label>softness <input id="soft" type="range" min="0.01" max="0.6" step="0.01" value="0.22"><span class="val" id="softV">0.22</span></label>
+  <label>warp <input id="warp" type="range" min="0" max="3" step="0.01" value="1.2"><span class="val" id="warpV">1.20</span></label>
+  <label>billow <input id="billow" type="range" min="0" max="1" step="0.01" value="0.65"><span class="val" id="billowV">0.65</span></label>
+  <label>scale <input id="scale" type="range" min="0.3" max="4" step="0.01" value="1.4"><span class="val" id="scaleV">1.40</span></label>
+
+  <h4>camera</h4>
+  <label>horizon <input id="hor" type="range" min="-0.6" max="0.6" step="0.01" value="-0.05"><span class="val" id="horV">-0.05</span></label>
+  <label>height <input id="height" type="range" min="0.2" max="3" step="0.01" value="1.0"><span class="val" id="heightV">1.00</span></label>
+  <label>fov <input id="fov" type="range" min="0.5" max="1.6" step="0.01" value="1.05"><span class="val" id="fovV">1.05</span></label>
+
+  <h4>sun</h4>
+  <label>sun Y <input id="sunY" type="range" min="-0.3" max="0.9" step="0.01" value="0.2"><span class="val" id="sunYV">0.20</span></label>
+  <label>sun X <input id="sunX" type="range" min="-1" max="1" step="0.01" value="-0.3"><span class="val" id="sunXV">-0.30</span></label>
+
+  <h4>export</h4>
+  <div class="row">
+    <button id="pause">pause</button>
+    <button id="save">png</button>
+    <button id="rec1x" class="rec">rec 1 loop</button>
+    <button id="rec2x" class="rec">rec 2 loops</button>
+  </div>
+  <div id="rec"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2', { antialias:false, preserveDrawingBuffer:true });
+if (!gl) { document.body.innerHTML = 'WebGL2 required'; throw 0; }
+
+const vs = `#version 300 es
+in vec2 p; out vec2 uv;
+void main(){ uv = p*0.5+0.5; gl_Position = vec4(p,0.,1.); }`;
+
+const fs = `#version 300 es
+precision highp float;
+in vec2 uv; out vec4 o;
+uniform vec2 res;
+uniform float t;        // loop phase in [0,1)
+uniform float coverage;
+uniform float softness;
+uniform float warp;
+uniform float billow;   // 0=gradient noise, 1=absolute (puffy)
+uniform float scale;
+uniform vec2 sunDir2;
+uniform float horizon;  // -1..1 screen offset where horizon sits
+uniform float camHeight;
+uniform float fov;
+
+// ---------- hash ----------
+vec4 hash4(vec4 p){
+  p = fract(p * vec4(443.8975, 397.2973, 491.1871, 599.8971));
+  p += dot(p.wzxy, p + 19.19);
+  return fract(vec4(p.x*p.y, p.y*p.z, p.z*p.w, p.w*p.x));
+}
+float hash1(vec4 p){
+  p = fract(p*0.3183099 + vec4(0.1,0.2,0.3,0.4));
+  p *= 17.0;
+  return fract(p.x*p.y*p.z*p.w*(p.x+p.y+p.z+p.w));
+}
+
+// ---------- 4D gradient noise ----------
+// Perlin-style: random gradient at each lattice, dot with offset, smoothstep blend.
+float gnoise4(vec4 x){
+  vec4 i = floor(x);
+  vec4 f = fract(x);
+  vec4 u = f*f*f*(f*(f*6.0-15.0)+10.0); // quintic
+
+  float n = 0.0;
+  for(int dx=0; dx<2; dx++)
+  for(int dy=0; dy<2; dy++)
+  for(int dz=0; dz<2; dz++)
+  for(int dw=0; dw<2; dw++){
+    vec4 d = vec4(float(dx),float(dy),float(dz),float(dw));
+    // random gradient in 4D from hash
+    vec4 g = hash4(i+d)*2.0-1.0;
+    g = normalize(g + 1e-5);
+    float v = dot(g, f-d);
+    vec4 w4 = mix(1.0-u, u, d);
+    n += v * w4.x*w4.y*w4.z*w4.w;
+  }
+  return n*0.5+0.5; // to 0..1
+}
+
+// fBm with time dims on a circle → seamless loop
+float fbm(vec3 p, float tt){
+  float a = 0.5, s = 1.0, sum = 0.0, norm = 0.0;
+  vec2 tc = vec2(cos(tt), sin(tt)) * 0.7;
+  for(int i=0;i<6;i++){
+    float n = gnoise4(vec4(p*s, tc));
+    // billow blend: puffy cauliflower edges
+    float b = abs(n*2.0-1.0);
+    n = mix(n, 1.0-b, billow);
+    sum  += a * n;
+    norm += a;
+    a *= 0.5; s *= 2.03;
+  }
+  return sum/norm;
+}
+
+float clouds(vec3 pos, float tt){
+  vec3 p = pos*scale;
+  // domain warp (2-tap)
+  vec3 w1 = vec3(
+    fbm(p, tt),
+    fbm(p+vec3(5.2,1.3,2.8), tt),
+    fbm(p+vec3(-1.7,9.1,4.4), tt)
+  );
+  p += (w1 - 0.5) * warp;
+  vec3 w2 = vec3(
+    fbm(p+vec3(1.1,2.2,3.3), tt),
+    fbm(p+vec3(7.7,3.3,8.8), tt),
+    fbm(p+vec3(-4.4,0.1,6.6), tt)
+  );
+  p += (w2 - 0.5) * warp * 0.4;
+  float d = fbm(p, tt);
+  float thr = 1.0 - coverage;
+  return smoothstep(thr - softness, thr + softness, d);
+}
+
+vec3 sky(vec3 rd, vec3 sun){
+  float h = clamp(rd.y*0.8+0.15, 0.0, 1.0);
+  vec3 top = vec3(0.30,0.52,0.85);
+  vec3 hor = vec3(0.82,0.88,0.96);
+  vec3 c = mix(hor, top, pow(h,1.1));
+  // sun disc
+  float sd = max(dot(rd, sun), 0.0);
+  c += vec3(1.0,0.93,0.78) * pow(sd, 32.0) * 1.1;
+  c += vec3(1.0,0.85,0.65) * pow(sd, 600.0) * 6.0;
+  // horizon haze toward sun
+  c += vec3(1.0,0.8,0.6) * pow(sd, 3.0) * 0.08 * (1.0 - h);
+  return c;
+}
+
+void main(){
+  // screen coords with horizon offset
+  vec2 q = (uv*2.0-1.0);
+  q.x *= res.x/res.y;
+  q.y -= horizon;
+
+  // build a ray looking roughly up
+  // camera looks toward +z, up is +y. fov scales screen plane.
+  vec3 rd = normalize(vec3(q.x*fov, q.y*fov + 0.15, 1.0));
+
+  // sun direction in same space
+  vec3 sun = normalize(vec3(sunDir2.x, sunDir2.y + 0.1, 0.7));
+
+  vec3 base = sky(rd, sun);
+
+  // only compute clouds where we look upward (rd.y > small)
+  float up = rd.y;
+  if(up < 0.02){
+    o = vec4(base, 1.0); return;
+  }
+
+  // intersect ray with a cloud plane at height H
+  float H = camHeight;
+  float tPlane = H / up;                  // distance along ray
+  vec3 hit = rd * tPlane;                 // position on plane
+  // scale down far-away so parallax looks right without going insane
+  vec2 pp = hit.xz * 0.08;
+
+  float tt = 6.2831853 * t;
+
+  float density = clouds(vec3(pp, 0.0), tt);
+
+  // cheap lighting: sample slightly toward sun
+  vec2 lp = pp + sun.xy * 0.015;
+  float lit = clouds(vec3(lp, 0.0), tt);
+  float shade = clamp((density - lit)*7.0 + 0.55, 0.0, 1.0);
+
+  vec3 bright = vec3(1.03, 1.00, 0.95);
+  vec3 dark   = vec3(0.52, 0.58, 0.70);
+  vec3 cloudCol = mix(dark, bright, shade);
+
+  // distance fade toward horizon (clouds dissolve into haze)
+  float fade = 1.0 - smoothstep(0.02, 0.35, up);
+  fade = pow(fade, 1.5);
+  vec3 hazeCol = mix(cloudCol, base, 0.85);
+  cloudCol = mix(cloudCol, hazeCol, fade);
+
+  float alpha = density * (1.0 - fade*0.85);
+  vec3 col = mix(base, cloudCol, alpha);
+
+  // subtle vignette + gamma
+  float v = smoothstep(1.6, 0.4, length(uv*2.0-1.0));
+  col *= mix(0.88, 1.0, v);
+  col = pow(col, vec3(0.95));
+
+  o = vec4(col, 1.0);
+}`;
+
+function sh(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s);
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs));
+gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+gl.linkProgram(prog);
+if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw gl.getProgramInfoLog(prog);
+gl.useProgram(prog);
+
+const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p');
+gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const U = {};
+['res','t','coverage','softness','warp','billow','scale','sunDir2','horizon','camHeight','fov']
+  .forEach(n => U[n] = gl.getUniformLocation(prog, n));
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  canvas.width = Math.floor(innerWidth*dpr);
+  canvas.height = Math.floor(innerHeight*dpr);
+  gl.viewport(0,0,canvas.width,canvas.height);
+}
+resize(); addEventListener('resize', resize);
+
+// ---- UI ----
+const ui = {};
+['speed','period','cov','soft','warp','billow','scale','hor','height','fov','sunY','sunX'].forEach(id=>{
+  const el = document.getElementById(id);
+  const v  = document.getElementById(id+'V');
+  ui[id] = el;
+  const upd = ()=> v.textContent = Number(el.value).toFixed(2);
+  el.addEventListener('input', upd); upd();
+});
+let paused = false;
+document.getElementById('pause').onclick = (e)=>{ paused = !paused; e.target.textContent = paused ? 'play' : 'pause'; };
+document.getElementById('save').onclick = ()=>{
+  const a = document.createElement('a');
+  a.download = `cloud-${Date.now()}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+};
+
+// ---- render ----
+let phase = 0, last = performance.now();
+function drawAt(ph){
+  gl.uniform2f(U.res, canvas.width, canvas.height);
+  gl.uniform1f(U.t, ph);
+  gl.uniform1f(U.coverage, parseFloat(ui.cov.value));
+  gl.uniform1f(U.softness, parseFloat(ui.soft.value));
+  gl.uniform1f(U.warp, parseFloat(ui.warp.value));
+  gl.uniform1f(U.billow, parseFloat(ui.billow.value));
+  gl.uniform1f(U.scale, parseFloat(ui.scale.value));
+  gl.uniform2f(U.sunDir2, parseFloat(ui.sunX.value), parseFloat(ui.sunY.value));
+  gl.uniform1f(U.horizon, parseFloat(ui.hor.value));
+  gl.uniform1f(U.camHeight, parseFloat(ui.height.value));
+  gl.uniform1f(U.fov, parseFloat(ui.fov.value));
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+function frame(now){
+  const dt = (now - last)/1000; last = now;
+  if(!paused && !recording){
+    const speed = parseFloat(ui.speed.value);
+    const period = parseFloat(ui.period.value);
+    phase = (phase + dt * speed / period) % 1.0;
+  }
+  drawAt(phase);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---- record seamless loop ----
+let recording = false;
+const recEl = document.getElementById('rec');
+async function recordLoops(loops){
+  if(recording) return;
+  recording = true;
+  const period = parseFloat(ui.period.value);
+  const durSec = period * loops;
+  const fps = 30;
+  const totalFrames = Math.round(durSec * fps);
+
+  const stream = canvas.captureStream(0); // manual frame pushing
+  const track = stream.getVideoTracks()[0];
+  // Prefer MP4 if the browser supports it, else webm
+  const mimes = ['video/mp4;codecs=avc1.42E01E', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  const mime = mimes.find(m => MediaRecorder.isTypeSupported(m)) || '';
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 12_000_000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
+  const done = new Promise(r => rec.onstop = r);
+  rec.start();
+
+  for(let i=0; i<totalFrames; i++){
+    const ph = ((i/(period*fps)) % 1.0); // phase cycles exactly every `period` seconds
+    phase = ph;
+    drawAt(ph);
+    if(track.requestFrame) track.requestFrame();
+    recEl.textContent = `recording ${i+1}/${totalFrames}`;
+    await new Promise(r => setTimeout(r, 1000/fps));
+  }
+  rec.stop();
+  await done;
+
+  const blob = new Blob(chunks, { type: mime });
+  const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.download = `cloud-loop-${Date.now()}.${ext}`;
+  a.href = url; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 10000);
+
+  recEl.textContent = `saved ${ext} (${(blob.size/1e6).toFixed(1)} MB)`;
+  recording = false;
+}
+document.getElementById('rec1x').onclick = ()=>recordLoops(1);
+document.getElementById('rec2x').onclick = ()=>recordLoops(2);
+</script>
+</body>
+</html>
