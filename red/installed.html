@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>/red — install the GitHub App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 2rem;
+      line-height: 1.5;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    a { color: #e04040; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header { margin-bottom: 2.5rem; }
+    header .crumb { color: #555; font-size: 0.8rem; }
+    header .crumb a { color: #888; }
+    h1 { font-size: 2rem; letter-spacing: -0.02em; margin-top: 0.75rem; }
+    h1 .slash { color: #e04040; }
+    .checkmark { color: #4ade80; font-size: 1.1rem; margin-top: 1.5rem; }
+    section { margin-top: 2rem; }
+    section h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+      margin-bottom: 0.75rem;
+    }
+    ol { padding-left: 1.25rem; color: #bbb; }
+    ol li { padding: 0.35rem 0; }
+    ol li b { color: #e0e0e0; }
+    .button {
+      display: inline-block;
+      background: #e04040;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+    .button:hover { background: #c43535; text-decoration: none; }
+    .fine { color: #555; font-size: 0.85rem; margin-top: 1rem; }
+    code {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: #1a1a1a;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="crumb"><a href="/">slash.red / lab</a> / <a href="/red/">red</a></div>
+      <h1>Payment received</h1>
+      <p class="checkmark">✓ Thanks. Now one more step.</p>
+    </header>
+
+    <section>
+      <h2>Install the GitHub App</h2>
+      <p>Install <code>slash-red</code> on the repo you want reviewed. Read-only access + permission to post PR comments. We never push to your branches.</p>
+      <a class="button" href="https://github.com/apps/slash-red/installations/new" target="_blank" rel="noopener">Install slash-red on GitHub →</a>
+      <p class="fine">You'll pick one repo. We'll auto-detect the rest.</p>
+    </section>
+
+    <section>
+      <h2>What happens next</h2>
+      <ol>
+        <li><b>Auto-detect</b> — we read your repo to infer framework, branch model, preview URL, and whether we post to a PR or open an Issue.</li>
+        <li><b>Confirm</b> — you'll see a summary of what we found. Tweak if needed.</li>
+        <li><b>First review</b> — lands on your repo within the hour.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Didn't work?</h2>
+      <p>Ping <a href="https://x.com/antimofm">@antimofm</a> on X or reply to the receipt email. This is alpha; I'm watching every install by hand.</p>
+    </section>
+  </div>
+</body>
+</html>
