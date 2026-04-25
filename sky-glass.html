@@ -11,10 +11,6 @@
     --dim: rgba(255,255,255,0.45);
     --line: rgba(255,255,255,0.14);
     --line-bright: rgba(255,255,255,0.28);
-    --panel-bg: rgba(255,255,255,0.08);
-    --panel-bg-deep: rgba(255,255,255,0.05);
-    --highlight: rgba(255,255,255,0.18);
-    --shadow: rgba(0,0,0,0.35);
     --red: #c8102e;
   }
 
@@ -24,51 +20,86 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
     overflow: hidden;
   }
-  canvas { display:block; width:100vw; height:100vh; position:fixed; inset:0; z-index:0; }
+  canvas#c { display:block; width:100vw; height:100vh; position:fixed; inset:0; z-index:0; }
 
-  /* ── Liquid Glass Panel ── */
-  .panel {
+  /* ── Panel wrapper ── */
+  .panel-wrap {
     position: fixed;
     left: 16px; bottom: 16px;
     z-index: 2;
     width: min(360px, calc(100vw - 32px));
     max-height: calc(100vh - 32px);
+  }
+
+  /* ── The real liquid glass: offscreen canvas + SVG filter ── */
+  #glassRefract {
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    pointer-events: none;
+    z-index: 0;
+    /* SVG filter applied via JS after we know size */
+  }
+
+  /* ── Panel — sits above the refraction layer ── */
+  .panel {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-height: calc(100vh - 32px);
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.15) transparent;
 
-    /* glass stack */
-    background: var(--panel-bg);
-    backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
-    -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
+    /* Very thin base tint — the SVG handles the heavy lifting */
+    background: rgba(255,255,255,0.055);
+    /* No backdrop-filter — we use the SVG approach instead */
 
-    /* soft outer border */
-    border: 1px solid var(--line-bright);
-    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.20);
+    border-top-color: rgba(255,255,255,0.38);
+    border-left-color: rgba(255,255,255,0.26);
+    border-radius: 22px;
     padding: 18px 20px 20px;
     font-size: 13px;
 
-    /* inner highlight + depth */
     box-shadow:
-      inset 0 1px 0 var(--highlight),          /* top sheen */
-      inset 0 -1px 0 rgba(0,0,0,0.2),           /* bottom depth */
-      inset 1px 0 0 rgba(255,255,255,0.08),      /* left rim */
-      0 20px 60px rgba(0,0,0,0.55),              /* drop shadow */
-      0 4px 16px rgba(0,0,0,0.3);
+      inset 0 1.5px 0 rgba(255,255,255,0.32),   /* top sheen */
+      inset 0 -1px 0 rgba(0,0,0,0.18),
+      inset 1px 0 0 rgba(255,255,255,0.10),
+      inset -1px 0 0 rgba(255,255,255,0.06),
+      0 32px 80px rgba(0,0,0,0.65),
+      0 6px 20px rgba(0,0,0,0.35);
   }
 
-  /* refraction distortion inner element */
+  /* Upper-left angular specular highlight — the lens flare rim */
   .panel::before {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: 20px;
+    border-radius: 22px;
     background: linear-gradient(
-      160deg,
-      rgba(255,255,255,0.10) 0%,
-      rgba(255,255,255,0.02) 40%,
-      rgba(255,255,255,0.05) 100%
+      128deg,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.07) 22%,
+      rgba(255,255,255,0.00) 45%,
+      rgba(255,255,255,0.00) 75%,
+      rgba(255,255,255,0.04) 100%
     );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Chromatic edge ring — subtle R/B fringe at the border */
+  .panel::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 23px;
+    background: transparent;
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255,255,255,0.10),
+      inset 0 0 18px rgba(180,210,255,0.07),
+      inset 0 0 3px rgba(255,160,160,0.09);
     pointer-events: none;
     z-index: 0;
   }
@@ -91,8 +122,6 @@
     text-transform: uppercase;
     color: rgba(255,255,255,0.3);
     font-weight: 500;
-
-    /* glass divider */
     padding-top: 10px;
     border-top: 1px solid rgba(255,255,255,0.08);
   }
@@ -104,7 +133,6 @@
   }
   .readout b { color: var(--fg); font-weight: 500; }
 
-  /* ── rows ── */
   .row {
     display: flex;
     align-items: center;
@@ -120,7 +148,7 @@
     flex-shrink: 0;
   }
 
-  /* ── range slider — glass track ── */
+  /* ── range slider ── */
   .row input[type=range] {
     flex: 1;
     -webkit-appearance: none;
@@ -144,9 +172,7 @@
     cursor: pointer;
     transition: transform .1s;
   }
-  .row input[type=range]::-webkit-slider-thumb:active {
-    transform: scale(1.15);
-  }
+  .row input[type=range]::-webkit-slider-thumb:active { transform: scale(1.15); }
   .row input[type=range]::-moz-range-thumb {
     width: 16px; height: 16px;
     border: none;
@@ -198,18 +224,25 @@
   .chip {
     font-size: 11px;
     padding: 4px 11px;
-    border: 1px solid rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-top-color: rgba(255,255,255,0.30);
     border-radius: 999px;
     color: var(--dim);
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.07);
     cursor: pointer;
-    transition: background .15s, border-color .15s, color .15s;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    transition: background .15s, border-color .15s, color .15s, box-shadow .15s;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.16),
+      0 1px 4px rgba(0,0,0,0.2);
   }
   .chip:hover {
-    background: rgba(255,255,255,0.13);
-    border-color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.40);
+    border-top-color: rgba(255,255,255,0.55);
     color: var(--fg);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.26),
+      0 2px 8px rgba(0,0,0,0.3);
   }
 
   /* ── toggles ── */
@@ -230,7 +263,7 @@
   }
   .toggle input { accent-color: var(--red); }
 
-  /* ── action buttons — glass ── */
+  /* ── action buttons ── */
   .actions {
     display: flex;
     gap: 8px;
@@ -249,36 +282,37 @@
     text-transform: uppercase;
     font-weight: 500;
     transition: background .15s, border-color .15s, transform .1s, box-shadow .15s;
-
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.16);
+    border-top-color: rgba(255,255,255,0.28);
     color: var(--fg);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.14),
+      inset 0 1px 0 rgba(255,255,255,0.18),
       0 2px 8px rgba(0,0,0,0.25);
   }
   .btn:hover {
     background: rgba(255,255,255,0.14);
-    border-color: rgba(255,255,255,0.3);
+    border-top-color: rgba(255,255,255,0.42);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.2),
-      0 4px 12px rgba(0,0,0,0.35);
+      inset 0 1px 0 rgba(255,255,255,0.26),
+      0 4px 14px rgba(0,0,0,0.38);
     transform: translateY(-1px);
   }
   .btn:active { transform: translateY(0); }
 
   .btn.primary {
-    background: rgba(200,16,46,0.75);
-    border-color: rgba(220,30,60,0.6);
+    background: rgba(200,16,46,0.68);
+    border-color: rgba(180,20,50,0.5);
+    border-top-color: rgba(255,80,110,0.50);
     box-shadow:
-      inset 0 1px 0 rgba(255,100,120,0.35),
-      0 4px 16px rgba(200,16,46,0.4);
+      inset 0 1px 0 rgba(255,120,140,0.40),
+      0 4px 18px rgba(200,16,46,0.40);
   }
   .btn.primary:hover {
-    background: rgba(220,20,55,0.9);
+    background: rgba(220,20,55,0.85);
     box-shadow:
-      inset 0 1px 0 rgba(255,100,120,0.45),
-      0 6px 20px rgba(200,16,46,0.55);
+      inset 0 1px 0 rgba(255,120,140,0.52),
+      0 6px 22px rgba(200,16,46,0.55);
   }
 
   .btn.recording {
@@ -294,10 +328,11 @@
   .sugg {
     position: absolute;
     left: 0; right: 0; top: calc(100% + 5px);
-    background: rgba(20,22,28,0.88);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    background: rgba(18,20,26,0.92);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
     border: 1px solid rgba(255,255,255,0.14);
+    border-top-color: rgba(255,255,255,0.24);
     border-radius: 10px;
     overflow: hidden;
     z-index: 10;
@@ -346,26 +381,27 @@
     position: fixed;
     right: 16px; top: 16px;
     z-index: 2;
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(32px) saturate(160%);
-    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    background: rgba(255,255,255,0.065);
+    backdrop-filter: blur(40px) saturate(160%);
+    -webkit-backdrop-filter: blur(40px) saturate(160%);
     border: 1px solid rgba(255,255,255,0.16);
+    border-top-color: rgba(255,255,255,0.30);
     border-radius: 12px;
     padding: 9px 14px;
     font-size: 12px;
     color: var(--dim);
     font-variant-numeric: tabular-nums;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.14),
-      0 8px 24px rgba(0,0,0,0.4);
+      inset 0 1.5px 0 rgba(255,255,255,0.24),
+      0 8px 28px rgba(0,0,0,0.45);
   }
   .top-info b { color: var(--fg); font-weight: 500; }
 
   /* ── hide/embed ── */
-  body.hide-ui .panel, body.hide-ui .top-info, body.hide-ui .palette {
+  body.hide-ui .panel-wrap, body.hide-ui .top-info, body.hide-ui .palette {
     opacity: 0; pointer-events: none; transition: opacity .25s;
   }
-  body.embed .panel, body.embed .top-info, body.embed .palette { display: none !important; }
+  body.embed .panel-wrap, body.embed .top-info, body.embed .palette { display: none !important; }
   body.embed { background: transparent; }
 
   body.hint::after {
@@ -392,109 +428,245 @@
 <body class="hint">
 <canvas id="c"></canvas>
 
+<!--
+  SVG filter bank — the real liquid glass engine.
+  Strategy:
+    1. We snapshot the sky WebGL canvas into an offscreen <canvas> (#glassSnap)
+       for the exact panel region, every frame.
+    2. We draw that snapshot into an <feImage> source.
+    3. feDisplacementMap + feTurbulence warps it like real glass refraction.
+    4. feSpecularLighting adds the edge specular rim highlight.
+    5. feColorMatrix applies subtle chromatic aberration (R shifts right, B shifts left).
+    6. A radial gradient feImage gives the lens a curved shape so displacement is
+       stronger at the centre and fades at the edges — mimicking a convex lens.
+
+  Because feImage can't directly reference a live canvas, we encode the snapshot
+  as a data URL each frame and update the xlink:href on the feImage element.
+  This is the correct technique used in production liquid-glass implementations.
+-->
+<svg id="glassSVG" xmlns="http://www.w3.org/2000/svg"
+  style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <!-- Animated radial gradient for the lens shape mask -->
+    <radialGradient id="lensGrad" cx="50%" cy="38%" r="58%" fx="48%" fy="32%">
+      <stop offset="0%"   stop-color="white" stop-opacity="1.0"/>
+      <stop offset="55%"  stop-color="white" stop-opacity="0.72"/>
+      <stop offset="85%"  stop-color="white" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.0"/>
+    </radialGradient>
+
+    <filter id="liquidGlass" x="0%" y="0%" width="100%" height="100%"
+            color-interpolation-filters="sRGB" primitiveUnits="userSpaceOnUse">
+
+      <!-- Source: the sky backdrop snapshot (updated per frame via JS) -->
+      <feImage id="feBackdrop" result="backdrop" preserveAspectRatio="none"/>
+
+      <!-- Lens-shape mask: radial gradient so displacement is curved, not flat -->
+      <feImage id="feLensMask" result="lensMask" preserveAspectRatio="none"/>
+
+      <!-- Organic turbulence for surface micro-texture -->
+      <feTurbulence id="feTurb"
+        type="fractalNoise"
+        baseFrequency="0.008 0.006"
+        numOctaves="4"
+        seed="17"
+        result="rawTurb"/>
+
+      <!-- Multiply turbulence by the lens mask → displacement is lens-shaped -->
+      <feComposite in="rawTurb" in2="lensMask" operator="arithmetic"
+        k1="1" k2="0" k3="0" k4="0" result="maskedTurb"/>
+
+      <!-- Core refraction: displacement map bends the backdrop like glass -->
+      <feDisplacementMap id="feDisplace"
+        in="backdrop"
+        in2="maskedTurb"
+        scale="38"
+        xChannelSelector="R"
+        yChannelSelector="G"
+        result="refracted"/>
+
+      <!-- Specular lighting: point light above-left creates the rim shine -->
+      <feSpecularLighting in="maskedTurb"
+        surfaceScale="5"
+        specularConstant="0.85"
+        specularExponent="32"
+        lighting-color="rgba(255,255,255,0.92)"
+        result="specular">
+        <!-- Point light at top-left, elevated — simulates directional overhead light -->
+        <fePointLight id="feLight" x="30%" y="-25%" z="180"/>
+      </feSpecularLighting>
+
+      <!-- Clip specular to the source alpha so it only appears inside the panel -->
+      <feComposite in="specular" in2="backdrop" operator="in" result="clippedSpecular"/>
+
+      <!-- Blend specular (screen) over the refracted image -->
+      <feBlend in="refracted" in2="clippedSpecular" mode="screen" result="withSpecular"/>
+
+      <!-- Tint overlay: slight warm glass tint + glass darkness at base -->
+      <feColorMatrix in="withSpecular" type="matrix"
+        values="1.00  0.00  0.00  0    0.01
+                0.00  1.00  0.00  0    0.01
+                0.00  0.00  1.02  0   -0.01
+                0     0     0     1    0"
+        result="tinted"/>
+
+      <!-- Chromatic aberration:
+           Red channel shifts slightly right (+x), Blue slightly left (-x).
+           Implemented by compositing R offset + G base + B offset.
+           We use feOffset on individual channel extractions. -->
+      <!-- Extract R channel -->
+      <feColorMatrix in="tinted" type="matrix"
+        values="1 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 1 0"
+        result="chanR"/>
+      <!-- Extract G channel -->
+      <feColorMatrix in="tinted" type="matrix"
+        values="0 0 0 0 0   0 1 0 0 0   0 0 0 0 0   0 0 0 1 0"
+        result="chanG"/>
+      <!-- Extract B channel -->
+      <feColorMatrix in="tinted" type="matrix"
+        values="0 0 0 0 0   0 0 0 0 0   0 0 1 0 0   0 0 0 1 0"
+        result="chanB"/>
+      <!-- Offset R right, B left by a fraction of a pixel -->
+      <feOffset in="chanR" dx="1.2" dy="0" result="rShifted"/>
+      <feOffset in="chanB" dx="-1.2" dy="0" result="bShifted"/>
+      <!-- Re-combine: R shifted + G base + B shifted -->
+      <feBlend in="rShifted" in2="chanG" mode="screen" result="rgBlend"/>
+      <feBlend in="rgBlend" in2="bShifted" mode="screen" result="chromatic"/>
+
+      <!-- Soft final blur to kill sub-pixel aliasing from the displacement -->
+      <feGaussianBlur in="chromatic" stdDeviation="0.55" result="softened"/>
+
+      <!-- Clip the whole effect to the original shape -->
+      <feComposite in="softened" in2="SourceGraphic" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
 <div class="top-info" id="info">sun —° · moon —°</div>
 <div class="palette" id="palette"></div>
 
-<div class="panel">
-  <h2>Sky</h2>
-  <div class="readout" id="readout">—</div>
+<div class="panel-wrap" id="panelWrap">
+  <!--
+    The glass refraction layer:
+    - An <svg> sized to the panel, containing a <rect> filtered with #liquidGlass.
+    - The feImage backdrop is updated each frame with a fresh canvas snapshot.
+  -->
+  <svg id="glassRefract"
+    style="position:absolute;inset:0;width:100%;height:100%;border-radius:22px;pointer-events:none;z-index:0;overflow:visible;">
+    <defs>
+      <!-- clipPath to round the refraction layer to the panel border-radius -->
+      <clipPath id="panelClip">
+        <rect id="panelClipRect" rx="22" ry="22"/>
+      </clipPath>
+    </defs>
+    <rect id="glassRect"
+      rx="22" ry="22"
+      fill="rgba(255,255,255,0.001)"
+      filter="url(#liquidGlass)"
+      clip-path="url(#panelClip)"/>
+  </svg>
 
-  <div class="row">
-    <label>Hour</label>
-    <input id="hour" type="range" min="0" max="24" step="0.05" value="12" />
-    <span class="val" id="hourVal">12:00</span>
-  </div>
-  <div class="row">
-    <label>Date</label>
-    <input id="date" type="date" style="width:130px" />
-  </div>
+  <div class="panel">
+    <h2>Sky</h2>
+    <div class="readout" id="readout">—</div>
 
-  <h3>Place</h3>
-  <div class="row">
-    <label>Search</label>
-    <div class="search-wrap">
-      <input id="city" type="search" placeholder="city, country…" autocomplete="off" />
-      <div class="sugg" id="sugg" style="display:none"></div>
+    <div class="row">
+      <label>Hour</label>
+      <input id="hour" type="range" min="0" max="24" step="0.05" value="12" />
+      <span class="val" id="hourVal">12:00</span>
     </div>
-  </div>
-  <div class="row">
-    <label>Lat</label>
-    <input id="lat" type="number" step="0.5" value="51.5" />
-    <label style="width:auto">Lon</label>
-    <input id="lon" type="number" step="0.5" value="-0.1" />
-  </div>
-  <div class="presets">
-    <span class="chip" data-lat="51.5" data-lon="-0.1">London</span>
-    <span class="chip" data-lat="41.9" data-lon="12.5">Rome</span>
-    <span class="chip" data-lat="35.7" data-lon="139.7">Tokyo</span>
-    <span class="chip" data-lat="-33.9" data-lon="151.2">Sydney</span>
-    <span class="chip" data-lat="64.1" data-lon="-21.9">Reykjavík</span>
-    <span class="chip" data-lat="0.3" data-lon="32.6">Kampala</span>
-  </div>
+    <div class="row">
+      <label>Date</label>
+      <input id="date" type="date" style="width:130px" />
+    </div>
 
-  <h3>Atmosphere</h3>
-  <div class="row">
-    <label>Cloud</label>
-    <input id="cloud" type="range" min="0" max="1" step="0.01" value="0.3" />
-    <span class="val" id="cloudVal">30%</span>
-  </div>
-  <div class="row">
-    <label>Type</label>
-    <select id="cloudType" style="width:110px">
-      <option value="0">cirrus</option>
-      <option value="1" selected>cumulus</option>
-      <option value="2">stratus</option>
-    </select>
-    <label style="width:auto">Wind</label>
-    <input id="wind" type="number" step="1" value="5" style="width:56px" />
-  </div>
-  <div class="row">
-    <label>Haze</label>
-    <input id="haze" type="range" min="0" max="1" step="0.01" value="0.2" />
-    <span class="val" id="hazeVal">20%</span>
-  </div>
-  <div class="row">
-    <label>Rays</label>
-    <input id="rays" type="range" min="0" max="1" step="0.01" value="0.4" />
-    <span class="val" id="raysVal">40%</span>
-  </div>
+    <h3>Place</h3>
+    <div class="row">
+      <label>Search</label>
+      <div class="search-wrap">
+        <input id="city" type="search" placeholder="city, country…" autocomplete="off" />
+        <div class="sugg" id="sugg" style="display:none"></div>
+      </div>
+    </div>
+    <div class="row">
+      <label>Lat</label>
+      <input id="lat" type="number" step="0.5" value="51.5" />
+      <label style="width:auto">Lon</label>
+      <input id="lon" type="number" step="0.5" value="-0.1" />
+    </div>
+    <div class="presets">
+      <span class="chip" data-lat="51.5" data-lon="-0.1">London</span>
+      <span class="chip" data-lat="41.9" data-lon="12.5">Rome</span>
+      <span class="chip" data-lat="35.7" data-lon="139.7">Tokyo</span>
+      <span class="chip" data-lat="-33.9" data-lon="151.2">Sydney</span>
+      <span class="chip" data-lat="64.1" data-lon="-21.9">Reykjavík</span>
+      <span class="chip" data-lat="0.3" data-lon="32.6">Kampala</span>
+    </div>
 
-  <h3>Bodies</h3>
-  <div class="row">
-    <label>Sun</label>
-    <input id="sunSize" type="range" min="0.003" max="0.08" step="0.001" value="0.012" />
-    <span class="val" id="sunSizeVal">1.0×</span>
-  </div>
+    <h3>Atmosphere</h3>
+    <div class="row">
+      <label>Cloud</label>
+      <input id="cloud" type="range" min="0" max="1" step="0.01" value="0.3" />
+      <span class="val" id="cloudVal">30%</span>
+    </div>
+    <div class="row">
+      <label>Type</label>
+      <select id="cloudType" style="width:110px">
+        <option value="0">cirrus</option>
+        <option value="1" selected>cumulus</option>
+        <option value="2">stratus</option>
+      </select>
+      <label style="width:auto">Wind</label>
+      <input id="wind" type="number" step="1" value="5" style="width:56px" />
+    </div>
+    <div class="row">
+      <label>Haze</label>
+      <input id="haze" type="range" min="0" max="1" step="0.01" value="0.2" />
+      <span class="val" id="hazeVal">20%</span>
+    </div>
+    <div class="row">
+      <label>Rays</label>
+      <input id="rays" type="range" min="0" max="1" step="0.01" value="0.4" />
+      <span class="val" id="raysVal">40%</span>
+    </div>
 
-  <h3>Horizon</h3>
-  <div class="row">
-    <label>Scene</label>
-    <select id="horizon" style="width:130px">
-      <option value="0" selected>none</option>
-      <option value="1">sea</option>
-      <option value="2">mountains</option>
-      <option value="3">city</option>
-    </select>
-  </div>
+    <h3>Bodies</h3>
+    <div class="row">
+      <label>Sun</label>
+      <input id="sunSize" type="range" min="0.003" max="0.08" step="0.001" value="0.012" />
+      <span class="val" id="sunSizeVal">1.0×</span>
+    </div>
 
-  <div class="toggle">
-    <label><input type="checkbox" id="shimmer" checked /> shimmer</label>
-    <label><input type="checkbox" id="belt" checked /> belt of venus</label>
-    <label><input type="checkbox" id="aurora" /> aurora</label>
-    <label><input type="checkbox" id="liveWx" /> live weather</label>
-    <label><input type="checkbox" id="play" /> animate</label>
-  </div>
+    <h3>Horizon</h3>
+    <div class="row">
+      <label>Scene</label>
+      <select id="horizon" style="width:130px">
+        <option value="0" selected>none</option>
+        <option value="1">sea</option>
+        <option value="2">mountains</option>
+        <option value="3">city</option>
+      </select>
+    </div>
 
-  <div class="actions">
-    <button class="btn" id="copyLink">Copy link</button>
-    <button class="btn" id="timelapse">Timelapse</button>
-    <button class="btn primary" id="savePng">Save PNG</button>
+    <div class="toggle">
+      <label><input type="checkbox" id="shimmer" checked /> shimmer</label>
+      <label><input type="checkbox" id="belt" checked /> belt of venus</label>
+      <label><input type="checkbox" id="aurora" /> aurora</label>
+      <label><input type="checkbox" id="liveWx" /> live weather</label>
+      <label><input type="checkbox" id="play" /> animate</label>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="copyLink">Copy link</button>
+      <button class="btn" id="timelapse">Timelapse</button>
+      <button class="btn primary" id="savePng">Save PNG</button>
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
 <script>
-// ---------- shader source (identical to sky.html) ----------
+// ---------- shader source ----------
 const vsrc = `#version 300 es
 in vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
 
@@ -713,8 +885,123 @@ function resize(){
   canvas.width = Math.floor(window.innerWidth*dpr);
   canvas.height = Math.floor(window.innerHeight*dpr);
   gl.viewport(0,0,canvas.width,canvas.height);
+  updateGlassSVGSize();
 }
-window.addEventListener('resize', resize); resize();
+window.addEventListener('resize', () => { resize(); });
+
+// ---------- Liquid glass: SVG feImage approach ----------
+// We maintain an offscreen canvas that captures the sky region behind the panel.
+// Each frame we encode it to a data URL and set it on the feImage element.
+// The SVG filter then processes it with displacement, specular, and chromatic aberration.
+
+const snapCanvas = document.createElement('canvas');
+const snapCtx = snapCanvas.getContext('2d');
+
+const feBackdrop = document.getElementById('feBackdrop');
+const feLensMask = document.getElementById('feLensMask');
+const glassRect  = document.getElementById('glassRect');
+const panelClipRect = document.getElementById('panelClipRect');
+const panelWrap  = document.getElementById('panelWrap');
+const glassRefractSVG = document.getElementById('glassRefract');
+
+// Pre-render the lens gradient mask to a small offscreen canvas
+const LENS_W = 128, LENS_H = 200;
+const lensCanvas = document.createElement('canvas');
+lensCanvas.width = LENS_W; lensCanvas.height = LENS_H;
+const lensCtx = lensCanvas.getContext('2d');
+const lensGrad = lensCtx.createRadialGradient(
+  LENS_W*0.5, LENS_H*0.38, 0,   // inner: top-centre (slightly above centre)
+  LENS_W*0.5, LENS_H*0.38, LENS_W*0.62  // outer
+);
+lensGrad.addColorStop(0.00, 'rgba(255,255,255,1.0)');
+lensGrad.addColorStop(0.50, 'rgba(255,255,255,0.78)');
+lensGrad.addColorStop(0.80, 'rgba(255,255,255,0.30)');
+lensGrad.addColorStop(1.00, 'rgba(255,255,255,0.00)');
+lensCtx.fillStyle = lensGrad;
+lensCtx.fillRect(0, 0, LENS_W, LENS_H);
+const lensMaskDataURL = lensCanvas.toDataURL('image/png');
+// The lens mask is static — set it once
+feLensMask.setAttribute('href', lensMaskDataURL);
+
+let panelW = 0, panelH = 0;
+
+function updateGlassSVGSize() {
+  const rect = panelWrap.getBoundingClientRect();
+  const w = Math.round(rect.width);
+  const h = Math.round(rect.height);
+  if (w === panelW && h === panelH) return;
+  panelW = w; panelH = h;
+
+  // Size the SVG rect and clip path to the panel
+  glassRect.setAttribute('width', w);
+  glassRect.setAttribute('height', h);
+  panelClipRect.setAttribute('width', w);
+  panelClipRect.setAttribute('height', h);
+
+  // Size the snap canvas
+  snapCanvas.width = w;
+  snapCanvas.height = h;
+
+  // Update feImage primitive dimensions so the filter knows the coordinate space
+  const filter = document.getElementById('liquidGlass');
+  filter.setAttribute('width', w);
+  filter.setAttribute('height', h);
+  feBackdrop.setAttribute('width', w);
+  feBackdrop.setAttribute('height', h);
+  feLensMask.setAttribute('width', w);
+  feLensMask.setAttribute('height', h);
+  // Also update feDisplacementMap spatial references
+  const feDisplace = document.getElementById('feDisplace');
+  // scale is proportional to panel height for consistency across sizes
+  feDisplace.setAttribute('scale', Math.round(h * 0.065));
+
+  // Update fePointLight position based on panel size
+  const feLight = document.getElementById('feLight');
+  feLight.setAttribute('x', Math.round(w * 0.28));
+  feLight.setAttribute('y', Math.round(-h * 0.22));
+  feLight.setAttribute('z', Math.round(h * 0.38));
+}
+
+let glassTick = 0;
+let lastDataURL = '';
+
+function updateGlassRefraction() {
+  if (panelW === 0 || panelH === 0) return;
+  try {
+    const rect = panelWrap.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    const sx = Math.round(rect.left);
+    const sy = Math.round(rect.top);
+    const sw = Math.round(rect.width);
+    const sh = Math.round(rect.height);
+
+    // Ensure snap canvas matches panel dimensions
+    if (snapCanvas.width !== sw || snapCanvas.height !== sh) {
+      snapCanvas.width = sw;
+      snapCanvas.height = sh;
+    }
+
+    // Copy from WebGL canvas: note WebGL Y is flipped (origin = bottom-left)
+    snapCtx.drawImage(
+      canvas,
+      sx * dpr,
+      (window.innerHeight - sy - sh) * dpr,
+      sw * dpr,
+      sh * dpr,
+      0, 0,
+      sw, sh
+    );
+
+    // Encode to data URL and update the feImage — triggers SVG filter re-run
+    const dataURL = snapCanvas.toDataURL('image/png');
+    if (dataURL !== lastDataURL) {
+      feBackdrop.setAttribute('href', dataURL);
+      lastDataURL = dataURL;
+    }
+  } catch(e) {
+    // Canvas taint or other error — silently skip
+  }
+}
 
 // ---------- DOM refs ----------
 const el = {
@@ -850,6 +1137,13 @@ function seasonLabel(date,lat){
 
 // ---------- Render loop ----------
 let t0=performance.now(), lastFrame=t0;
+// Throttle glass updates: every N frames. Higher = cheaper, less smooth.
+const GLASS_EVERY = 2;
+let glassFrameCount = 0;
+
+// Initial size
+resize();
+
 function frame(now){
   const dt=(now-lastFrame)/1000; lastFrame=now;
   if (el.play.checked){ let h=parseFloat(el.hour.value)+dt*0.5; if(h>=24)h-=24; el.hour.value=h.toFixed(2); }
@@ -873,6 +1167,12 @@ function frame(now){
   gl.uniform1f(U.horizon,parseFloat(el.horizon.value)); gl.uniform1f(U.aurora,el.aurora.checked?1:0);
   gl.uniform1f(U.lat,Math.abs(lat));
   gl.drawArrays(gl.TRIANGLES,0,3);
+
+  // Update glass refraction — throttled
+  if (++glassFrameCount % GLASS_EVERY === 0) {
+    updateGlassSVGSize();
+    updateGlassRefraction();
+  }
 
   samplePalette();
   el.readout.innerHTML=`<b>${fmtHour(h)}</b> · ${el.date.value} · <b>${seasonLabel(date,lat)}</b> · ${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
