@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sky — liquid glass</title>
+<style>
+  :root {
+    --fg: #f0f0f0;
+    --dim: rgba(255,255,255,0.45);
+    --line: rgba(255,255,255,0.14);
+    --line-bright: rgba(255,255,255,0.28);
+    --panel-bg: rgba(255,255,255,0.08);
+    --panel-bg-deep: rgba(255,255,255,0.05);
+    --highlight: rgba(255,255,255,0.18);
+    --shadow: rgba(0,0,0,0.35);
+    --red: #c8102e;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; background: #000; color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  canvas { display:block; width:100vw; height:100vh; position:fixed; inset:0; z-index:0; }
+
+  /* ── Liquid Glass Panel ── */
+  .panel {
+    position: fixed;
+    left: 16px; bottom: 16px;
+    z-index: 2;
+    width: min(360px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
+
+    /* glass stack */
+    background: var(--panel-bg);
+    backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
+    -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.05);
+
+    /* soft outer border */
+    border: 1px solid var(--line-bright);
+    border-radius: 20px;
+    padding: 18px 20px 20px;
+    font-size: 13px;
+
+    /* inner highlight + depth */
+    box-shadow:
+      inset 0 1px 0 var(--highlight),          /* top sheen */
+      inset 0 -1px 0 rgba(0,0,0,0.2),           /* bottom depth */
+      inset 1px 0 0 rgba(255,255,255,0.08),      /* left rim */
+      0 20px 60px rgba(0,0,0,0.55),              /* drop shadow */
+      0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  /* refraction distortion inner element */
+  .panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: linear-gradient(
+      160deg,
+      rgba(255,255,255,0.10) 0%,
+      rgba(255,255,255,0.02) 40%,
+      rgba(255,255,255,0.05) 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .panel > * { position: relative; z-index: 1; }
+
+  .panel h2 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 600;
+  }
+
+  .panel h3 {
+    margin: 14px 0 7px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    font-weight: 500;
+
+    /* glass divider */
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .readout {
+    font-size: 13px;
+    color: var(--dim);
+    margin-bottom: 14px;
+  }
+  .readout b { color: var(--fg); font-weight: 500; }
+
+  /* ── rows ── */
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+  }
+  .row label {
+    width: 52px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    flex-shrink: 0;
+  }
+
+  /* ── range slider — glass track ── */
+  .row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    outline: none;
+    cursor: pointer;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+  }
+  .row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.4),
+      0 2px 8px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .row input[type=range]::-webkit-slider-thumb:active {
+    transform: scale(1.15);
+  }
+  .row input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    cursor: pointer;
+  }
+
+  /* ── glass inputs ── */
+  .row input[type=number],
+  .row input[type=text],
+  .row input[type=search],
+  .row input[type=date],
+  .row select {
+    background: rgba(255,255,255,0.07);
+    color: var(--fg);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 8px;
+    padding: 5px 9px;
+    font-size: 12px;
+    width: 84px;
+    font-family: inherit;
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.06);
+    transition: border-color .15s, background .15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .row input[type=date] { width: 130px; }
+  .row input[type=number]:focus,
+  .row input[type=text]:focus,
+  .row input[type=search]:focus,
+  .row select:focus {
+    border-color: rgba(255,255,255,0.32);
+    background: rgba(255,255,255,0.11);
+  }
+
+  .row .val {
+    width: 48px;
+    text-align: right;
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+
+  /* ── presets / chips ── */
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
+  .chip {
+    font-size: 11px;
+    padding: 4px 11px;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px;
+    color: var(--dim);
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .chip:hover {
+    background: rgba(255,255,255,0.13);
+    border-color: rgba(255,255,255,0.35);
+    color: var(--fg);
+  }
+
+  /* ── toggles ── */
+  .toggle {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .toggle label {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--dim);
+  }
+  .toggle input { accent-color: var(--red); }
+
+  /* ── action buttons — glass ── */
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    flex: 1;
+    min-width: 72px;
+    font-size: 11px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background .15s, border-color .15s, transform .1s, box-shadow .15s;
+
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    color: var(--fg);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      0 2px 8px rgba(0,0,0,0.25);
+  }
+  .btn:hover {
+    background: rgba(255,255,255,0.14);
+    border-color: rgba(255,255,255,0.3);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      0 4px 12px rgba(0,0,0,0.35);
+    transform: translateY(-1px);
+  }
+  .btn:active { transform: translateY(0); }
+
+  .btn.primary {
+    background: rgba(200,16,46,0.75);
+    border-color: rgba(220,30,60,0.6);
+    box-shadow:
+      inset 0 1px 0 rgba(255,100,120,0.35),
+      0 4px 16px rgba(200,16,46,0.4);
+  }
+  .btn.primary:hover {
+    background: rgba(220,20,55,0.9);
+    box-shadow:
+      inset 0 1px 0 rgba(255,100,120,0.45),
+      0 6px 20px rgba(200,16,46,0.55);
+  }
+
+  .btn.recording {
+    background: rgba(224,21,56,0.85);
+    border-color: rgba(255,60,90,0.6);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.65; } }
+
+  /* ── city search suggestions ── */
+  .search-wrap { position: relative; flex: 1; }
+  .search-wrap input { width: 100% !important; }
+  .sugg {
+    position: absolute;
+    left: 0; right: 0; top: calc(100% + 5px);
+    background: rgba(20,22,28,0.88);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
+    overflow: hidden;
+    z-index: 10;
+    max-height: 180px;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  }
+  .sugg div {
+    padding: 7px 11px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--fg);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: background .12s;
+  }
+  .sugg div:last-child { border-bottom: none; }
+  .sugg div:hover { background: rgba(200,16,46,0.22); }
+
+  /* ── colour palette strip ── */
+  .palette {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    z-index: 2;
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.12),
+      0 8px 24px rgba(0,0,0,0.5);
+  }
+  .palette .sw {
+    width: 44px; height: 64px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 4px;
+    font-size: 8.5px;
+    font-family: ui-monospace, Menlo, monospace;
+    color: rgba(255,255,255,0.88);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+
+  /* ── top info pill ── */
+  .top-info {
+    position: fixed;
+    right: 16px; top: 16px;
+    z-index: 2;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(32px) saturate(160%);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 12px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      0 8px 24px rgba(0,0,0,0.4);
+  }
+  .top-info b { color: var(--fg); font-weight: 500; }
+
+  /* ── hide/embed ── */
+  body.hide-ui .panel, body.hide-ui .top-info, body.hide-ui .palette {
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  body.embed .panel, body.embed .top-info, body.embed .palette { display: none !important; }
+  body.embed { background: transparent; }
+
+  body.hint::after {
+    content: "H to hide UI · S to save PNG";
+    position: fixed;
+    top: 16px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px;
+    z-index: 3;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    animation: fadeout 5s forwards;
+  }
+  @keyframes fadeout { 0%,70%{opacity:1} 100%{opacity:0} }
+</style>
+</head>
+<body class="hint">
+<canvas id="c"></canvas>
+
+<div class="top-info" id="info">sun —° · moon —°</div>
+<div class="palette" id="palette"></div>
+
+<div class="panel">
+  <h2>Sky</h2>
+  <div class="readout" id="readout">—</div>
+
+  <div class="row">
+    <label>Hour</label>
+    <input id="hour" type="range" min="0" max="24" step="0.05" value="12" />
+    <span class="val" id="hourVal">12:00</span>
+  </div>
+  <div class="row">
+    <label>Date</label>
+    <input id="date" type="date" style="width:130px" />
+  </div>
+
+  <h3>Place</h3>
+  <div class="row">
+    <label>Search</label>
+    <div class="search-wrap">
+      <input id="city" type="search" placeholder="city, country…" autocomplete="off" />
+      <div class="sugg" id="sugg" style="display:none"></div>
+    </div>
+  </div>
+  <div class="row">
+    <label>Lat</label>
+    <input id="lat" type="number" step="0.5" value="51.5" />
+    <label style="width:auto">Lon</label>
+    <input id="lon" type="number" step="0.5" value="-0.1" />
+  </div>
+  <div class="presets">
+    <span class="chip" data-lat="51.5" data-lon="-0.1">London</span>
+    <span class="chip" data-lat="41.9" data-lon="12.5">Rome</span>
+    <span class="chip" data-lat="35.7" data-lon="139.7">Tokyo</span>
+    <span class="chip" data-lat="-33.9" data-lon="151.2">Sydney</span>
+    <span class="chip" data-lat="64.1" data-lon="-21.9">Reykjavík</span>
+    <span class="chip" data-lat="0.3" data-lon="32.6">Kampala</span>
+  </div>
+
+  <h3>Atmosphere</h3>
+  <div class="row">
+    <label>Cloud</label>
+    <input id="cloud" type="range" min="0" max="1" step="0.01" value="0.3" />
+    <span class="val" id="cloudVal">30%</span>
+  </div>
+  <div class="row">
+    <label>Type</label>
+    <select id="cloudType" style="width:110px">
+      <option value="0">cirrus</option>
+      <option value="1" selected>cumulus</option>
+      <option value="2">stratus</option>
+    </select>
+    <label style="width:auto">Wind</label>
+    <input id="wind" type="number" step="1" value="5" style="width:56px" />
+  </div>
+  <div class="row">
+    <label>Haze</label>
+    <input id="haze" type="range" min="0" max="1" step="0.01" value="0.2" />
+    <span class="val" id="hazeVal">20%</span>
+  </div>
+  <div class="row">
+    <label>Rays</label>
+    <input id="rays" type="range" min="0" max="1" step="0.01" value="0.4" />
+    <span class="val" id="raysVal">40%</span>
+  </div>
+
+  <h3>Bodies</h3>
+  <div class="row">
+    <label>Sun</label>
+    <input id="sunSize" type="range" min="0.003" max="0.08" step="0.001" value="0.012" />
+    <span class="val" id="sunSizeVal">1.0×</span>
+  </div>
+
+  <h3>Horizon</h3>
+  <div class="row">
+    <label>Scene</label>
+    <select id="horizon" style="width:130px">
+      <option value="0" selected>none</option>
+      <option value="1">sea</option>
+      <option value="2">mountains</option>
+      <option value="3">city</option>
+    </select>
+  </div>
+
+  <div class="toggle">
+    <label><input type="checkbox" id="shimmer" checked /> shimmer</label>
+    <label><input type="checkbox" id="belt" checked /> belt of venus</label>
+    <label><input type="checkbox" id="aurora" /> aurora</label>
+    <label><input type="checkbox" id="liveWx" /> live weather</label>
+    <label><input type="checkbox" id="play" /> animate</label>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="copyLink">Copy link</button>
+    <button class="btn" id="timelapse">Timelapse</button>
+    <button class="btn primary" id="savePng">Save PNG</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
+<script>
+// ---------- shader source (identical to sky.html) ----------
+const vsrc = `#version 300 es
+in vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
+
+const fsrc = `#version 300 es
+precision highp float;
+out vec4 outColor;
+
+uniform vec2  uRes;
+uniform float uTime;
+uniform float uSunAlt;
+uniform float uSunAz;
+uniform float uMoonAlt;
+uniform float uMoonAz;
+uniform float uMoonPhase;
+uniform float uMoonIllum;
+uniform float uShimmer;
+uniform float uBelt;
+uniform float uCloudCover;
+uniform float uCloudType;
+uniform float uWind;
+uniform float uHaze;
+uniform float uRays;
+uniform float uSunSize;
+uniform float uHorizon;
+uniform float uAurora;
+uniform float uLat;
+
+#define PI 3.14159265359
+
+float hash(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+float noise(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  float a = hash(i), b = hash(i+vec2(1,0)), c = hash(i+vec2(0,1)), d = hash(i+vec2(1,1));
+  vec2 u = f*f*(3.0-2.0*f);
+  return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v = 0.0, a = 0.5;
+  for (int i=0; i<5; i++){ v += a * noise(p); p *= 2.05; a *= 0.5; }
+  return v;
+}
+float angDist(float a1, float z1, float a2, float z2){
+  float c = sin(a1)*sin(a2) + cos(a1)*cos(a2)*cos(z1 - z2);
+  return acos(clamp(c, -1.0, 1.0));
+}
+float silhouette(float x, float scene){
+  if (scene < 0.5) return -1.0;
+  if (scene < 1.5) return 0.01 + sin(x*8.0)*0.003 + noise(vec2(x*20.0, 0.5))*0.004;
+  if (scene < 2.5) { float n1 = fbm(vec2(x*3.5, 1.7))*0.16; float n2 = fbm(vec2(x*8.0, 4.2))*0.06; return 0.02+n1+n2; }
+  float i = floor(x*22.0); float seed = hash(vec2(i,7.0)); float h = mix(0.03,0.11,seed);
+  if (hash(vec2(i,3.0))>0.88) h+=0.05; return 0.015+h;
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / uRes;
+  float viewAz = (uv.x - 0.5) * PI;
+  float viewAlt = uv.y * (PI * 0.5);
+
+  if (uShimmer > 0.5) {
+    float horizonMask = 1.0 - smoothstep(0.0, 0.12, viewAlt);
+    float n = noise(vec2(uv.x*60.0, uTime*0.6));
+    float warp = (n-0.5)*0.015*horizonMask;
+    viewAz += warp; viewAlt += warp*0.5;
+  }
+
+  float day      = smoothstep(-0.08, 0.18, uSunAlt);
+  float twilight = smoothstep(-0.35, 0.0, uSunAlt)*(1.0-smoothstep(0.0,0.25,uSunAlt));
+  float civilDusk= smoothstep(-0.25, 0.05, uSunAlt);
+  float h = clamp(viewAlt/(PI*0.5),0.0,1.0);
+
+  vec3 dayZenith=vec3(0.16,0.38,0.78), dayHorizon=vec3(0.75,0.88,1.00);
+  vec3 sunsetZenith=vec3(0.22,0.18,0.42), sunsetHorizon=vec3(1.00,0.52,0.22);
+  vec3 nightZenith=vec3(0.012,0.018,0.055), nightHorizon=vec3(0.04,0.06,0.13);
+
+  vec3 dayC    = mix(dayHorizon, dayZenith, pow(h,0.7));
+  vec3 sunsetC = mix(sunsetHorizon, sunsetZenith, pow(h,0.55));
+  vec3 nightC  = mix(nightHorizon, nightZenith, pow(h,0.5));
+
+  float azDelta = abs(viewAz-uSunAz); float sunsetLean = exp(-azDelta*1.4);
+  sunsetC = mix(sunsetC, sunsetC*vec3(1.1,0.95,0.85)+vec3(0.15,0.05,0.0)*sunsetLean, sunsetLean*0.7);
+
+  vec3 sky = mix(nightC, sunsetC, twilight); sky = mix(sky, dayC, day);
+
+  if (uBelt > 0.5) {
+    float daz = viewAz-uSunAz; daz = mod(daz+PI, 2.0*PI)-PI;
+    float anti = smoothstep(0.6,0.0,abs(abs(daz)-PI));
+    float beltTime = smoothstep(-0.12,-0.02,uSunAlt)*(1.0-smoothstep(0.02,0.09,uSunAlt));
+    float beltC = clamp(-uSunAlt+0.08,0.04,0.22);
+    float pink = exp(-pow((viewAlt-beltC)/0.055,2.0));
+    sky += vec3(1.0,0.62,0.68)*pink*anti*beltTime*0.35;
+    float shadowC = clamp(beltC-0.08,0.0,0.2);
+    float shadow = exp(-pow((viewAlt-shadowC)/0.045,2.0));
+    sky = mix(sky, vec3(0.07,0.1,0.22), shadow*anti*beltTime*0.45);
+  }
+  if (uHaze > 0.001) {
+    float horizonMask = 1.0-smoothstep(0.0,0.35,viewAlt);
+    vec3 hazeColor = mix(vec3(0.55,0.6,0.65),vec3(1.0,0.7,0.5),twilight);
+    sky = mix(sky, hazeColor, horizonMask*uHaze*0.45);
+  }
+  if (uAurora > 0.5) {
+    float latGate = smoothstep(45.0,60.0,uLat), nightGate = 1.0-civilDusk;
+    float strength = latGate*nightGate;
+    if (strength > 0.001) {
+      float band = fbm(vec2(viewAz*3.0+uTime*0.06, viewAlt*1.5+uTime*0.02));
+      float curtain = smoothstep(0.42,0.62,band);
+      float altEnv = smoothstep(0.15,0.45,viewAlt)*(1.0-smoothstep(0.75,1.1,viewAlt));
+      float striate = 0.5+0.5*sin(viewAz*80.0+fbm(vec2(viewAz*4.0,uTime*0.1))*8.0);
+      vec3 aurC = mix(vec3(0.15,1.0,0.45), vec3(0.9,0.35,0.8), smoothstep(0.3,0.7,viewAlt)*0.5);
+      sky += aurC*curtain*altEnv*striate*strength*0.55;
+    }
+  }
+  if (uCloudCover > 0.005 && viewAlt > 0.0) {
+    float tanAlt = max(tan(viewAlt),0.08);
+    vec2 cloudUV;
+    if (uCloudType < 0.5) cloudUV = vec2(viewAz*4.0+uTime*0.04*uWind, 1.0/tanAlt*0.2);
+    else if (uCloudType < 1.5) cloudUV = vec2(viewAz*2.5+uTime*0.03*uWind, 1.0/tanAlt*0.35);
+    else cloudUV = vec2(viewAz*1.4+uTime*0.02*uWind, 1.0/tanAlt*0.15);
+    float n = fbm(cloudUV); float threshold = mix(0.72,0.25,uCloudCover);
+    float density;
+    if (uCloudType<0.5) density=smoothstep(threshold,threshold+0.12,n)*0.5;
+    else if (uCloudType<1.5) density=smoothstep(threshold,threshold+0.18,n);
+    else density=smoothstep(threshold-0.05,threshold+0.25,n)*0.85;
+    density *= smoothstep(0.0,0.1,viewAlt)*(1.0-smoothstep(0.7,1.0,viewAlt)*0.3);
+    vec3 cloudDay=mix(vec3(0.35,0.38,0.45),vec3(1.0,0.98,0.95),0.7);
+    vec3 cloudSunset=mix(vec3(0.6,0.35,0.35),vec3(1.0,0.75,0.5),0.6);
+    vec3 cloudNight=vec3(0.08,0.1,0.15);
+    vec3 cloudC=mix(cloudNight,cloudSunset,twilight); cloudC=mix(cloudC,cloudDay,day);
+    cloudC += vec3(0.3,0.18,0.1)*exp(-abs(viewAz-uSunAz)*1.2)*(twilight+day*0.4);
+    sky = mix(sky, cloudC, density);
+  }
+  if (uRays > 0.001) {
+    float sunAD = angDist(viewAlt,viewAz,uSunAlt,uSunAz);
+    float rayFade = smoothstep(-0.05,0.2,uSunAlt)*(1.0-smoothstep(0.3,0.6,uSunAlt));
+    float radial = pow(max(0.0,1.0-sunAD/1.8),4.0);
+    float streak = fbm(vec2(viewAz*6.0,viewAlt*3.0+uTime*0.08));
+    streak = smoothstep(0.35,0.75,streak);
+    vec3 rayC = mix(vec3(1.0,0.7,0.4),vec3(1.0,0.95,0.85),day);
+    sky += rayC*radial*streak*uRays*rayFade*0.4;
+  }
+  float sunAngDist = angDist(viewAlt,viewAz,uSunAlt,uSunAz);
+  float sunDisk = smoothstep(uSunSize, uSunSize*0.75, sunAngDist);
+  float sunGlow = exp(-sunAngDist/max(uSunSize*8.0,0.08))*0.5 + exp(-sunAngDist/max(uSunSize*22.0,0.3))*0.25;
+  vec3 sunColor = mix(vec3(1.0,0.55,0.25),vec3(1.0,0.98,0.92),smoothstep(0.0,0.35,uSunAlt));
+  float sunVisible = smoothstep(-0.03,0.01,uSunAlt);
+  sky += (sunDisk*1.8+sunGlow*0.7)*sunColor*sunVisible;
+
+  float moonAngDist = angDist(viewAlt,viewAz,uMoonAlt,uMoonAz);
+  float moonR = 0.013; float moonDisk = smoothstep(moonR,moonR-0.003,moonAngDist);
+  float phase = uMoonPhase; float dir = (phase<0.5)?1.0:-1.0;
+  float shadowShift = (0.5-abs(phase-0.5))*2.0;
+  vec2 moonLocal = vec2(viewAz-uMoonAz, viewAlt-uMoonAlt);
+  float shadowDist = length(moonLocal+vec2(dir*shadowShift*moonR*0.95,0.0));
+  float moonLit = moonDisk*smoothstep(moonR-0.002,moonR+0.001,shadowDist);
+  float moonGlow = exp(-moonAngDist*50.0)*0.35*uMoonIllum*(1.0-day);
+  float moonVisible = smoothstep(-0.03,0.01,uMoonAlt);
+  sky += (moonLit*1.1+moonGlow)*vec3(0.96,0.96,0.92)*moonVisible;
+
+  if (uHorizon > 0.5) {
+    float sh = silhouette(uv.x, uHorizon);
+    if (uv.y < sh) {
+      vec3 ambient = mix(nightC, sunsetC*0.35, twilight); ambient = mix(ambient, dayC*0.12, day);
+      sky = ambient;
+      if (uHorizon>2.5 && (1.0-civilDusk)>0.3) {
+        float w = hash(floor(vec2(uv.x*120.0,uv.y*200.0)));
+        if (w>0.985) sky += vec3(1.0,0.8,0.4)*(w-0.985)/0.015*0.8;
+      }
+    }
+  }
+  sky += (hash(gl_FragCoord.xy+uTime)-0.5)*0.008;
+  outColor = vec4(sky, 1.0);
+}
+`;
+
+// ---------- WebGL setup ----------
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2', { antialias: true, preserveDrawingBuffer: true });
+if (!gl) { document.body.innerHTML = "WebGL2 not available."; throw new Error("no webgl2"); }
+
+function compile(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s)); throw new Error("shader compile");
+  }
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsrc));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsrc));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+
+const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,3,-1,-1,3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const U = {
+  res: gl.getUniformLocation(prog,'uRes'), time: gl.getUniformLocation(prog,'uTime'),
+  sunAlt: gl.getUniformLocation(prog,'uSunAlt'), sunAz: gl.getUniformLocation(prog,'uSunAz'),
+  moonAlt: gl.getUniformLocation(prog,'uMoonAlt'), moonAz: gl.getUniformLocation(prog,'uMoonAz'),
+  moonPhase: gl.getUniformLocation(prog,'uMoonPhase'), moonIllum: gl.getUniformLocation(prog,'uMoonIllum'),
+  shimmer: gl.getUniformLocation(prog,'uShimmer'), belt: gl.getUniformLocation(prog,'uBelt'),
+  cloudCover: gl.getUniformLocation(prog,'uCloudCover'), cloudType: gl.getUniformLocation(prog,'uCloudType'),
+  wind: gl.getUniformLocation(prog,'uWind'), haze: gl.getUniformLocation(prog,'uHaze'),
+  rays: gl.getUniformLocation(prog,'uRays'), sunSize: gl.getUniformLocation(prog,'uSunSize'),
+  horizon: gl.getUniformLocation(prog,'uHorizon'), aurora: gl.getUniformLocation(prog,'uAurora'),
+  lat: gl.getUniformLocation(prog,'uLat'),
+};
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  canvas.width = Math.floor(window.innerWidth*dpr);
+  canvas.height = Math.floor(window.innerHeight*dpr);
+  gl.viewport(0,0,canvas.width,canvas.height);
+}
+window.addEventListener('resize', resize); resize();
+
+// ---------- DOM refs ----------
+const el = {
+  hour: document.getElementById('hour'), hourVal: document.getElementById('hourVal'),
+  date: document.getElementById('date'), lat: document.getElementById('lat'),
+  lon: document.getElementById('lon'), city: document.getElementById('city'),
+  sugg: document.getElementById('sugg'), shimmer: document.getElementById('shimmer'),
+  belt: document.getElementById('belt'), aurora: document.getElementById('aurora'),
+  cloud: document.getElementById('cloud'), cloudVal: document.getElementById('cloudVal'),
+  cloudType: document.getElementById('cloudType'), wind: document.getElementById('wind'),
+  haze: document.getElementById('haze'), hazeVal: document.getElementById('hazeVal'),
+  rays: document.getElementById('rays'), raysVal: document.getElementById('raysVal'),
+  sunSize: document.getElementById('sunSize'), sunSizeVal: document.getElementById('sunSizeVal'),
+  horizon: document.getElementById('horizon'), liveWx: document.getElementById('liveWx'),
+  play: document.getElementById('play'), readout: document.getElementById('readout'),
+  info: document.getElementById('info'), palette: document.getElementById('palette'),
+  savePng: document.getElementById('savePng'), copyLink: document.getElementById('copyLink'),
+  timelapse: document.getElementById('timelapse'),
+};
+el.date.value = new Date().toISOString().slice(0,10);
+
+function updateSunSizeLabel(){ el.sunSizeVal.textContent = (parseFloat(el.sunSize.value)/0.012).toFixed(1)+'×'; }
+updateSunSizeLabel();
+
+// ---------- URL state ----------
+function loadFromURL(){
+  const p = new URLSearchParams(location.search);
+  if (p.get('h')!==null)  el.hour.value=p.get('h');
+  if (p.get('d'))         el.date.value=p.get('d');
+  if (p.get('lat')!==null) el.lat.value=p.get('lat');
+  if (p.get('lon')!==null) el.lon.value=p.get('lon');
+  if (p.get('s')!==null)  el.shimmer.checked=p.get('s')==='1';
+  if (p.get('b')!==null)  el.belt.checked=p.get('b')==='1';
+  if (p.get('a')!==null)  el.aurora.checked=p.get('a')==='1';
+  if (p.get('c')!==null)  { el.cloud.value=p.get('c'); el.cloudVal.textContent=Math.round(el.cloud.value*100)+'%'; }
+  if (p.get('ct')!==null) el.cloudType.value=p.get('ct');
+  if (p.get('w')!==null)  el.wind.value=p.get('w');
+  if (p.get('hz')!==null) { el.haze.value=p.get('hz'); el.hazeVal.textContent=Math.round(el.haze.value*100)+'%'; }
+  if (p.get('r')!==null)  { el.rays.value=p.get('r'); el.raysVal.textContent=Math.round(el.rays.value*100)+'%'; }
+  if (p.get('ss')!==null) { el.sunSize.value=p.get('ss'); updateSunSizeLabel(); }
+  if (p.get('hz2')!==null) el.horizon.value=p.get('hz2');
+  if (p.get('embed')==='1'||p.get('ui')==='0') document.body.classList.add('hide-ui','embed');
+}
+function updateURL(){
+  const p = new URLSearchParams({
+    h: parseFloat(el.hour.value).toFixed(2), d: el.date.value,
+    lat: el.lat.value, lon: el.lon.value,
+    s: el.shimmer.checked?1:0, b: el.belt.checked?1:0, a: el.aurora.checked?1:0,
+    c: parseFloat(el.cloud.value).toFixed(2), ct: el.cloudType.value,
+    w: el.wind.value, hz: parseFloat(el.haze.value).toFixed(2),
+    r: parseFloat(el.rays.value).toFixed(2), ss: parseFloat(el.sunSize.value).toFixed(3),
+    hz2: el.horizon.value,
+  });
+  history.replaceState(null,'','?'+p.toString());
+}
+loadFromURL();
+['hour','date','lat','lon','shimmer','belt','aurora','cloud','cloudType','wind','haze','rays','sunSize','horizon']
+  .forEach(k => el[k].addEventListener('change', updateURL));
+el.hour.addEventListener('input', updateURL);
+el.cloud.addEventListener('input', () => { el.cloudVal.textContent=Math.round(el.cloud.value*100)+'%'; });
+el.haze.addEventListener('input', () => { el.hazeVal.textContent=Math.round(el.haze.value*100)+'%'; });
+el.rays.addEventListener('input', () => { el.raysVal.textContent=Math.round(el.rays.value*100)+'%'; });
+el.sunSize.addEventListener('input', updateSunSizeLabel);
+
+// ---------- Live weather ----------
+let lastWx = null;
+async function fetchWeather(){
+  const lat=parseFloat(el.lat.value), lon=parseFloat(el.lon.value);
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=cloud_cover,wind_speed_10m,relative_humidity_2m&timezone=auto`);
+    const j = await r.json(); const c = j.current;
+    lastWx = { cloud:(c.cloud_cover||0)/100, wind:c.wind_speed_10m||0, humidity:(c.relative_humidity_2m||0)/100 };
+    if (el.liveWx.checked) applyWeather();
+  } catch(e){ console.warn('weather fetch failed',e); }
+}
+function applyWeather(){
+  if (!lastWx) return;
+  el.cloud.value=lastWx.cloud; el.cloudVal.textContent=Math.round(lastWx.cloud*100)+'%';
+  el.wind.value=Math.round(lastWx.wind);
+  el.haze.value=Math.min(1,lastWx.humidity*0.8); el.hazeVal.textContent=Math.round(el.haze.value*100)+'%';
+}
+el.liveWx.addEventListener('change', () => { if (el.liveWx.checked) fetchWeather(); });
+['lat','lon'].forEach(k => el[k].addEventListener('change', () => { if (el.liveWx.checked) fetchWeather(); }));
+
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    el.lat.value=c.dataset.lat; el.lon.value=c.dataset.lon; updateURL();
+    if (el.liveWx.checked) fetchWeather();
+  });
+});
+
+// ---------- City search ----------
+let suggTimer=null;
+el.city.addEventListener('input', () => {
+  clearTimeout(suggTimer);
+  const q = el.city.value.trim();
+  if (q.length<2){ el.sugg.style.display='none'; return; }
+  suggTimer = setTimeout(async()=>{
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}`,
+        {headers:{'Accept-Language':'en'}});
+      const j = await r.json();
+      if (!Array.isArray(j)||j.length===0){ el.sugg.style.display='none'; return; }
+      el.sugg.innerHTML='';
+      j.forEach(row=>{
+        const d=document.createElement('div'); d.textContent=row.display_name;
+        d.addEventListener('click',()=>{
+          el.lat.value=parseFloat(row.lat).toFixed(2); el.lon.value=parseFloat(row.lon).toFixed(2);
+          el.city.value=row.display_name.split(',')[0]; el.sugg.style.display='none';
+          updateURL(); if (el.liveWx.checked) fetchWeather();
+        });
+        el.sugg.appendChild(d);
+      });
+      el.sugg.style.display='block';
+    } catch(e){ console.warn('geocode failed',e); }
+  },300);
+});
+document.addEventListener('click',e=>{ if (!el.city.contains(e.target)&&!el.sugg.contains(e.target)) el.sugg.style.display='none'; });
+
+function tzOffsetHours(){ return Math.round(parseFloat(el.lon.value)/15); }
+function currentDate(){
+  const [y,m,d]=el.date.value.split('-').map(Number);
+  const h=parseFloat(el.hour.value), hh=Math.floor(h), mm=Math.round((h-hh)*60);
+  return new Date(Date.UTC(y,m-1,d,hh-tzOffsetHours(),mm));
+}
+function fmtHour(h){ const hh=Math.floor(h),mm=Math.round((h-hh)*60); return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; }
+function deg(rad){ return rad*180/Math.PI; }
+function seasonLabel(date,lat){
+  const m=date.getUTCMonth()+1;
+  const north=(m>=3&&m<=5)?'spring':(m>=6&&m<=8)?'summer':(m>=9&&m<=11)?'autumn':'winter';
+  return lat>=0?north:{spring:'autumn',summer:'winter',autumn:'spring',winter:'summer'}[north];
+}
+
+// ---------- Render loop ----------
+let t0=performance.now(), lastFrame=t0;
+function frame(now){
+  const dt=(now-lastFrame)/1000; lastFrame=now;
+  if (el.play.checked){ let h=parseFloat(el.hour.value)+dt*0.5; if(h>=24)h-=24; el.hour.value=h.toFixed(2); }
+
+  const h=parseFloat(el.hour.value); el.hourVal.textContent=fmtHour(h);
+  const lat=parseFloat(el.lat.value), lon=parseFloat(el.lon.value);
+  const date=currentDate();
+  const sun=SunCalc.getPosition(date,lat,lon);
+  const moon=SunCalc.getMoonPosition(date,lat,lon);
+  const moonI=SunCalc.getMoonIllumination(date);
+
+  gl.uniform2f(U.res,canvas.width,canvas.height);
+  gl.uniform1f(U.time,(now-t0)/1000);
+  gl.uniform1f(U.sunAlt,sun.altitude); gl.uniform1f(U.sunAz,sun.azimuth);
+  gl.uniform1f(U.moonAlt,moon.altitude); gl.uniform1f(U.moonAz,moon.azimuth);
+  gl.uniform1f(U.moonPhase,moonI.phase); gl.uniform1f(U.moonIllum,moonI.fraction);
+  gl.uniform1f(U.shimmer,el.shimmer.checked?1:0); gl.uniform1f(U.belt,el.belt.checked?1:0);
+  gl.uniform1f(U.cloudCover,parseFloat(el.cloud.value)); gl.uniform1f(U.cloudType,parseFloat(el.cloudType.value));
+  gl.uniform1f(U.wind,parseFloat(el.wind.value)||0); gl.uniform1f(U.haze,parseFloat(el.haze.value));
+  gl.uniform1f(U.rays,parseFloat(el.rays.value)); gl.uniform1f(U.sunSize,parseFloat(el.sunSize.value));
+  gl.uniform1f(U.horizon,parseFloat(el.horizon.value)); gl.uniform1f(U.aurora,el.aurora.checked?1:0);
+  gl.uniform1f(U.lat,Math.abs(lat));
+  gl.drawArrays(gl.TRIANGLES,0,3);
+
+  samplePalette();
+  el.readout.innerHTML=`<b>${fmtHour(h)}</b> · ${el.date.value} · <b>${seasonLabel(date,lat)}</b> · ${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
+  el.info.innerHTML=`sun <b>${deg(sun.altitude).toFixed(1)}°</b> alt · moon <b>${deg(moon.altitude).toFixed(1)}°</b> alt · illum <b>${Math.round(moonI.fraction*100)}%</b>`;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---------- Palette ----------
+let paletteTick=0;
+const swEls=[];
+for(let i=0;i<5;i++){ const s=document.createElement('div'); s.className='sw'; el.palette.appendChild(s); swEls.push(s); }
+function toHex(r,g,b){ const h=n=>n.toString(16).padStart(2,'0'); return '#'+h(r)+h(g)+h(b); }
+function samplePalette(){
+  if (++paletteTick%6!==0) return;
+  const w=canvas.width, hh=canvas.height, x=Math.floor(w/2), pixel=new Uint8Array(4);
+  [0.95,0.72,0.5,0.25,0.05].forEach((ry,i)=>{
+    gl.readPixels(x,Math.floor(hh*ry),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
+    const hex=toHex(pixel[0],pixel[1],pixel[2]);
+    swEls[i].style.background=hex; swEls[i].textContent=hex.toUpperCase();
+  });
+}
+
+// ---------- Save PNG ----------
+el.savePng.addEventListener('click',()=>{
+  document.body.classList.add('hide-ui');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    canvas.toBlob(b=>{
+      const a=document.createElement('a');
+      const h=parseFloat(el.hour.value), hh=String(Math.floor(h)).padStart(2,'0'), mm=String(Math.round((h-Math.floor(h))*60)).padStart(2,'0');
+      a.download=`sky-${el.date.value}-${hh}${mm}-${el.lat.value}_${el.lon.value}.png`;
+      a.href=URL.createObjectURL(b); a.click(); URL.revokeObjectURL(a.href);
+      setTimeout(()=>document.body.classList.remove('hide-ui'),200);
+    },'image/png');
+  }));
+});
+
+// ---------- Timelapse ----------
+let recorder=null,recChunks=[],tlAnimRaf=null;
+el.timelapse.addEventListener('click',()=>{
+  if (recorder&&recorder.state==='recording'){ recorder.stop(); return; }
+  if (!canvas.captureStream||!window.MediaRecorder){ alert('MediaRecorder not supported'); return; }
+  const stream=canvas.captureStream(60);
+  let mime='video/webm;codecs=vp9'; if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
+  recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:12_000_000});
+  recChunks=[];
+  recorder.ondataavailable=e=>{ if(e.data.size) recChunks.push(e.data); };
+  recorder.onstop=()=>{
+    const blob=new Blob(recChunks,{type:'video/webm'}), a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=`sky-timelapse-${el.date.value}-${el.lat.value}_${el.lon.value}.webm`;
+    a.click(); URL.revokeObjectURL(a.href);
+    el.timelapse.textContent='Timelapse'; el.timelapse.classList.remove('recording');
+    cancelAnimationFrame(tlAnimRaf); el.play.checked=false;
+  };
+  el.hour.value=0; el.play.checked=false;
+  const tlStartTime=performance.now(), DURATION=12000;
+  function step(now){
+    const t=(now-tlStartTime)/DURATION;
+    if(t>=1){ el.hour.value=24; recorder.stop(); return; }
+    el.hour.value=(t*24).toFixed(2); tlAnimRaf=requestAnimationFrame(step);
+  }
+  recorder.start(); el.timelapse.textContent='Stop'; el.timelapse.classList.add('recording');
+  tlAnimRaf=requestAnimationFrame(step);
+});
+
+// ---------- Copy link ----------
+el.copyLink.addEventListener('click',async()=>{
+  updateURL();
+  try { await navigator.clipboard.writeText(location.href); el.copyLink.textContent='Copied'; setTimeout(()=>el.copyLink.textContent='Copy link',1200); }
+  catch(e){ el.copyLink.textContent='Select URL'; }
+});
+
+// ---------- Keyboard ----------
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='h'||e.key==='H') document.body.classList.toggle('hide-ui');
+  if(e.key==='s'||e.key==='S') el.savePng.click();
+});
+</script>
+</body>
+</html>
