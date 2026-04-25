@@ -22,7 +22,43 @@
   }
   canvas#c { display:block; width:100vw; height:100vh; position:fixed; inset:0; z-index:0; }
 
-  /* ── Panel wrapper ── */
+  /* ─────────────────────────────────────────────────────────────
+     NIKDELVIN LIQUID GLASS TECHNIQUE (ported from github.com/nikdelvin/liquid-glass)
+
+     Core: backdrop-filter: url(#glass-filter) on Chromium.
+     The SVG filter operates at the browser compositor level on the
+     ACTUAL rendered pixels behind the element — true optical
+     refraction, not an approximation.
+
+     Our displacement map is LENS-SHAPED (not raw feTurbulence):
+     - Generated as a 512×512 canvas
+     - R channel = outward horizontal vector (0.5 neutral at centre)
+     - G channel = outward vertical vector (0.5 neutral at centre)
+     - Quintic falloff: neutral centre, max warp near the glass rim
+     - This produces the CONVEX LENS effect: calm interior, strong
+       bending at the boundary where real glass refracts most
+
+     Full pipeline:
+     1. feImage (lens map) → interior feDisplacementMap scale=20
+     2. feMorphology erode → feComposite out = edge ring
+     3. Edge feDisplacementMap scale=70 (strong boundary refraction)
+     4. Merge interior + edge passes
+     5. feSpecularLighting + feDistantLight → Apple-style rim band
+     6. Chromatic aberration: R/B channel offset ±1.8px
+     7. Cool glass density tint
+     8. Specular blend (screen) over final
+
+     Fallback (Safari/Firefox): blur(28px) saturate(180%)
+  ───────────────────────────────────────────────────────────── */
+
+  #glass-svg {
+    position: absolute;
+    width: 0; height: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #dispCanvas { display: none; }
+
   .panel-wrap {
     position: fixed;
     left: 16px; bottom: 16px;
@@ -31,65 +67,61 @@
     max-height: calc(100vh - 32px);
   }
 
-  /* ── The real liquid glass: offscreen canvas + SVG filter ── */
-  #glassRefract {
-    position: absolute;
-    inset: 0;
-    border-radius: 22px;
-    pointer-events: none;
-    z-index: 0;
-    /* SVG filter applied via JS after we know size */
-  }
-
-  /* ── Panel — sits above the refraction layer ── */
   .panel {
     position: relative;
-    z-index: 1;
     width: 100%;
     max-height: calc(100vh - 32px);
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.15) transparent;
-
-    /* Very thin base tint — the SVG handles the heavy lifting */
-    background: rgba(255,255,255,0.055);
-    /* No backdrop-filter — we use the SVG approach instead */
-
-    border: 1px solid rgba(255,255,255,0.20);
-    border-top-color: rgba(255,255,255,0.38);
-    border-left-color: rgba(255,255,255,0.26);
     border-radius: 22px;
     padding: 18px 20px 20px;
     font-size: 13px;
 
+    /* NIKDELVIN: SVG filter as backdrop-filter */
+    -webkit-backdrop-filter: url(#glass-filter) saturate(1.35) brightness(1.04);
+    backdrop-filter: url(#glass-filter) saturate(1.35) brightness(1.04);
+
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-top-color: rgba(255,255,255,0.42);
+    border-left-color: rgba(255,255,255,0.22);
+
     box-shadow:
-      inset 0 1.5px 0 rgba(255,255,255,0.32),   /* top sheen */
-      inset 0 -1px 0 rgba(0,0,0,0.18),
-      inset 1px 0 0 rgba(255,255,255,0.10),
-      inset -1px 0 0 rgba(255,255,255,0.06),
+      inset 0 1.5px 0 rgba(255,255,255,0.35),
+      inset 0 -1px 0 rgba(0,0,0,0.12),
+      inset 1px 0 0 rgba(255,255,255,0.08),
+      inset -1px 0 0 rgba(255,255,255,0.04),
       0 32px 80px rgba(0,0,0,0.65),
       0 6px 20px rgba(0,0,0,0.35);
   }
 
-  /* Upper-left angular specular highlight — the lens flare rim */
+  @supports not (backdrop-filter: url(#x)) {
+    .panel {
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      backdrop-filter: blur(28px) saturate(180%);
+      background: rgba(255,255,255,0.09);
+    }
+  }
+
+  /* Directional sheen — complements SVG specular */
   .panel::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 22px;
     background: linear-gradient(
-      128deg,
+      132deg,
       rgba(255,255,255,0.22) 0%,
-      rgba(255,255,255,0.07) 22%,
-      rgba(255,255,255,0.00) 45%,
-      rgba(255,255,255,0.00) 75%,
-      rgba(255,255,255,0.04) 100%
+      rgba(255,255,255,0.07) 18%,
+      rgba(255,255,255,0.00) 40%,
+      rgba(255,255,255,0.00) 80%,
+      rgba(255,255,255,0.02) 100%
     );
     pointer-events: none;
-    z-index: 0;
   }
 
-  /* Chromatic edge ring — subtle R/B fringe at the border */
+  /* Chromatic fringe ring */
   .panel::after {
     content: '';
     position: absolute;
@@ -97,14 +129,13 @@
     border-radius: 23px;
     background: transparent;
     box-shadow:
-      inset 0 0 0 1.5px rgba(255,255,255,0.10),
-      inset 0 0 18px rgba(180,210,255,0.07),
-      inset 0 0 3px rgba(255,160,160,0.09);
+      inset 0 0 0 1.5px rgba(255,255,255,0.07),
+      inset 0 0 18px rgba(140,190,255,0.07),
+      inset 0 0 6px rgba(255,120,120,0.07);
     pointer-events: none;
-    z-index: 0;
   }
 
-  .panel > * { position: relative; z-index: 1; }
+  .panel > * { position: relative; }
 
   .panel h2 {
     margin: 0 0 4px;
@@ -126,19 +157,10 @@
     border-top: 1px solid rgba(255,255,255,0.08);
   }
 
-  .readout {
-    font-size: 13px;
-    color: var(--dim);
-    margin-bottom: 14px;
-  }
+  .readout { font-size: 13px; color: var(--dim); margin-bottom: 14px; }
   .readout b { color: var(--fg); font-weight: 500; }
 
-  .row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 9px;
-  }
+  .row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
   .row label {
     width: 52px;
     font-size: 11px;
@@ -148,7 +170,6 @@
     flex-shrink: 0;
   }
 
-  /* ── range slider ── */
   .row input[type=range] {
     flex: 1;
     -webkit-appearance: none;
@@ -182,7 +203,6 @@
     cursor: pointer;
   }
 
-  /* ── glass inputs ── */
   .row input[type=number],
   .row input[type=text],
   .row input[type=search],
@@ -219,7 +239,6 @@
     font-size: 12px;
   }
 
-  /* ── presets / chips ── */
   .presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
   .chip {
     font-size: 11px;
@@ -245,7 +264,6 @@
       0 2px 8px rgba(0,0,0,0.3);
   }
 
-  /* ── toggles ── */
   .toggle {
     display: flex;
     gap: 10px;
@@ -263,7 +281,6 @@
   }
   .toggle input { accent-color: var(--red); }
 
-  /* ── action buttons ── */
   .actions {
     display: flex;
     gap: 8px;
@@ -322,7 +339,6 @@
   }
   @keyframes pulse { 50% { opacity: 0.65; } }
 
-  /* ── city search suggestions ── */
   .search-wrap { position: relative; flex: 1; }
   .search-wrap input { width: 100% !important; }
   .sugg {
@@ -351,7 +367,6 @@
   .sugg div:last-child { border-bottom: none; }
   .sugg div:hover { background: rgba(200,16,46,0.22); }
 
-  /* ── colour palette strip ── */
   .palette {
     position: fixed;
     bottom: 16px; right: 16px;
@@ -376,7 +391,6 @@
     text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   }
 
-  /* ── top info pill ── */
   .top-info {
     position: fixed;
     right: 16px; top: 16px;
@@ -397,7 +411,6 @@
   }
   .top-info b { color: var(--fg); font-weight: 500; }
 
-  /* ── hide/embed ── */
   body.hide-ui .panel-wrap, body.hide-ui .top-info, body.hide-ui .palette {
     opacity: 0; pointer-events: none; transition: opacity .25s;
   }
@@ -428,116 +441,133 @@
 <body class="hint">
 <canvas id="c"></canvas>
 
+<!-- Hidden lens-map canvas — fed into feImage as dataURL -->
+<canvas id="dispCanvas"></canvas>
+
 <!--
-  SVG filter bank — the real liquid glass engine.
-  Strategy:
-    1. We snapshot the sky WebGL canvas into an offscreen <canvas> (#glassSnap)
-       for the exact panel region, every frame.
-    2. We draw that snapshot into an <feImage> source.
-    3. feDisplacementMap + feTurbulence warps it like real glass refraction.
-    4. feSpecularLighting adds the edge specular rim highlight.
-    5. feColorMatrix applies subtle chromatic aberration (R shifts right, B shifts left).
-    6. A radial gradient feImage gives the lens a curved shape so displacement is
-       stronger at the centre and fades at the edges — mimicking a convex lens.
+  NIKDELVIN SVG FILTER PIPELINE
+  ==============================
+  The lens-shaped displacement map is a JS-generated 512×512 canvas.
+  R channel encodes outward horizontal direction per pixel.
+  G channel encodes outward vertical direction per pixel.
+  Both are 0.5 (128) at the centre (neutral — no warp).
+  Both ramp toward 0/255 at the edges (maximum outward warp).
+  Quintic falloff gives a convex lens shape: calm inside, strong rim.
 
-  Because feImage can't directly reference a live canvas, we encode the snapshot
-  as a data URL each frame and update the xlink:href on the feImage element.
-  This is the correct technique used in production liquid-glass implementations.
+  Step 1: feImage loads the lens map.
+  Step 2: Interior feDisplacementMap (scale 20) — subtle global warp.
+  Step 3: feMorphology erode + feComposite out = edge ring only.
+  Step 4: feGaussianBlur smooths edge ring for soft falloff.
+  Step 5: Edge feDisplacementMap (scale 70) — strong rim refraction.
+  Step 6: feComposite in clips edge warp to edge ring.
+  Step 7: feComposite over merges interior + edge passes.
+  Step 8: feSpecularLighting + feDistantLight (azimuth 225, elev 55)
+          — long top-edge highlight band, like Apple glass.
+          specularExponent=90 → tight, glossy.
+  Step 9: feColorMatrix R/B channel offset → chromatic aberration.
+  Step 10: Cool glass density tint (slight blue shift).
+  Step 11: feBlend screen — specular rim over final glass.
 -->
-<svg id="glassSVG" xmlns="http://www.w3.org/2000/svg"
-  style="position:absolute;width:0;height:0;overflow:hidden">
+<svg id="glass-svg" xmlns="http://www.w3.org/2000/svg"
+     style="position:absolute;width:0;height:0;pointer-events:none;overflow:hidden">
   <defs>
-    <!-- Animated radial gradient for the lens shape mask -->
-    <radialGradient id="lensGrad" cx="50%" cy="38%" r="58%" fx="48%" fy="32%">
-      <stop offset="0%"   stop-color="white" stop-opacity="1.0"/>
-      <stop offset="55%"  stop-color="white" stop-opacity="0.72"/>
-      <stop offset="85%"  stop-color="white" stop-opacity="0.28"/>
-      <stop offset="100%" stop-color="white" stop-opacity="0.0"/>
-    </radialGradient>
+    <filter id="glass-filter"
+            x="-35%" y="-35%" width="170%" height="170%"
+            color-interpolation-filters="sRGB"
+            filterUnits="objectBoundingBox">
 
-    <filter id="liquidGlass" x="0%" y="0%" width="100%" height="100%"
-            color-interpolation-filters="sRGB" primitiveUnits="userSpaceOnUse">
+      <!-- 1. Load lens-shaped displacement map -->
+      <feImage id="feLensMap" result="lensMap"
+               x="0%" y="0%" width="100%" height="100%"
+               preserveAspectRatio="none"
+               href="" />
 
-      <!-- Source: the sky backdrop snapshot (updated per frame via JS) -->
-      <feImage id="feBackdrop" result="backdrop" preserveAspectRatio="none"/>
+      <!-- 2. Interior warp — gentle, uniform -->
+      <feDisplacementMap
+        in="SourceGraphic" in2="lensMap"
+        scale="20"
+        xChannelSelector="R" yChannelSelector="G"
+        result="interiorWarp" />
 
-      <!-- Lens-shape mask: radial gradient so displacement is curved, not flat -->
-      <feImage id="feLensMask" result="lensMask" preserveAspectRatio="none"/>
+      <!-- 3. Edge ring: erode shape inward, subtract → ring only -->
+      <feMorphology in="SourceGraphic" operator="erode" radius="12" result="eroded" />
+      <feComposite in="SourceGraphic" in2="eroded" operator="out" result="edgeRing" />
 
-      <!-- Organic turbulence for surface micro-texture -->
-      <feTurbulence id="feTurb"
-        type="fractalNoise"
-        baseFrequency="0.008 0.006"
-        numOctaves="4"
-        seed="17"
-        result="rawTurb"/>
+      <!-- 4. Smooth edge ring for soft falloff on the displacement -->
+      <feGaussianBlur in="edgeRing" stdDeviation="5" result="softEdge" />
 
-      <!-- Multiply turbulence by the lens mask → displacement is lens-shaped -->
-      <feComposite in="rawTurb" in2="lensMask" operator="arithmetic"
-        k1="1" k2="0" k3="0" k4="0" result="maskedTurb"/>
+      <!-- 5. Strong edge warp — glass bends most at the boundary -->
+      <feDisplacementMap
+        in="interiorWarp" in2="lensMap"
+        scale="70"
+        xChannelSelector="R" yChannelSelector="G"
+        result="edgeWarp" />
 
-      <!-- Core refraction: displacement map bends the backdrop like glass -->
-      <feDisplacementMap id="feDisplace"
-        in="backdrop"
-        in2="maskedTurb"
-        scale="38"
-        xChannelSelector="R"
-        yChannelSelector="G"
-        result="refracted"/>
+      <!-- 6. Clip edge warp to edge ring only -->
+      <feComposite in="edgeWarp" in2="softEdge" operator="in" result="maskedEdge" />
 
-      <!-- Specular lighting: point light above-left creates the rim shine -->
-      <feSpecularLighting in="maskedTurb"
-        surfaceScale="5"
-        specularConstant="0.85"
-        specularExponent="32"
-        lighting-color="rgba(255,255,255,0.92)"
+      <!-- 7. Merge: interior base + edge-amplified refraction -->
+      <feComposite in="interiorWarp" in2="maskedEdge" operator="over" result="warped" />
+
+      <!--
+        8. Specular rim — feDistantLight not fePointLight.
+           Distant light gives the long band highlight across the top
+           of the glass, like Apple's design language.
+           azimuth=225 → upper-left source.
+           elevation=55 → above horizon, realistic.
+           specularExponent=90 → very tight, glossy.
+           surfaceScale=4 → moderate relief depth.
+      -->
+      <feSpecularLighting
+        in="softEdge"
+        surfaceScale="4"
+        specularConstant="1.1"
+        specularExponent="90"
+        lighting-color="white"
         result="specular">
-        <!-- Point light at top-left, elevated — simulates directional overhead light -->
-        <fePointLight id="feLight" x="30%" y="-25%" z="180"/>
+        <feDistantLight azimuth="225" elevation="55" />
       </feSpecularLighting>
 
-      <!-- Clip specular to the source alpha so it only appears inside the panel -->
-      <feComposite in="specular" in2="backdrop" operator="in" result="clippedSpecular"/>
+      <!-- Clip specular to element boundary -->
+      <feComposite in="specular" in2="SourceGraphic" operator="in" result="clippedSpecular" />
 
-      <!-- Blend specular (screen) over the refracted image -->
-      <feBlend in="refracted" in2="clippedSpecular" mode="screen" result="withSpecular"/>
+      <!--
+        9. Chromatic aberration — isolate R and B, offset in opposite
+           horizontal directions, screen back together.
+           G channel unchanged (green is most luminance, least noticeable).
+      -->
+      <feColorMatrix in="warped" type="matrix"
+        values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+        result="chanR" />
+      <feColorMatrix in="warped" type="matrix"
+        values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+        result="chanG" />
+      <feColorMatrix in="warped" type="matrix"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+        result="chanB" />
 
-      <!-- Tint overlay: slight warm glass tint + glass darkness at base -->
-      <feColorMatrix in="withSpecular" type="matrix"
-        values="1.00  0.00  0.00  0    0.01
-                0.00  1.00  0.00  0    0.01
-                0.00  0.00  1.02  0   -0.01
+      <feOffset in="chanR" dx="1.8" dy="0.3" result="rShift" />
+      <feOffset in="chanB" dx="-1.8" dy="-0.3" result="bShift" />
+
+      <feBlend in="rShift" in2="chanG" mode="screen" result="rgBlend" />
+      <feBlend in="rgBlend" in2="bShift" mode="screen" result="chromatic" />
+
+      <!--
+        10. Glass density tint — subtle cool shift for thick-glass feel.
+            Damp red slightly, nudge blue up.
+      -->
+      <feColorMatrix in="chromatic" type="matrix"
+        values="0.95  0     0     0    0.005
+                0     0.97  0     0    0.006
+                0     0     1.04  0   -0.008
                 0     0     0     1    0"
-        result="tinted"/>
+        result="tinted" />
 
-      <!-- Chromatic aberration:
-           Red channel shifts slightly right (+x), Blue slightly left (-x).
-           Implemented by compositing R offset + G base + B offset.
-           We use feOffset on individual channel extractions. -->
-      <!-- Extract R channel -->
-      <feColorMatrix in="tinted" type="matrix"
-        values="1 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 1 0"
-        result="chanR"/>
-      <!-- Extract G channel -->
-      <feColorMatrix in="tinted" type="matrix"
-        values="0 0 0 0 0   0 1 0 0 0   0 0 0 0 0   0 0 0 1 0"
-        result="chanG"/>
-      <!-- Extract B channel -->
-      <feColorMatrix in="tinted" type="matrix"
-        values="0 0 0 0 0   0 0 0 0 0   0 0 1 0 0   0 0 0 1 0"
-        result="chanB"/>
-      <!-- Offset R right, B left by a fraction of a pixel -->
-      <feOffset in="chanR" dx="1.2" dy="0" result="rShifted"/>
-      <feOffset in="chanB" dx="-1.2" dy="0" result="bShifted"/>
-      <!-- Re-combine: R shifted + G base + B shifted -->
-      <feBlend in="rShifted" in2="chanG" mode="screen" result="rgBlend"/>
-      <feBlend in="rgBlend" in2="bShifted" mode="screen" result="chromatic"/>
+      <!-- 11. Screen specular rim over tinted glass -->
+      <feBlend in="tinted" in2="clippedSpecular" mode="screen" result="withRim" />
 
-      <!-- Soft final blur to kill sub-pixel aliasing from the displacement -->
-      <feGaussianBlur in="chromatic" stdDeviation="0.55" result="softened"/>
-
-      <!-- Clip the whole effect to the original shape -->
-      <feComposite in="softened" in2="SourceGraphic" operator="in"/>
+      <!-- Final micro-blur to smooth displacement aliasing -->
+      <feGaussianBlur in="withRim" stdDeviation="0.25" />
     </filter>
   </defs>
 </svg>
@@ -546,26 +576,6 @@
 <div class="palette" id="palette"></div>
 
 <div class="panel-wrap" id="panelWrap">
-  <!--
-    The glass refraction layer:
-    - An <svg> sized to the panel, containing a <rect> filtered with #liquidGlass.
-    - The feImage backdrop is updated each frame with a fresh canvas snapshot.
-  -->
-  <svg id="glassRefract"
-    style="position:absolute;inset:0;width:100%;height:100%;border-radius:22px;pointer-events:none;z-index:0;overflow:visible;">
-    <defs>
-      <!-- clipPath to round the refraction layer to the panel border-radius -->
-      <clipPath id="panelClip">
-        <rect id="panelClipRect" rx="22" ry="22"/>
-      </clipPath>
-    </defs>
-    <rect id="glassRect"
-      rx="22" ry="22"
-      fill="rgba(255,255,255,0.001)"
-      filter="url(#liquidGlass)"
-      clip-path="url(#panelClip)"/>
-  </svg>
-
   <div class="panel">
     <h2>Sky</h2>
     <div class="readout" id="readout">—</div>
@@ -666,7 +676,69 @@
 
 <script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js"></script>
 <script>
-// ---------- shader source ----------
+// ═══════════════════════════════════════════════════════════════
+//  LENS-SHAPED DISPLACEMENT MAP
+//  Mirrors nikdelvin's approach: a crafted displacement map that
+//  encodes outward lens geometry, not random feTurbulence noise.
+//
+//  Each pixel encodes the normalised outward direction vector:
+//    R = 0.5 + cos(angle) * magnitude * 0.5   → [0, 1]
+//    G = 0.5 + sin(angle) * magnitude * 0.5   → [0, 1]
+//
+//  Magnitude uses a quintic falloff:
+//    t = clamp(r, 0, 1)
+//    mag = smoothstep(t) = t³(6t² - 15t + 10)
+//  This is 0 at r=0 (centre), peaks near r=0.85, drops to 0 at r=1.
+//  Result: convex lens — calm centre, strong refraction at rim.
+// ═══════════════════════════════════════════════════════════════
+
+const dispCanvas = document.getElementById('dispCanvas');
+dispCanvas.width = 512;
+dispCanvas.height = 512;
+
+(function buildLensMap() {
+  const ctx = dispCanvas.getContext('2d');
+  const W = dispCanvas.width, H = dispCanvas.height;
+  const img = ctx.createImageData(W, H);
+  const d = img.data;
+  const cx = W * 0.5, cy = H * 0.5;
+  const maxR = Math.min(cx, cy);
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const dx = (x - cx) / maxR;
+      const dy = (y - cy) / maxR;
+      const r = Math.sqrt(dx * dx + dy * dy);
+
+      // Quintic smoothstep — lens bulge profile
+      const t = Math.min(r, 1.0);
+      const mag = t * t * t * (t * (t * 6 - 15) + 10);
+
+      const nx = r > 0.001 ? (dx / r) * mag : 0;
+      const ny = r > 0.001 ? (dy / r) * mag : 0;
+
+      const ri = Math.round((0.5 + nx * 0.5) * 255);
+      const gi = Math.round((0.5 + ny * 0.5) * 255);
+
+      const idx = (y * W + x) * 4;
+      d[idx]     = Math.max(0, Math.min(255, ri));
+      d[idx + 1] = Math.max(0, Math.min(255, gi));
+      d[idx + 2] = 128;
+      d[idx + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Wire the map into the SVG feImage — this is the nikdelvin key move
+  const dataURL = dispCanvas.toDataURL('image/png');
+  const feImg = document.getElementById('feLensMap');
+  if (feImg) feImg.setAttribute('href', dataURL);
+})();
+
+// ═══════════════════════════════════════════════════════════════
+//  WEBGL SKY SHADER
+// ═══════════════════════════════════════════════════════════════
+
 const vsrc = `#version 300 es
 in vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
 
@@ -840,7 +912,7 @@ void main(){
 }
 `;
 
-// ---------- WebGL setup ----------
+// ─── WebGL setup ───
 const canvas = document.getElementById('c');
 const gl = canvas.getContext('webgl2', { antialias: true, preserveDrawingBuffer: true });
 if (!gl) { document.body.innerHTML = "WebGL2 not available."; throw new Error("no webgl2"); }
@@ -885,125 +957,11 @@ function resize(){
   canvas.width = Math.floor(window.innerWidth*dpr);
   canvas.height = Math.floor(window.innerHeight*dpr);
   gl.viewport(0,0,canvas.width,canvas.height);
-  updateGlassSVGSize();
 }
-window.addEventListener('resize', () => { resize(); });
+window.addEventListener('resize', resize);
+resize();
 
-// ---------- Liquid glass: SVG feImage approach ----------
-// We maintain an offscreen canvas that captures the sky region behind the panel.
-// Each frame we encode it to a data URL and set it on the feImage element.
-// The SVG filter then processes it with displacement, specular, and chromatic aberration.
-
-const snapCanvas = document.createElement('canvas');
-const snapCtx = snapCanvas.getContext('2d');
-
-const feBackdrop = document.getElementById('feBackdrop');
-const feLensMask = document.getElementById('feLensMask');
-const glassRect  = document.getElementById('glassRect');
-const panelClipRect = document.getElementById('panelClipRect');
-const panelWrap  = document.getElementById('panelWrap');
-const glassRefractSVG = document.getElementById('glassRefract');
-
-// Pre-render the lens gradient mask to a small offscreen canvas
-const LENS_W = 128, LENS_H = 200;
-const lensCanvas = document.createElement('canvas');
-lensCanvas.width = LENS_W; lensCanvas.height = LENS_H;
-const lensCtx = lensCanvas.getContext('2d');
-const lensGrad = lensCtx.createRadialGradient(
-  LENS_W*0.5, LENS_H*0.38, 0,   // inner: top-centre (slightly above centre)
-  LENS_W*0.5, LENS_H*0.38, LENS_W*0.62  // outer
-);
-lensGrad.addColorStop(0.00, 'rgba(255,255,255,1.0)');
-lensGrad.addColorStop(0.50, 'rgba(255,255,255,0.78)');
-lensGrad.addColorStop(0.80, 'rgba(255,255,255,0.30)');
-lensGrad.addColorStop(1.00, 'rgba(255,255,255,0.00)');
-lensCtx.fillStyle = lensGrad;
-lensCtx.fillRect(0, 0, LENS_W, LENS_H);
-const lensMaskDataURL = lensCanvas.toDataURL('image/png');
-// The lens mask is static — set it once
-feLensMask.setAttribute('href', lensMaskDataURL);
-
-let panelW = 0, panelH = 0;
-
-function updateGlassSVGSize() {
-  const rect = panelWrap.getBoundingClientRect();
-  const w = Math.round(rect.width);
-  const h = Math.round(rect.height);
-  if (w === panelW && h === panelH) return;
-  panelW = w; panelH = h;
-
-  // Size the SVG rect and clip path to the panel
-  glassRect.setAttribute('width', w);
-  glassRect.setAttribute('height', h);
-  panelClipRect.setAttribute('width', w);
-  panelClipRect.setAttribute('height', h);
-
-  // Size the snap canvas
-  snapCanvas.width = w;
-  snapCanvas.height = h;
-
-  // Update feImage primitive dimensions so the filter knows the coordinate space
-  const filter = document.getElementById('liquidGlass');
-  filter.setAttribute('width', w);
-  filter.setAttribute('height', h);
-  feBackdrop.setAttribute('width', w);
-  feBackdrop.setAttribute('height', h);
-  feLensMask.setAttribute('width', w);
-  feLensMask.setAttribute('height', h);
-  // Also update feDisplacementMap spatial references
-  const feDisplace = document.getElementById('feDisplace');
-  // scale is proportional to panel height for consistency across sizes
-  feDisplace.setAttribute('scale', Math.round(h * 0.065));
-
-  // Update fePointLight position based on panel size
-  const feLight = document.getElementById('feLight');
-  feLight.setAttribute('x', Math.round(w * 0.28));
-  feLight.setAttribute('y', Math.round(-h * 0.22));
-  feLight.setAttribute('z', Math.round(h * 0.38));
-}
-
-let glassTick = 0;
-let lastDataURL = '';
-
-function updateGlassRefraction() {
-  if (panelW === 0 || panelH === 0) return;
-  try {
-    const rect = panelWrap.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio||1, 2);
-    const sx = Math.round(rect.left);
-    const sy = Math.round(rect.top);
-    const sw = Math.round(rect.width);
-    const sh = Math.round(rect.height);
-
-    // Ensure snap canvas matches panel dimensions
-    if (snapCanvas.width !== sw || snapCanvas.height !== sh) {
-      snapCanvas.width = sw;
-      snapCanvas.height = sh;
-    }
-
-    // Copy from WebGL canvas: note WebGL Y is flipped (origin = bottom-left)
-    snapCtx.drawImage(
-      canvas,
-      sx * dpr,
-      (window.innerHeight - sy - sh) * dpr,
-      sw * dpr,
-      sh * dpr,
-      0, 0,
-      sw, sh
-    );
-
-    // Encode to data URL and update the feImage — triggers SVG filter re-run
-    const dataURL = snapCanvas.toDataURL('image/png');
-    if (dataURL !== lastDataURL) {
-      feBackdrop.setAttribute('href', dataURL);
-      lastDataURL = dataURL;
-    }
-  } catch(e) {
-    // Canvas taint or other error — silently skip
-  }
-}
-
-// ---------- DOM refs ----------
+// ─── DOM refs ───
 const el = {
   hour: document.getElementById('hour'), hourVal: document.getElementById('hourVal'),
   date: document.getElementById('date'), lat: document.getElementById('lat'),
@@ -1026,7 +984,7 @@ el.date.value = new Date().toISOString().slice(0,10);
 function updateSunSizeLabel(){ el.sunSizeVal.textContent = (parseFloat(el.sunSize.value)/0.012).toFixed(1)+'×'; }
 updateSunSizeLabel();
 
-// ---------- URL state ----------
+// ─── URL state ───
 function loadFromURL(){
   const p = new URLSearchParams(location.search);
   if (p.get('h')!==null)  el.hour.value=p.get('h');
@@ -1066,7 +1024,7 @@ el.haze.addEventListener('input', () => { el.hazeVal.textContent=Math.round(el.h
 el.rays.addEventListener('input', () => { el.raysVal.textContent=Math.round(el.rays.value*100)+'%'; });
 el.sunSize.addEventListener('input', updateSunSizeLabel);
 
-// ---------- Live weather ----------
+// ─── Live weather ───
 let lastWx = null;
 async function fetchWeather(){
   const lat=parseFloat(el.lat.value), lon=parseFloat(el.lon.value);
@@ -1093,7 +1051,7 @@ document.querySelectorAll('.chip').forEach(c => {
   });
 });
 
-// ---------- City search ----------
+// ─── City search ───
 let suggTimer=null;
 el.city.addEventListener('input', () => {
   clearTimeout(suggTimer);
@@ -1135,14 +1093,8 @@ function seasonLabel(date,lat){
   return lat>=0?north:{spring:'autumn',summer:'winter',autumn:'spring',winter:'summer'}[north];
 }
 
-// ---------- Render loop ----------
+// ─── Render loop ───
 let t0=performance.now(), lastFrame=t0;
-// Throttle glass updates: every N frames. Higher = cheaper, less smooth.
-const GLASS_EVERY = 2;
-let glassFrameCount = 0;
-
-// Initial size
-resize();
 
 function frame(now){
   const dt=(now-lastFrame)/1000; lastFrame=now;
@@ -1168,12 +1120,6 @@ function frame(now){
   gl.uniform1f(U.lat,Math.abs(lat));
   gl.drawArrays(gl.TRIANGLES,0,3);
 
-  // Update glass refraction — throttled
-  if (++glassFrameCount % GLASS_EVERY === 0) {
-    updateGlassSVGSize();
-    updateGlassRefraction();
-  }
-
   samplePalette();
   el.readout.innerHTML=`<b>${fmtHour(h)}</b> · ${el.date.value} · <b>${seasonLabel(date,lat)}</b> · ${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
   el.info.innerHTML=`sun <b>${deg(sun.altitude).toFixed(1)}°</b> alt · moon <b>${deg(moon.altitude).toFixed(1)}°</b> alt · illum <b>${Math.round(moonI.fraction*100)}%</b>`;
@@ -1181,7 +1127,7 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 
-// ---------- Palette ----------
+// ─── Palette ───
 let paletteTick=0;
 const swEls=[];
 for(let i=0;i<5;i++){ const s=document.createElement('div'); s.className='sw'; el.palette.appendChild(s); swEls.push(s); }
@@ -1196,7 +1142,7 @@ function samplePalette(){
   });
 }
 
-// ---------- Save PNG ----------
+// ─── Save PNG ───
 el.savePng.addEventListener('click',()=>{
   document.body.classList.add('hide-ui');
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -1210,7 +1156,7 @@ el.savePng.addEventListener('click',()=>{
   }));
 });
 
-// ---------- Timelapse ----------
+// ─── Timelapse ───
 let recorder=null,recChunks=[],tlAnimRaf=null;
 el.timelapse.addEventListener('click',()=>{
   if (recorder&&recorder.state==='recording'){ recorder.stop(); return; }
@@ -1238,14 +1184,14 @@ el.timelapse.addEventListener('click',()=>{
   tlAnimRaf=requestAnimationFrame(step);
 });
 
-// ---------- Copy link ----------
+// ─── Copy link ───
 el.copyLink.addEventListener('click',async()=>{
   updateURL();
   try { await navigator.clipboard.writeText(location.href); el.copyLink.textContent='Copied'; setTimeout(()=>el.copyLink.textContent='Copy link',1200); }
   catch(e){ el.copyLink.textContent='Select URL'; }
 });
 
-// ---------- Keyboard ----------
+// ─── Keyboard ───
 window.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT') return;
   if(e.key==='h'||e.key==='H') document.body.classList.toggle('hide-ui');
