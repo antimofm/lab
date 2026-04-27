@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RED Client Pipeline</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0f0f0f;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  color: #e2e2e2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+.header { display: flex; align-items: center; gap: 10px; margin-bottom: 48px; }
+.red-dot { width: 18px; height: 18px; background: #e8341c; border-radius: 50%; }
+.header-label { font-size: 12px; font-weight: 500; color: #666; letter-spacing: 0.05em; text-transform: uppercase; }
+.pipeline { display: flex; align-items: flex-start; width: 100%; max-width: 1080px; }
+.stage { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.stage-header { display: flex; align-items: center; gap: 7px; padding-bottom: 10px; border-bottom: 1px solid #1e1e1e; margin-bottom: 4px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.d-grey   { border: 1.5px solid #555; background: transparent; }
+.d-yellow { background: #f59e0b; }
+.d-blue   { background: #4a90d9; }
+.d-indigo { background: #5e6ad2; }
+.d-green  { background: #10b981; }
+.stage-title { font-size: 11px; font-weight: 500; color: #666; letter-spacing: 0.03em; }
+.stage-n { font-size: 11px; color: #333; margin-left: auto; }
+.card { background: #161616; border: 1px solid #222; border-radius: 6px; padding: 12px 13px; opacity: 0; transform: translateY(6px); animation: fi 0.3s ease forwards; }
+.card:hover { border-color: #2e2e2e; background: #1a1a1a; }
+.card-id { font-size: 10px; color: #3a3a3a; font-weight: 500; letter-spacing: 0.05em; margin-bottom: 5px; }
+.card-title { font-size: 13px; color: #ccc; line-height: 1.45; margin-bottom: 9px; }
+.card-foot { display: flex; align-items: center; gap: 7px; }
+.card-lbl { font-size: 11px; color: #4a4a4a; }
+.card-time { font-size: 11px; color: #2e2e2e; margin-left: auto; }
+.prog { margin-top: 8px; }
+.prog-bar { height: 3px; background: #222; border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; width: 0; transition: width 1.2s ease 1s; }
+.fi-indigo { background: #5e6ad2; }
+.fi-green  { background: #10b981; }
+.pulse { display: flex; align-items: center; gap: 5px; margin-top: 7px; }
+.pulse-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; animation: p 1.4s ease-in-out infinite; }
+.pulse-lbl { font-size: 10px; color: #f59e0b; }
+.arr { width: 32px; padding-top: 36px; display: flex; justify-content: center; flex-shrink: 0; }
+.footer { margin-top: 44px; font-size: 11px; color: #2e2e2e; }
+.s1 .card { animation-delay: 0.05s; }
+.s2 .card { animation-delay: 0.18s; }
+.s3 .card { animation-delay: 0.31s; }
+.s4 .card { animation-delay: 0.44s; }
+.s5 .card { animation-delay: 0.57s; }
+@keyframes fi { to { opacity: 1; transform: translateY(0); } }
+@keyframes p { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.6)} }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="red-dot"></div>
+  <span class="header-label">RED — Client Intake Pipeline</span>
+</div>
+<div class="pipeline">
+  <div class="stage s1">
+    <div class="stage-header">
+      <div class="dot d-grey"></div>
+      <span class="stage-title">DM Received</span>
+      <span class="stage-n">1</span>
+    </div>
+    <div class="card">
+      <div class="card-id">PROSPECT · INBOUND</div>
+      <div class="card-title">Prospect reaches out via Farcaster, X, or referral</div>
+      <div class="card-foot">
+        <div class="dot d-grey"></div>
+        <span class="card-lbl">Unqualified</span>
+        <span class="card-time">T+0</span>
+      </div>
+    </div>
+  </div>
+  <div class="arr"><svg width="32" height="16" viewBox="0 0 32 16" fill="none"><path d="M0 8H26M20 3L27 8L20 13" stroke="#2a2a2a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="stage s2">
+    <div class="stage-header">
+      <div class="dot d-yellow"></div>
+      <span class="stage-title">Agent Fires</span>
+      <span class="stage-n">1</span>
+    </div>
+    <div class="card">
+      <div class="card-id">VPS · AUTOMATION</div>
+      <div class="card-title">RED agent detects signal, triggers intake pipeline</div>
+      <div class="card-foot">
+        <div class="dot d-yellow"></div>
+        <span class="card-lbl">Running</span>
+        <span class="card-time">T+30s</span>
+      </div>
+      <div class="pulse"><div class="pulse-dot"></div><span class="pulse-lbl">live</span></div>
+    </div>
+  </div>
+  <div class="arr"><svg width="32" height="16" viewBox="0 0 32 16" fill="none"><path d="M0 8H26M20 3L27 8L20 13" stroke="#2a2a2a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="stage s3">
+    <div class="stage-header">
+      <div class="dot d-blue"></div>
+      <span class="stage-title">Slack Thread</span>
+      <span class="stage-n">1</span>
+    </div>
+    <div class="card">
+      <div class="card-id">SLACK · #clients</div>
+      <div class="card-title">Dedicated thread opens — name, source, timestamp</div>
+      <div class="card-foot">
+        <div class="dot d-blue"></div>
+        <span class="card-lbl">Auto-created</span>
+        <span class="card-time">T+35s</span>
+      </div>
+    </div>
+  </div>
+  <div class="arr"><svg width="32" height="16" viewBox="0 0 32 16" fill="none"><path d="M0 8H26M20 3L27 8L20 13" stroke="#2a2a2a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="stage s4">
+    <div class="stage-header">
+      <div class="dot d-indigo"></div>
+      <span class="stage-title">Linear Ticket</span>
+      <span class="stage-n">1</span>
+    </div>
+    <div class="card">
+      <div class="card-id">CLIENTS-XX · Qualifying</div>
+      <div class="card-title">Issue created, linked to Slack thread, state: Qualifying</div>
+      <div class="card-foot">
+        <div class="dot d-indigo"></div>
+        <span class="card-lbl">Qualifying</span>
+        <span class="card-time">T+40s</span>
+      </div>
+      <div class="prog"><div class="prog-bar"><div class="prog-fill fi-indigo" data-w="15"></div></div></div>
+    </div>
+  </div>
+  <div class="arr"><svg width="32" height="16" viewBox="0 0 32 16" fill="none"><path d="M0 8H26M20 3L27 8L20 13" stroke="#2a2a2a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="stage s5">
+    <div class="stage-header">
+      <div class="dot d-green"></div>
+      <span class="stage-title">Research Block</span>
+      <span class="stage-n">1</span>
+    </div>
+    <div class="card">
+      <div class="card-id">AGENT · ENRICHMENT</div>
+      <div class="card-title">Background, socials, project scope injected into thread + ticket</div>
+      <div class="card-foot">
+        <div class="dot d-green"></div>
+        <span class="card-lbl">Enriched</span>
+        <span class="card-time">T+2min</span>
+      </div>
+      <div class="prog"><div class="prog-bar"><div class="prog-fill fi-green" data-w="100"></div></div></div>
+    </div>
+  </div>
+</div>
+<div class="footer">lab.slash.red · RED internal · placeholder data</div>
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.prog-fill[data-w]').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 800);
+});
+</script>
+</body>
+</html>
