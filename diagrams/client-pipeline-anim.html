@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RED — Client Intake</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0f0f0f;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  color: #e2e2e2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  overflow-x: hidden;
+}
+
+/* ── SCENE SYSTEM ── */
+.scene {
+  display: none;
+  width: 100%;
+  max-width: 640px;
+  animation: fadeIn 0.4s ease forwards;
+}
+.scene.active { display: flex; flex-direction: column; gap: 16px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── SCENE LABEL ── */
+.scene-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #444; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.scene-label .dot { width: 6px; height: 6px; border-radius: 50%; background: #e8341c; }
+
+/* ── DM BUBBLE ── */
+.dm-window {
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dm-titlebar {
+  background: #1a1a1a;
+  border-bottom: 1px solid #222;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dm-titlebar-dots { display: flex; gap: 5px; }
+.dm-titlebar-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.dm-titlebar-dots span:nth-child(1) { background: #ff5f57; }
+.dm-titlebar-dots span:nth-child(2) { background: #febc2e; }
+.dm-titlebar-dots span:nth-child(3) { background: #28c840; }
+.dm-titlebar-label { font-size: 12px; color: #555; margin-left: 6px; }
+.dm-body { padding: 18px 16px; display: flex; gap: 11px; }
+.dm-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #4a90d9, #5e6ad2);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #fff; font-weight: 600;
+}
+.dm-meta { font-size: 11px; color: #444; margin-bottom: 5px; }
+.dm-meta strong { color: #888; font-weight: 500; }
+.dm-text {
+  font-size: 14px; color: #ccc; line-height: 1.55;
+  overflow: hidden;
+}
+.dm-text .cursor {
+  display: inline-block;
+  width: 2px; height: 14px;
+  background: #5e6ad2;
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 0.7s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── SLACK WINDOW ── */
+.slack-window {
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.slack-titlebar {
+  background: #1a1a1a;
+  border-bottom: 1px solid #222;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.slack-channel { font-size: 12px; color: #666; }
+.slack-channel strong { color: #888; font-weight: 500; }
+.slack-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+
+.slack-msg { display: flex; gap: 10px; opacity: 0; }
+.slack-msg.show { animation: fadeIn 0.35s ease forwards; }
+.slack-avatar {
+  width: 30px; height: 30px; border-radius: 6px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+.av-antimo { background: #e8341c; }
+.av-red    { background: #5e6ad2; }
+
+.slack-msg-inner {}
+.slack-msg-meta { font-size: 11px; color: #444; margin-bottom: 4px; }
+.slack-msg-meta strong { color: #777; font-weight: 500; }
+.slack-msg-text { font-size: 13px; color: #ccc; line-height: 1.5; }
+.slack-msg-text .mention { color: #5e6ad2; }
+
+/* quote block */
+.slack-quote {
+  border-left: 3px solid #2e2e2e;
+  padding: 6px 10px;
+  margin: 6px 0;
+  background: #111;
+  border-radius: 0 4px 4px 0;
+}
+.slack-quote .q-label { font-size: 10px; color: #444; margin-bottom: 3px; }
+.slack-quote .q-text { font-size: 12px; color: #888; line-height: 1.45; font-style: italic; }
+
+/* ── LINEAR TICKET ── */
+.linear-window {
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.linear-titlebar {
+  background: #1a1a1a;
+  border-bottom: 1px solid #222;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.linear-titlebar .lbl { font-size: 12px; color: #555; }
+.linear-titlebar .state-badge {
+  margin-left: auto;
+  font-size: 10px; color: #f59e0b;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.2);
+  padding: 2px 7px; border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.ticket-body { padding: 16px 16px 18px; }
+.ticket-id { font-size: 10px; color: #333; letter-spacing: 0.08em; margin-bottom: 8px; }
+.ticket-title { font-size: 15px; color: #ddd; font-weight: 500; margin-bottom: 14px; line-height: 1.4; }
+.ticket-meta-row {
+  display: flex; gap: 18px; margin-bottom: 14px;
+  border-top: 1px solid #1e1e1e; padding-top: 12px;
+}
+.ticket-meta-item { display: flex; flex-direction: column; gap: 3px; }
+.ticket-meta-key { font-size: 10px; color: #333; text-transform: uppercase; letter-spacing: 0.06em; }
+.ticket-meta-val { font-size: 12px; color: #777; }
+.ticket-meta-val .dot-inline {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 5px; vertical-align: middle;
+}
+
+/* enrichment section */
+.enrichment {
+  border-top: 1px solid #1e1e1e;
+  padding-top: 12px;
+  margin-top: 4px;
+}
+.enrich-label {
+  font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.enrich-pulse {
+  width: 6px; height: 6px; background: #10b981; border-radius: 50%;
+  animation: p 1.2s ease-in-out infinite;
+}
+@keyframes p { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.enrich-lines { display: flex; flex-direction: column; gap: 6px; }
+.enrich-line {
+  font-size: 12px; color: #555; line-height: 1.5;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.4s ease;
+  padding-left: 10px;
+  border-left: 2px solid #1e1e1e;
+}
+.enrich-line.show { max-height: 60px; color: #888; border-left-color: #10b981; }
+.enrich-line .tag {
+  color: #10b981; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-right: 5px;
+}
+
+/* ── NAV ── */
+.nav {
+  display: flex; gap: 8px; align-items: center;
+  margin-top: 8px;
+}
+.nav-btn {
+  font-size: 12px; color: #555;
+  background: #161616; border: 1px solid #222;
+  padding: 6px 14px; border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.nav-btn:hover { border-color: #3a3a3a; color: #999; }
+.nav-btn.primary { color: #ccc; border-color: #333; }
+.nav-btn.primary:hover { border-color: #5e6ad2; color: #5e6ad2; }
+.nav-spacer { flex: 1; }
+.scene-dots { display: flex; gap: 5px; }
+.scene-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #252525; transition: background 0.2s;
+}
+.scene-dot.active { background: #5e6ad2; }
+
+/* footer */
+.footer { margin-top: 32px; font-size: 10px; color: #252525; }
+</style>
+</head>
+<body>
+
+<!-- SCENE 1: DM -->
+<div class="scene active" id="s1">
+  <div class="scene-label"><div class="dot"></div> Inbound · Farcaster DM</div>
+  <div class="dm-window">
+    <div class="dm-titlebar">
+      <div class="dm-titlebar-dots"><span></span><span></span><span></span></div>
+      <span class="dm-titlebar-label">Direct Message</span>
+    </div>
+    <div class="dm-body">
+      <div class="dm-avatar">JV</div>
+      <div>
+        <div class="dm-meta"><strong>jacobv.eth</strong> · just now</div>
+        <div class="dm-text" id="dm-text"><span class="cursor"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="scene-dots">
+      <div class="scene-dot active"></div>
+      <div class="scene-dot"></div>
+      <div class="scene-dot"></div>
+    </div>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn primary" id="s1-next" disabled>Next →</button>
+  </div>
+</div>
+
+<!-- SCENE 2: Slack -->
+<div class="scene" id="s2">
+  <div class="scene-label"><div class="dot"></div> Slack · #clients</div>
+  <div class="slack-window">
+    <div class="slack-titlebar">
+      <span class="slack-channel"><strong>#clients</strong></span>
+    </div>
+    <div class="slack-body">
+      <!-- Antimo drops the DM -->
+      <div class="slack-msg" id="sm1">
+        <div class="slack-avatar av-antimo">A</div>
+        <div class="slack-msg-inner">
+          <div class="slack-msg-meta"><strong>Antimo</strong> <span>12:04 PM</span></div>
+          <div class="slack-msg-text">
+            <span class="mention">@Red Claude</span> new prospect just DMed. Cross-chain payments dashboard.
+            <div class="slack-quote">
+              <div class="q-label">jacobv.eth · Farcaster DM</div>
+              <div class="q-text">Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?</div>
+            </div>
+            Make the ticket. OSINT the space.
+          </div>
+        </div>
+      </div>
+      <!-- Red Claude responds -->
+      <div class="slack-msg" id="sm2">
+        <div class="slack-avatar av-red">R</div>
+        <div class="slack-msg-inner">
+          <div class="slack-msg-meta"><strong>Red Claude</strong> <span>12:04 PM</span></div>
+          <div class="slack-msg-text" id="sm2-text"><span class="cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="scene-dots">
+      <div class="scene-dot"></div>
+      <div class="scene-dot active"></div>
+      <div class="scene-dot"></div>
+    </div>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn" id="s2-back">← Back</button>
+    <button class="nav-btn primary" id="s2-next" disabled>Next →</button>
+  </div>
+</div>
+
+<!-- SCENE 3: Linear ticket enriched -->
+<div class="scene" id="s3">
+  <div class="scene-label"><div class="dot"></div> Linear · CLIENTS-47</div>
+  <div class="linear-window">
+    <div class="linear-titlebar">
+      <span class="lbl">CLIENTS-47</span>
+      <span class="state-badge">Qualifying</span>
+    </div>
+    <div class="ticket-body">
+      <div class="ticket-id">CLIENTS · QUALIFYING</div>
+      <div class="ticket-title">jacobv.eth — cross-chain payments dashboard</div>
+      <div class="ticket-meta-row">
+        <div class="ticket-meta-item">
+          <div class="ticket-meta-key">Source</div>
+          <div class="ticket-meta-val">Farcaster DM</div>
+        </div>
+        <div class="ticket-meta-item">
+          <div class="ticket-meta-key">Created</div>
+          <div class="ticket-meta-val">12:04 PM · auto</div>
+        </div>
+        <div class="ticket-meta-item">
+          <div class="ticket-meta-key">Slack</div>
+          <div class="ticket-meta-val">#clients → thread</div>
+        </div>
+      </div>
+      <div class="enrichment">
+        <div class="enrich-label">
+          <div class="enrich-pulse" id="epulse"></div>
+          Agent enrichment
+        </div>
+        <div class="enrich-lines">
+          <div class="enrich-line" id="el1"><span class="tag">Space</span>Cross-chain liquidity aggregation is active — Li.Fi, Socket, deBridge leading infra.</div>
+          <div class="enrich-line" id="el2"><span class="tag">Signal</span>jacobv.eth · 2.1k followers · prev built zkSync tooling. High-intent inbound.</div>
+          <div class="enrich-line" id="el3"><span class="tag">Scope</span>Dashboard product — likely 6–10 week engagement. Design + front-end.</div>
+          <div class="enrich-line" id="el4"><span class="tag">Action</span>Qualify budget + timeline. Schedule intro call.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="scene-dots">
+      <div class="scene-dot"></div>
+      <div class="scene-dot"></div>
+      <div class="scene-dot active"></div>
+    </div>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn" id="s3-back">← Back</button>
+    <button class="nav-btn primary" id="s3-restart">↺ Restart</button>
+  </div>
+</div>
+
+<div class="footer">lab.slash.red · RED internal · placeholder data</div>
+
+<script>
+// ── typewriter ──
+function typewrite(el, text, speed, onDone) {
+  let i = 0;
+  const cursor = el.querySelector('.cursor');
+  function tick() {
+    if (i <= text.length) {
+      const chunk = text.slice(0, i);
+      if (cursor) {
+        el.innerHTML = chunk + '<span class="cursor"></span>';
+      } else {
+        el.textContent = chunk;
+      }
+      i++;
+      setTimeout(tick, speed + Math.random() * 20);
+    } else {
+      if (cursor) el.querySelector('.cursor')?.remove();
+      if (onDone) onDone();
+    }
+  }
+  tick();
+}
+
+// ── Scene 1: typewrite DM ──
+const dmText = "Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?";
+const dmEl = document.getElementById('dm-text');
+const s1next = document.getElementById('s1-next');
+
+setTimeout(() => {
+  typewrite(dmEl, dmText, 22, () => {
+    s1next.disabled = false;
+  });
+}, 600);
+
+// ── Scene transitions ──
+function showScene(id) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+s1next.addEventListener('click', () => {
+  showScene('s2');
+  startScene2();
+});
+
+document.getElementById('s2-back').addEventListener('click', () => showScene('s1'));
+document.getElementById('s3-back').addEventListener('click', () => showScene('s2'));
+document.getElementById('s3-restart').addEventListener('click', () => {
+  location.reload();
+});
+
+// ── Scene 2 ──
+let scene2Started = false;
+function startScene2() {
+  if (scene2Started) return;
+  scene2Started = true;
+
+  const sm1 = document.getElementById('sm1');
+  const sm2 = document.getElementById('sm2');
+  const sm2text = document.getElementById('sm2-text');
+  const s2next = document.getElementById('s2-next');
+
+  // show antimo message
+  setTimeout(() => {
+    sm1.classList.add('show');
+  }, 300);
+
+  // show red claude thinking then typing
+  setTimeout(() => {
+    sm2.classList.add('show');
+    const reply = "On it. Creating CLIENTS-47, running OSINT on cross-chain payments space.";
+    typewrite(sm2text, reply, 28, () => {
+      s2next.disabled = false;
+    });
+  }, 1400);
+}
+
+document.getElementById('s2-next').addEventListener('click', () => {
+  showScene('s3');
+  startScene3();
+});
+
+// ── Scene 3 ──
+let scene3Started = false;
+function startScene3() {
+  if (scene3Started) return;
+  scene3Started = true;
+
+  const lines = ['el1','el2','el3','el4'];
+  lines.forEach((id, i) => {
+    setTimeout(() => {
+      document.getElementById(id).classList.add('show');
+    }, 400 + i * 550);
+  });
+
+  // stop pulse after all lines
+  setTimeout(() => {
+    const ep = document.getElementById('epulse');
+    if (ep) ep.style.animation = 'none';
+    ep.style.background = '#10b981';
+    ep.style.opacity = '0.4';
+  }, 400 + 4 * 550 + 400);
+}
+</script>
+</body>
+</html>
