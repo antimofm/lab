@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RED — Client Pipeline</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .scene {
+    width: 620px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+
+  /* ── SLACK CHROME ── */
+  .slack-titlebar {
+    background: #3f0e40;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 6px;
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; }
+  .dot.y { background: #febc2e; }
+  .dot.g { background: #28c840; }
+
+  .slack-body {
+    display: flex;
+    height: 420px;
+    background: #19171d;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 190px;
+    background: #3f0e40;
+    flex-shrink: 0;
+    padding-top: 12px;
+    overflow: hidden;
+  }
+  .sidebar-workspace {
+    padding: 0 12px 12px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    opacity: 0.95;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ws-dot {
+    width: 20px; height: 20px; border-radius: 5px;
+    background: #e01e5a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+  }
+  .sidebar-section {
+    padding: 8px 12px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.45);
+  }
+  .channel-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 4px;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .channel-item.active {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-weight: 500;
+  }
+  .channel-item .hash {
+    font-size: 14px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+  .channel-item .badge {
+    margin-left: auto;
+    background: #e01e5a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 9px;
+    min-width: 16px;
+    text-align: center;
+  }
+  .channel-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 6px 10px;
+  }
+  /* Dim other channels */
+  .channel-item.dim {
+    opacity: 0.4;
+  }
+
+  /* ── MAIN PANE ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #19171d;
+    overflow: hidden;
+  }
+  .channel-header {
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .channel-header .name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .channel-header .hash { color: rgba(255,255,255,0.5); font-size: 15px; }
+  .channel-header .desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    margin-left: 4px;
+  }
+
+  .messages {
+    flex: 1;
+    padding: 16px 16px 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .msg.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 2px;
+  }
+  .avatar.blue   { background: #1264a3; }
+  .avatar.green  { background: #007a5a; }
+  .avatar.red    { background: #c0392b; }
+  .avatar.purple { background: #6c3483; }
+  .avatar.bot    { background: #e01e5a; border-radius: 8px; font-size: 10px; letter-spacing: -0.02em; }
+
+  .msg-body { flex: 1; min-width: 0; }
+  .msg-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .sender {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .sender.bot-name { color: #e01e5a; }
+  .app-badge {
+    font-size: 9px;
+    background: rgba(224,30,90,0.2);
+    color: #e01e5a;
+    border: 1px solid rgba(224,30,90,0.3);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .timestamp { font-size: 11px; color: rgba(255,255,255,0.3); }
+  .msg-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.5;
+  }
+  .msg-text strong { color: #fff; font-weight: 600; }
+  .msg-text .mention {
+    color: #5bb8f5;
+    background: rgba(91,184,245,0.1);
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+  .msg-text .tag {
+    color: #e01e5a;
+    font-weight: 600;
+  }
+
+  /* Card-style block */
+  .card {
+    margin-top: 8px;
+    background: #222129;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid #e01e5a;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .card .card-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #e01e5a;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .card .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+  .card .card-body {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.45;
+  }
+  .card .card-meta {
+    margin-top: 7px;
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+  }
+  .card .card-meta span strong { color: rgba(255,255,255,0.7); }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .typing.visible { opacity: 1; }
+  .typing-dots {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .typing-dots span {
+    width: 6px; height: 6px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+  }
+  .typing-text { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+  /* Channel transition overlay */
+  .transition-flash {
+    position: absolute;
+    inset: 0;
+    background: rgba(224,30,90,0.08);
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 0;
+    transition: opacity 0.25s;
+  }
+  .transition-flash.flash { opacity: 1; }
+
+  .slack-body { position: relative; }
+
+  /* Replay button */
+  .replay {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    background: rgba(224,30,90,0.85);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.4s;
+    z-index: 10;
+    letter-spacing: 0.03em;
+  }
+  .replay.visible { opacity: 1; }
+  .replay:hover { background: #e01e5a; }
+</style>
+</head>
+<body>
+
+<div class="scene">
+  <!-- Title bar -->
+  <div class="slack-titlebar">
+    <div class="dot r"></div>
+    <div class="dot y"></div>
+    <div class="dot g"></div>
+  </div>
+
+  <!-- Body -->
+  <div class="slack-body" id="slackBody">
+    <div class="transition-flash" id="flash"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-workspace">
+        <div class="ws-dot">R</div>
+        RED Studio
+      </div>
+      <div class="sidebar-section">Channels</div>
+
+      <div class="channel-item active" id="ch-lobby">
+        <span class="hash">#</span>
+        <span>lobby</span>
+        <span class="badge" id="lobby-badge" style="display:none">1</span>
+      </div>
+
+      <div class="channel-item" id="ch-pipeline">
+        <span class="hash">#</span>
+        <span>pipeline</span>
+        <span class="badge" id="pipeline-badge" style="display:none">1</span>
+      </div>
+
+      <div class="channel-divider"></div>
+
+      <div class="channel-item dim">
+        <span class="hash">#</span>
+        <span>general</span>
+      </div>
+      <div class="channel-item dim">
+        <span class="hash">#</span>
+        <span>design</span>
+      </div>
+      <div class="channel-item dim">
+        <span class="hash">#</span>
+        <span>dev</span>
+      </div>
+      <div class="channel-item dim">
+        <span class="hash">#</span>
+        <span>clients</span>
+      </div>
+    </div>
+
+    <!-- Main pane -->
+    <div class="main">
+      <div class="channel-header" id="channelHeader">
+        <span class="hash">#</span>
+        <span class="name" id="channelName">lobby</span>
+        <span class="desc" id="channelDesc">inbound messages &amp; first contact</span>
+      </div>
+
+      <div class="messages" id="messages">
+        <!-- messages injected by JS -->
+      </div>
+
+      <div class="typing" id="typing">
+        <div style="width:32px;height:32px;background:#e01e5a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:800;flex-shrink:0;">RED</div>
+        <div>
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="typing-text">RED Bot is thinking…</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="replay" id="replayBtn" onclick="startAnimation()">↺ Replay</button>
+  </div>
+</div>
+
+<script>
+const state = {
+  phase: 'lobby' // 'lobby' | 'pipeline'
+};
+
+function el(id) { return document.getElementById(id); }
+
+function showMsg(id, delay) {
+  setTimeout(() => {
+    const m = el(id);
+    if (m) m.classList.add('visible');
+  }, delay);
+}
+
+function setChannel(name, desc) {
+  el('channelName').textContent = name;
+  el('channelDesc').textContent = desc;
+
+  // sidebar highlight
+  el('ch-lobby').classList.remove('active');
+  el('ch-pipeline').classList.remove('active');
+  el('ch-' + name)?.classList.add('active');
+}
+
+function flash() {
+  const f = el('flash');
+  f.classList.add('flash');
+  setTimeout(() => f.classList.remove('flash'), 300);
+}
+
+function clearMessages() {
+  const m = el('messages');
+  m.innerHTML = '';
+}
+
+function addMsg(html) {
+  el('messages').insertAdjacentHTML('beforeend', html);
+}
+
+function startAnimation() {
+  el('replayBtn').classList.remove('visible');
+  el('typing').classList.remove('visible');
+  el('lobby-badge').style.display = 'none';
+  el('pipeline-badge').style.display = 'none';
+  clearMessages();
+  setChannel('lobby', 'inbound messages & first contact');
+  state.phase = 'lobby';
+
+  // ── PHASE 1: #lobby ──
+  // Client DM appears (forwarded to lobby)
+  setTimeout(() => {
+    el('lobby-badge').style.display = 'flex';
+  }, 400);
+
+  setTimeout(() => {
+    el('lobby-badge').style.display = 'none';
+    addMsg(`
+      <div class="msg" id="m1">
+        <div class="avatar blue">JM</div>
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="sender">James M.</span>
+            <span class="timestamp">Today at 10:14 AM</span>
+          </div>
+          <div class="msg-text">
+            Hey, saw your work on the Neynar rebrand. We're building a cross-chain payment dashboard and need a design partner who gets crypto UX. Are you available for a sprint?
+          </div>
+        </div>
+      </div>
+    `);
+    el('m1').classList.add('visible');
+  }, 700);
+
+  // ── PHASE 2: transition to #pipeline ──
+  setTimeout(() => {
+    flash();
+    clearMessages();
+    setChannel('pipeline', 'active prospects & deal flow');
+    el('pipeline-badge').style.display = 'flex';
+  }, 2200);
+
+  setTimeout(() => {
+    el('pipeline-badge').style.display = 'none';
+    addMsg(`
+      <div class="msg" id="m2">
+        <div class="avatar red">A</div>
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="sender">Antimo</span>
+            <span class="timestamp">Today at 10:15 AM</span>
+          </div>
+          <div class="msg-text">
+            <span class="mention">@RED Bot</span> new prospect just DM'd — cross-chain payment dashboard. Log it and run first-pass qualification.
+          </div>
+        </div>
+      </div>
+    `);
+    el('m2').classList.add('visible');
+  }, 2600);
+
+  // typing
+  setTimeout(() => {
+    el('typing').classList.add('visible');
+  }, 3400);
+
+  // bot response
+  setTimeout(() => {
+    el('typing').classList.remove('visible');
+    addMsg(`
+      <div class="msg" id="m3">
+        <div class="avatar bot">RED</div>
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="sender bot-name">RED Bot</span>
+            <span class="app-badge">APP</span>
+            <span class="timestamp">Today at 10:15 AM</span>
+          </div>
+          <div class="msg-text">
+            Got it. Prospect logged. Initial read:
+          </div>
+          <div class="card">
+            <div class="card-label">New Prospect</div>
+            <div class="card-title">Cross-Chain Payment Dashboard</div>
+            <div class="card-body">
+              Inbound via DM. Referenced Neynar — warm signal. Crypto-native context, sprint format fits. Recommend qualifying call within 48h.
+            </div>
+            <div class="card-meta">
+              <span>Fit <strong>High</strong></span>
+              <span>Stage <strong>Qualify</strong></span>
+              <span>Source <strong>Farcaster</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    el('m3').classList.add('visible');
+  }, 5000);
+
+  // show replay
+  setTimeout(() => {
+    el('replayBtn').classList.add('visible');
+  }, 7500);
+}
+
+// Auto-start
+startAnimation();
+</script>
+</body>
+</html>

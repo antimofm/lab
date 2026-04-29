@@ -8,31 +8,31 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #1a1d21;
+  background: #111214;
   font-family: -apple-system, BlinkMacSystemFont, "Lato", "Inter", sans-serif;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 24px 16px;
 }
 
 /* ── SLACK APP SHELL ── */
 .slack-app {
-  width: 860px;
+  width: 820px;
   height: 560px;
   border-radius: 10px;
   overflow: hidden;
   display: flex;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7);
   border: 1px solid rgba(255,255,255,0.06);
-  animation: appIn 0.5s ease forwards;
+  animation: appIn 0.4s ease forwards;
 }
 @keyframes appIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
 
-/* ── SIDEBAR ── */
+/* ── SIDEBAR — narrow/squeezed ── */
 .sidebar {
-  width: 220px;
+  width: 108px;
   background: #3f0f40;
   flex-shrink: 0;
   display: flex;
@@ -40,64 +40,76 @@ body {
 }
 
 .sidebar-header {
-  padding: 14px 16px 10px;
+  padding: 14px 10px 10px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .workspace-name {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   color: #fff;
   letter-spacing: -0.01em;
 }
 .workspace-status {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin-top: 3px;
 }
 .status-dot {
-  width: 8px; height: 8px;
+  width: 6px; height: 6px;
   background: #2bac76;
   border-radius: 50%;
   border: 1.5px solid #3f0f40;
+  flex-shrink: 0;
 }
-.status-text { font-size: 11px; color: rgba(255,255,255,0.55); }
+.status-text { font-size: 10px; color: rgba(255,255,255,0.5); }
 
 .sidebar-section {
-  padding: 12px 8px 4px;
+  padding: 8px 4px 4px;
 }
 .sidebar-section-label {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 0.04em;
-  padding: 0 8px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.06em;
+  padding: 0 6px;
   margin-bottom: 3px;
+  text-transform: uppercase;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
-  border-radius: 5px;
+  gap: 4px;
+  padding: 5px 6px;
+  border-radius: 4px;
   cursor: pointer;
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.58);
   font-size: 13px;
+  transition: background 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.sidebar-item:hover { background: rgba(255,255,255,0.08); }
 .sidebar-item.active {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.18);
   color: #fff;
-  font-weight: 500;
+  font-weight: 600;
 }
-.sidebar-item .ch-icon { font-size: 14px; opacity: 0.7; }
+.sidebar-item .ch-hash { font-size: 12px; opacity: 0.5; flex-shrink: 0; }
+.sidebar-item .ch-label { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .sidebar-item .unread-dot {
-  width: 8px; height: 8px;
+  width: 6px; height: 6px;
   background: #fff;
   border-radius: 50%;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 5px 6px;
 }
 
 /* ── MAIN PANEL ── */
@@ -107,89 +119,90 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 /* channel header */
 .channel-header {
   background: #1a1d21;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 12px 18px;
+  padding: 13px 18px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-shrink: 0;
 }
 .channel-header-name {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   color: #fff;
 }
 .channel-header-topic {
   font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  margin-left: 6px;
-  padding-left: 6px;
-  border-left: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.32);
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255,255,255,0.12);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* messages area */
 .messages {
   flex: 1;
   overflow-y: auto;
-  padding: 18px 18px 12px;
+  overflow-x: hidden;
+  padding: 20px 18px 10px;
   display: flex;
   flex-direction: column;
   gap: 0;
+  scroll-behavior: smooth;
 }
-
-/* scene wrapper */
-.scene { display: none; flex-direction: column; gap: 0; }
-.scene.active { display: flex; animation: fadeIn 0.3s ease forwards; }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
 /* ── MESSAGE ROW ── */
 .msg-row {
   display: flex;
-  gap: 10px;
-  padding: 4px 0;
+  gap: 12px;
+  padding: 5px 0;
   opacity: 0;
 }
 .msg-row.show { animation: msgIn 0.3s ease forwards; }
-@keyframes msgIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+@keyframes msgIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
 .msg-avatar {
-  width: 32px; height: 32px;
-  border-radius: 4px;
+  width: 38px; height: 38px;
+  border-radius: 5px;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800; color: #fff;
+  font-size: 13px; font-weight: 800; color: #fff;
   margin-top: 2px;
 }
+.av-jacobv { background: linear-gradient(135deg, #4a90d9, #3ecf8e); }
 .av-antimo { background: #e8341c; }
 .av-red    { background: #5e6ad2; }
-.av-jacobv { background: linear-gradient(135deg, #4a90d9, #3ecf8e); }
 
-.msg-col {}
+.msg-col { min-width: 0; flex: 1; }
 .msg-meta {
   display: flex;
   align-items: baseline;
-  gap: 7px;
+  gap: 8px;
   margin-bottom: 3px;
 }
 .msg-name {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
 }
 .msg-name.red-name { color: #8b83f7; }
 .msg-time {
   font-size: 11px;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.28);
 }
 .msg-text {
-  font-size: 14px;
+  font-size: 15px;
   color: #d1d2d3;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 .msg-text .mention {
   color: #70b8ff;
@@ -199,7 +212,7 @@ body {
 }
 .cursor {
   display: inline-block;
-  width: 2px; height: 14px;
+  width: 2px; height: 15px;
   background: #5e6ad2;
   margin-left: 1px;
   vertical-align: middle;
@@ -209,10 +222,10 @@ body {
 
 /* quote block */
 .slack-quote {
-  border-left: 3px solid rgba(255,255,255,0.25);
-  padding: 6px 10px;
-  margin: 6px 0;
-  background: rgba(255,255,255,0.04);
+  border-left: 3px solid rgba(255,255,255,0.22);
+  padding: 6px 11px;
+  margin: 7px 0 5px;
+  background: rgba(255,255,255,0.03);
   border-radius: 0 4px 4px 0;
 }
 .slack-quote .q-source {
@@ -223,45 +236,45 @@ body {
 }
 .slack-quote .q-text {
   font-size: 13px;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.5);
   line-height: 1.45;
 }
 
 /* unfurl / card */
 .unfurl {
-  margin-top: 6px;
+  margin-top: 8px;
   border-left: 3px solid #5e6ad2;
   background: rgba(94,106,210,0.07);
   border-radius: 0 6px 6px 0;
-  padding: 10px 12px;
+  padding: 11px 14px;
   max-width: 400px;
 }
 .unfurl-source { font-size: 11px; color: rgba(94,106,210,0.8); margin-bottom: 5px; font-weight: 600; }
-.unfurl-title { font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 6px; }
-.unfurl-fields { display: flex; flex-direction: column; gap: 4px; }
-.unfurl-field { display: flex; gap: 8px; font-size: 12px; }
-.unfurl-key { color: rgba(255,255,255,0.35); min-width: 54px; }
-.unfurl-val { color: rgba(255,255,255,0.7); }
+.unfurl-title { font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 7px; }
+.unfurl-fields { display: flex; flex-direction: column; gap: 5px; }
+.unfurl-field { display: flex; gap: 10px; font-size: 12px; }
+.unfurl-key { color: rgba(255,255,255,0.32); min-width: 52px; }
+.unfurl-val { color: rgba(255,255,255,0.65); }
 .unfurl-tag {
   display: inline-block;
   font-size: 10px; font-weight: 700;
   padding: 1px 6px;
   border-radius: 3px;
-  margin-right: 4px;
+  margin-right: 3px;
 }
 .tag-qualifying { background: rgba(245,158,11,0.15); color: #f59e0b; }
 .tag-created    { background: rgba(16,185,129,0.15); color: #10b981; }
 
 /* enrich lines */
 .enrich-block {
-  margin-top: 6px;
-  max-width: 440px;
+  margin-top: 7px;
+  max-width: 460px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 .enrich-line {
-  font-size: 12.5px;
+  font-size: 13px;
   color: rgba(255,255,255,0.5);
   line-height: 1.5;
   overflow: hidden;
@@ -269,7 +282,7 @@ body {
   transition: max-height 0.4s ease, opacity 0.4s ease;
   opacity: 0;
   padding-left: 9px;
-  border-left: 2px solid rgba(255,255,255,0.08);
+  border-left: 2px solid rgba(255,255,255,0.07);
 }
 .enrich-line.show {
   max-height: 60px;
@@ -287,39 +300,48 @@ body {
 /* date divider */
 .date-divider {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 0 6px;
+  padding: 8px 0 8px;
 }
 .date-divider span {
-  font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 600; white-space: nowrap;
+  font-size: 11px; color: rgba(255,255,255,0.28); font-weight: 600; white-space: nowrap;
 }
 .date-divider::before, .date-divider::after {
-  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08);
+  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07);
 }
+
+/* channel transition flash */
+@keyframes channelFlash {
+  0%   { opacity: 1; }
+  35%  { opacity: 0.08; }
+  65%  { opacity: 0.75; }
+  100% { opacity: 1; }
+}
+.channel-transition { animation: channelFlash 0.35s ease forwards; }
 
 /* ── INPUT BAR ── */
 .input-bar {
   flex-shrink: 0;
-  padding: 10px 18px 14px;
+  padding: 8px 18px 13px;
 }
 .input-inner {
   background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.11);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 9px 13px;
   display: flex; align-items: center; gap: 8px;
 }
 .input-placeholder {
-  font-size: 13px;
-  color: rgba(255,255,255,0.25);
+  font-size: 14px;
+  color: rgba(255,255,255,0.22);
   flex: 1;
 }
 .input-icons { display: flex; gap: 10px; }
-.input-icon { font-size: 16px; opacity: 0.3; cursor: pointer; }
+.input-icon { font-size: 14px; opacity: 0.25; cursor: pointer; }
 
 /* ── NAV ── */
 .nav-bar {
   flex-shrink: 0;
-  padding: 8px 18px 10px;
+  padding: 5px 18px 10px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -331,7 +353,7 @@ body {
   color: rgba(255,255,255,0.4);
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
-  padding: 5px 12px;
+  padding: 4px 12px;
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s;
@@ -343,77 +365,22 @@ body {
   border-color: rgba(94,106,210,0.5);
 }
 .nav-btn.primary:hover { background: rgba(94,106,210,0.4); }
-.nav-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 .nav-spacer { flex: 1; }
-.scene-dots { display: flex; gap: 5px; align-items: center; }
-.scene-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  transition: background 0.2s;
-}
-.scene-dot.active { background: #5e6ad2; }
-.scene-label { font-size: 11px; color: rgba(255,255,255,0.25); margin-right: 4px; }
 
-/* ── DM OVERLAY (scene 1) ── */
-.dm-overlay {
-  position: relative;
-  background: #1a1d21;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.dm-pane {
-  width: 420px;
-  background: #222529;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-}
-.dm-header {
-  background: #1a1d21;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 14px 16px;
-  display: flex; align-items: center; gap: 10px;
-}
-.dm-header-avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: linear-gradient(135deg, #4a90d9, #3ecf8e);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800; color: #fff;
-}
-.dm-header-name { font-size: 14px; font-weight: 700; color: #fff; }
-.dm-header-handle { font-size: 11px; color: rgba(255,255,255,0.35); }
-.dm-body-msgs {
-  padding: 16px;
-  min-height: 110px;
-  display: flex; flex-direction: column; gap: 8px;
-}
-.dm-bubble {
-  max-width: 85%;
-  padding: 9px 12px;
-  border-radius: 14px;
-  font-size: 13.5px;
-  line-height: 1.5;
-}
-.dm-bubble.incoming {
-  background: rgba(255,255,255,0.07);
-  color: #d1d2d3;
-  border-radius: 4px 14px 14px 14px;
-  align-self: flex-start;
-}
-.dm-footer {
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding: 8px 12px;
-}
-.dm-input {
+.scene-pill {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
   background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  padding: 7px 14px;
-  font-size: 13px;
-  color: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 3px 10px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+}
+.scene-pill.active {
+  color: rgba(255,255,255,0.8);
+  background: rgba(94,106,210,0.18);
+  border-color: rgba(94,106,210,0.4);
 }
 </style>
 </head>
@@ -422,7 +389,7 @@ body {
 <div class="slack-app">
 
   <!-- SIDEBAR -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="workspace-name">RED</div>
       <div class="workspace-status">
@@ -431,58 +398,58 @@ body {
       </div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-item"><span class="ch-icon">🏠</span> Home</div>
-      <div class="sidebar-item"><span class="ch-icon">💬</span> DMs</div>
-    </div>
-    <div class="sidebar-section">
       <div class="sidebar-section-label">Channels</div>
-      <div class="sidebar-item"><span class="ch-icon">#</span> general</div>
-      <div class="sidebar-item"><span class="ch-icon">#</span> marketing</div>
-      <div class="sidebar-item active"><span class="ch-icon">#</span> clients <div class="unread-dot"></div></div>
-      <div class="sidebar-item"><span class="ch-icon">#</span> ops</div>
-      <div class="sidebar-item"><span class="ch-icon">#</span> dev</div>
-    </div>
-    <div class="sidebar-section" style="margin-top:auto; padding-bottom:16px;">
-      <div class="sidebar-item"><span class="ch-icon">⚙️</span> Settings</div>
+
+      <!-- lobby first, pipeline second -->
+      <div class="sidebar-item active" id="ch-lobby">
+        <span class="ch-hash">#</span>
+        <span class="ch-label">lobby</span>
+        <div class="unread-dot" id="lobby-dot"></div>
+      </div>
+      <div class="sidebar-item" id="ch-pipeline">
+        <span class="ch-hash">#</span>
+        <span class="ch-label">pipeline</span>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-item"><span class="ch-hash">#</span><span class="ch-label">general</span></div>
+      <div class="sidebar-item"><span class="ch-hash">#</span><span class="ch-label">ops</span></div>
+      <div class="sidebar-item"><span class="ch-hash">#</span><span class="ch-label">finance</span></div>
     </div>
   </div>
 
   <!-- MAIN PANEL -->
-  <div class="main">
-    <div class="channel-header">
-      <span class="channel-header-name"># clients</span>
-      <span class="channel-header-topic">prospect tracking · auto-intake enabled</span>
+  <div class="main" id="main-panel">
+    <div class="channel-header" id="channel-header">
+      <span class="channel-header-name" id="ch-name"># lobby</span>
+      <span class="channel-header-topic" id="ch-topic">inbound · first contact</span>
     </div>
 
     <div class="messages" id="messages-area">
+      <div class="date-divider"><span>Today</span></div>
 
-      <!-- SCENE 1: DM -->
-      <div class="scene active" id="s1">
-        <div class="dm-overlay">
-          <div class="dm-pane">
-            <div class="dm-header">
-              <div class="dm-header-avatar">JV</div>
-              <div>
-                <div class="dm-header-name">jacobv.eth</div>
-                <div class="dm-header-handle">farcaster · @jacobv</div>
-              </div>
+      <!-- SCENE 1: lobby — client message arrives inline -->
+      <div id="s1-block">
+        <div class="msg-row" id="s1-msg1">
+          <div class="msg-avatar av-jacobv">JV</div>
+          <div class="msg-col">
+            <div class="msg-meta">
+              <span class="msg-name">jacobv.eth</span>
+              <span class="msg-time">12:03 PM</span>
             </div>
-            <div class="dm-body-msgs">
-              <div class="dm-bubble incoming" id="dm-bubble">
-                <span id="dm-text"></span><span class="cursor" id="dm-cursor"></span>
-              </div>
-            </div>
-            <div class="dm-footer">
-              <div class="dm-input">Reply to jacobv.eth…</div>
+            <div class="msg-text">
+              <span id="s1-text"></span><span class="cursor" id="s1-cursor"></span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SCENE 2: Slack #clients -->
-      <div class="scene" id="s2">
-        <div class="date-divider"><span>Today</span></div>
-        <div class="msg-row" id="sm1">
+      <!-- SCENE 2: pipeline — continuous, no frame break -->
+      <div id="s2-block" style="display:none; flex-direction:column; gap:0;">
+
+        <!-- Antimo forwards to pipeline -->
+        <div class="msg-row" id="s2-msg1">
           <div class="msg-avatar av-antimo">A</div>
           <div class="msg-col">
             <div class="msg-meta">
@@ -490,48 +457,18 @@ body {
               <span class="msg-time">12:04 PM</span>
             </div>
             <div class="msg-text">
-              <span class="mention">@Red Claude</span> new prospect just DMed. Cross-chain payments dashboard.
+              <span class="mention">@Red Claude</span> new prospect. Cross-chain payments dashboard.
               <div class="slack-quote">
-                <div class="q-source">jacobv.eth · Farcaster DM</div>
+                <div class="q-source">jacobv.eth · #lobby</div>
                 <div class="q-text">Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?</div>
               </div>
               Make the ticket. OSINT the space.
             </div>
           </div>
         </div>
-        <div class="msg-row" id="sm2">
-          <div class="msg-avatar av-red">R</div>
-          <div class="msg-col">
-            <div class="msg-meta">
-              <span class="msg-name red-name">Red Claude</span>
-              <span class="msg-time">12:04 PM</span>
-            </div>
-            <div class="msg-text" id="sm2-text"><span class="cursor" id="sm2-cursor"></span></div>
-          </div>
-        </div>
-      </div>
 
-      <!-- SCENE 3: Ticket created + enrichment -->
-      <div class="scene" id="s3">
-        <div class="date-divider"><span>Today</span></div>
-        <div class="msg-row show" id="sm3a">
-          <div class="msg-avatar av-antimo">A</div>
-          <div class="msg-col">
-            <div class="msg-meta">
-              <span class="msg-name">Antimo</span>
-              <span class="msg-time">12:04 PM</span>
-            </div>
-            <div class="msg-text">
-              <span class="mention">@Red Claude</span> new prospect just DMed. Cross-chain payments dashboard.
-              <div class="slack-quote">
-                <div class="q-source">jacobv.eth · Farcaster DM</div>
-                <div class="q-text">Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?</div>
-              </div>
-              Make the ticket. OSINT the space.
-            </div>
-          </div>
-        </div>
-        <div class="msg-row show" id="sm3b">
+        <!-- Red Claude types response -->
+        <div class="msg-row" id="s2-msg2">
           <div class="msg-avatar av-red">R</div>
           <div class="msg-col">
             <div class="msg-meta">
@@ -539,29 +476,37 @@ body {
               <span class="msg-time">12:04 PM</span>
             </div>
             <div class="msg-text">
-              On it. Creating CLIENTS-47, running OSINT on cross-chain payments space.
-              <div class="unfurl" id="unfurl-card" style="opacity:0;transition:opacity 0.4s ease;">
-                <div class="unfurl-source">Linear · CLIENTS-47</div>
-                <div class="unfurl-title">jacobv.eth — cross-chain payments dashboard</div>
-                <div class="unfurl-fields">
-                  <div class="unfurl-field">
-                    <span class="unfurl-key">State</span>
-                    <span class="unfurl-val"><span class="unfurl-tag tag-qualifying">Qualifying</span></span>
-                  </div>
-                  <div class="unfurl-field">
-                    <span class="unfurl-key">Source</span>
-                    <span class="unfurl-val">Farcaster DM</span>
-                  </div>
-                  <div class="unfurl-field">
-                    <span class="unfurl-key">Created</span>
-                    <span class="unfurl-val"><span class="unfurl-tag tag-created">auto · 12:04 PM</span></span>
-                  </div>
+              <span id="s2-text"></span><span class="cursor" id="s2-cursor"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linear ticket card unfurl -->
+        <div class="msg-row" id="s2-msg3" style="padding-left:50px; opacity:0; transition: opacity 0.3s;">
+          <div class="msg-col">
+            <div class="unfurl" id="unfurl-card" style="opacity:0; transition:opacity 0.4s ease;">
+              <div class="unfurl-source">Linear · CLIENTS-47</div>
+              <div class="unfurl-title">jacobv.eth — cross-chain payments dashboard</div>
+              <div class="unfurl-fields">
+                <div class="unfurl-field">
+                  <span class="unfurl-key">State</span>
+                  <span class="unfurl-val"><span class="unfurl-tag tag-qualifying">Qualifying</span></span>
+                </div>
+                <div class="unfurl-field">
+                  <span class="unfurl-key">Source</span>
+                  <span class="unfurl-val">Farcaster DM</span>
+                </div>
+                <div class="unfurl-field">
+                  <span class="unfurl-key">Created</span>
+                  <span class="unfurl-val"><span class="unfurl-tag tag-created">auto · 12:04 PM</span></span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="msg-row" id="sm3c">
+
+        <!-- Red Claude enrichment (flows directly below — no frame break) -->
+        <div class="msg-row" id="s2-msg4">
           <div class="msg-avatar av-red">R</div>
           <div class="msg-col">
             <div class="msg-meta">
@@ -579,14 +524,14 @@ body {
             </div>
           </div>
         </div>
-      </div>
 
-    </div>
+      </div><!-- end s2-block -->
+    </div><!-- end messages -->
 
-    <!-- INPUT -->
+    <!-- INPUT BAR -->
     <div class="input-bar">
       <div class="input-inner">
-        <span class="input-placeholder">Message #clients</span>
+        <span class="input-placeholder" id="input-placeholder">Message #lobby</span>
         <div class="input-icons">
           <span class="input-icon">➕</span>
           <span class="input-icon">😊</span>
@@ -597,29 +542,24 @@ body {
 
     <!-- NAV -->
     <div class="nav-bar">
-      <span class="scene-label">Scene</span>
-      <div class="scene-dots">
-        <div class="scene-dot active" id="dot1"></div>
-        <div class="scene-dot" id="dot2"></div>
-        <div class="scene-dot" id="dot3"></div>
-      </div>
+      <span class="scene-pill active" id="pill-lobby">#lobby</span>
+      <span style="font-size:11px; color:rgba(255,255,255,0.15);">→</span>
+      <span class="scene-pill" id="pill-pipeline">#pipeline</span>
       <div class="nav-spacer"></div>
-      <button class="nav-btn" id="btn-back" style="display:none">← Back</button>
-      <button class="nav-btn primary" id="btn-next" disabled>Next →</button>
+      <button class="nav-btn primary" id="btn-replay" style="display:none;" onclick="location.reload()">↺ Replay</button>
     </div>
   </div>
 
 </div>
 
 <script>
-// ── helpers ──
 function typewrite(el, cursorEl, text, speed, onDone) {
   let i = 0;
   function tick() {
     if (i <= text.length) {
       el.textContent = text.slice(0, i);
       i++;
-      setTimeout(tick, speed + Math.random() * 18);
+      setTimeout(tick, speed + Math.random() * 12);
     } else {
       if (cursorEl) cursorEl.remove();
       if (onDone) onDone();
@@ -628,90 +568,100 @@ function typewrite(el, cursorEl, text, speed, onDone) {
   tick();
 }
 
-function setDots(n) {
-  ['dot1','dot2','dot3'].forEach((id, i) => {
-    document.getElementById(id).classList.toggle('active', i === n);
-  });
+function switchToPipeline() {
+  // Sidebar: deactivate lobby, activate pipeline
+  document.getElementById('ch-lobby').classList.remove('active');
+  const dot = document.getElementById('lobby-dot');
+  if (dot) dot.remove();
+  document.getElementById('ch-pipeline').classList.add('active');
+
+  // Channel header flash + update
+  const header = document.getElementById('channel-header');
+  header.classList.add('channel-transition');
+  document.getElementById('ch-name').textContent = '# pipeline';
+  document.getElementById('ch-topic').textContent = 'prospect tracking · auto-intake enabled';
+  document.getElementById('input-placeholder').textContent = 'Message #pipeline';
+
+  // Nav pills
+  document.getElementById('pill-lobby').classList.remove('active');
+  document.getElementById('pill-pipeline').classList.add('active');
 }
 
-function showScene(id) {
-  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+function runPipeline() {
+  // Hide lobby scene, show pipeline
+  document.getElementById('s1-block').style.display = 'none';
+  const s2 = document.getElementById('s2-block');
+  s2.style.display = 'flex';
 
-const btnNext = document.getElementById('btn-next');
-const btnBack = document.getElementById('btn-back');
-let currentScene = 1;
+  // Switch channel UI
+  switchToPipeline();
 
-function goToScene(n) {
-  currentScene = n;
-  showScene('s' + n);
-  setDots(n - 1);
-  btnBack.style.display = n > 1 ? 'inline-block' : 'none';
-  if (n === 1) { btnNext.disabled = true; btnNext.textContent = 'Next →'; startScene1(); }
-  if (n === 2) { btnNext.disabled = true; btnNext.textContent = 'Next →'; startScene2(); }
-  if (n === 3) { btnNext.textContent = '↺ Restart'; btnNext.disabled = false; startScene3(); }
-}
+  const m1 = document.getElementById('s2-msg1');
+  const m2 = document.getElementById('s2-msg2');
+  const m3 = document.getElementById('s2-msg3');
+  const m4 = document.getElementById('s2-msg4');
+  const textEl   = document.getElementById('s2-text');
+  const cursorEl = document.getElementById('s2-cursor');
+  const unfurl   = document.getElementById('unfurl-card');
+  const area     = document.getElementById('messages-area');
 
-btnNext.addEventListener('click', () => {
-  if (currentScene < 3) goToScene(currentScene + 1);
-  else location.reload();
-});
-btnBack.addEventListener('click', () => {
-  if (currentScene > 1) goToScene(currentScene - 1);
-});
-
-// ── Scene 1: DM typewriter ──
-let s1done = false;
-function startScene1() {
-  if (s1done) return;
-  s1done = true;
-  const el = document.getElementById('dm-text');
-  const cur = document.getElementById('dm-cursor');
-  const text = "Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?";
+  // Antimo's forwarded message appears
   setTimeout(() => {
-    typewrite(el, cur, text, 22, () => {
-      btnNext.disabled = false;
-    });
-  }, 600);
-}
+    m1.classList.add('show');
+    area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
+  }, 200);
 
-// ── Scene 2: Slack messages ──
-let s2done = false;
-function startScene2() {
-  if (s2done) return;
-  s2done = true;
-  const sm1 = document.getElementById('sm1');
-  const sm2 = document.getElementById('sm2');
-  const sm2text = document.getElementById('sm2-text');
-  const sm2cursor = document.getElementById('sm2-cursor');
-  setTimeout(() => { sm1.classList.add('show'); }, 250);
+  // Red Claude starts typing
   setTimeout(() => {
-    sm2.classList.add('show');
-    typewrite(sm2text, sm2cursor, "On it. Creating CLIENTS-47, running OSINT on cross-chain payments space.", 28, () => {
-      btnNext.disabled = false;
-    });
-  }, 1200);
+    m2.classList.add('show');
+    typewrite(textEl, cursorEl,
+      "On it. Creating CLIENTS-47, running OSINT on cross-chain payments space.",
+      24,
+      () => {
+        // Ticket card unfurls
+        setTimeout(() => {
+          m3.style.opacity = '1';
+          m3.classList.add('show');
+          unfurl.style.opacity = '1';
+          area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
+
+          // Enrichment flows directly below — no frame break
+          setTimeout(() => {
+            m4.classList.add('show');
+            area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
+
+            ['el1','el2','el3','el4'].forEach((id, i) => {
+              setTimeout(() => {
+                document.getElementById(id).classList.add('show');
+                area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
+                if (i === 3) {
+                  setTimeout(() => {
+                    document.getElementById('btn-replay').style.display = 'block';
+                  }, 500);
+                }
+              }, 300 + i * 550);
+            });
+          }, 700);
+        }, 350);
+      }
+    );
+  }, 800);
 }
 
-// ── Scene 3: Ticket unfurl + enrichment ──
-let s3done = false;
-function startScene3() {
-  if (s3done) return;
-  s3done = true;
-  const unfurl = document.getElementById('unfurl-card');
-  const sm3c = document.getElementById('sm3c');
-  setTimeout(() => { unfurl.style.opacity = '1'; }, 400);
-  setTimeout(() => { sm3c.classList.add('show'); }, 1000);
-  ['el1','el2','el3','el4'].forEach((id, i) => {
-    setTimeout(() => {
-      document.getElementById(id).classList.add('show');
-    }, 1200 + i * 500);
-  });
-}
+// ── Boot: Scene 1 — lobby ──
+const msg1 = document.getElementById('s1-msg1');
+const el1  = document.getElementById('s1-text');
+const cur1 = document.getElementById('s1-cursor');
 
-// boot
-startScene1();
+setTimeout(() => {
+  msg1.classList.add('show');
+  typewrite(
+    el1, cur1,
+    "Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?",
+    20,
+    () => setTimeout(runPipeline, 1000)
+  );
+}, 400);
 </script>
 </body>
 </html>
