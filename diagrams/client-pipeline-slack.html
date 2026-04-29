@@ -2,666 +2,747 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RED — Client Intake (Slack)</title>
+<title>RED — Client Pipeline</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #111214;
-  font-family: -apple-system, BlinkMacSystemFont, "Lato", "Inter", sans-serif;
-  min-height: 100vh;
+  background: #1a1a2e;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Lato', 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* ── SLACK APP SHELL ── */
-.slack-app {
-  width: 820px;
-  height: 560px;
-  border-radius: 10px;
+/* ═══ WINDOW ═══ */
+.window {
+  width: 1120px;
+  height: 780px;
+  border-radius: 12px;
   overflow: hidden;
-  display: flex;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.7);
-  border: 1px solid rgba(255,255,255,0.06);
-  animation: appIn 0.4s ease forwards;
-}
-@keyframes appIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
-
-/* ── SIDEBAR — narrow/squeezed ── */
-.sidebar {
-  width: 108px;
-  background: #3f0f40;
-  flex-shrink: 0;
+  box-shadow: 0 48px 140px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
 }
 
-.sidebar-header {
-  padding: 14px 10px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.workspace-name {
-  font-size: 14px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.01em;
-}
-.workspace-status {
+/* ═══ TITLE BAR ═══ */
+.title-bar {
+  height: 52px;
+  background: #350D36;
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 3px;
-}
-.status-dot {
-  width: 6px; height: 6px;
-  background: #2bac76;
-  border-radius: 50%;
-  border: 1.5px solid #3f0f40;
+  padding: 0 18px;
   flex-shrink: 0;
-}
-.status-text { font-size: 10px; color: rgba(255,255,255,0.5); }
-
-.sidebar-section {
-  padding: 8px 4px 4px;
-}
-.sidebar-section-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.06em;
-  padding: 0 6px;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-}
-
-.sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: rgba(255,255,255,0.58);
-  font-size: 13px;
-  transition: background 0.15s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sidebar-item.active {
-  background: rgba(255,255,255,0.18);
-  color: #fff;
-  font-weight: 600;
-}
-.sidebar-item .ch-hash { font-size: 12px; opacity: 0.5; flex-shrink: 0; }
-.sidebar-item .ch-label { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.sidebar-item .unread-dot {
-  width: 6px; height: 6px;
-  background: #fff;
-  border-radius: 50%;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.sidebar-divider {
-  height: 1px;
-  background: rgba(255,255,255,0.07);
-  margin: 5px 6px;
-}
-
-/* ── MAIN PANEL ── */
-.main {
-  flex: 1;
-  background: #1a1d21;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-}
-
-/* channel header */
-.channel-header {
-  background: #1a1d21;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 13px 18px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-shrink: 0;
-}
-.channel-header-name {
-  font-size: 17px;
-  font-weight: 800;
-  color: #fff;
-}
-.channel-header-topic {
-  font-size: 12px;
-  color: rgba(255,255,255,0.32);
-  margin-left: 8px;
-  padding-left: 8px;
-  border-left: 1px solid rgba(255,255,255,0.12);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* messages area */
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 20px 18px 10px;
-  display: flex;
-  flex-direction: column;
   gap: 0;
-  scroll-behavior: smooth;
+  user-select: none;
 }
 
-/* ── MESSAGE ROW ── */
-.msg-row {
+.traffic {
   display: flex;
-  gap: 12px;
-  padding: 5px 0;
-  opacity: 0;
+  gap: 8px;
+  margin-right: 14px;
+  flex-shrink: 0;
 }
-.msg-row.show { animation: msgIn 0.3s ease forwards; }
-@keyframes msgIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+.tl { width: 12px; height: 12px; border-radius: 50%; }
+.tl.r { background: #FF5F57; }
+.tl.y { background: #FEBC2E; }
+.tl.g { background: #28C840; }
 
-.msg-avatar {
-  width: 38px; height: 38px;
-  border-radius: 5px;
+.nav-arrows {
+  display: flex;
+  gap: 2px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.nav-arrow {
+  color: rgba(255,255,255,0.4);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 3px;
+  cursor: default;
+}
+
+.tb-search {
+  flex: 1;
+  max-width: 460px;
+  margin: 0 auto;
+  height: 28px;
+  background: rgba(255,255,255,0.13);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  color: rgba(255,255,255,0.65);
+  font-size: 13px;
+}
+.tb-search-icon { font-size: 12px; opacity: 0.8; }
+
+.tb-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.tb-avatar {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: #7C3AED;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white;
+}
+.tb-help {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ═══ BODY ═══ */
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ═══ ICON RAIL ═══ */
+.icon-rail {
+  width: 68px;
+  background: #3F0E40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ws-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #E8341C, #BF2213);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 900; color: white;
+  margin-bottom: 10px;
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+.ri {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ri.active {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+.ri-icon { font-size: 18px; line-height: 1; }
+.ri-label { font-size: 9px; color: inherit; }
+.ri-spacer { flex: 1; }
+.ri-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #7C3AED;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: white;
+  position: relative;
+  flex-shrink: 0;
+}
+.ri-avatar::after {
+  content: '';
+  position: absolute; bottom: 1px; right: 1px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #2BAC76;
+  border: 2px solid #3F0E40;
+}
+
+/* ═══ CHANNEL NAV ═══ */
+.ch-nav {
+  width: 260px;
+  background: #3F0E40;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ws-header {
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.ws-name { font-size: 16px; font-weight: 800; color: white; }
+.ws-chevron { color: white; font-size: 11px; }
+
+.nav-links { padding: 0 8px 8px; }
+.nav-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  color: rgba(255,255,255,0.8);
+  font-size: 14px;
+  cursor: pointer;
+}
+.nav-link:hover { background: rgba(255,255,255,0.08); }
+.nav-link-icon { font-size: 15px; opacity: 0.7; }
+
+.section-head {
+  display: flex; align-items: center; gap: 5px;
+  padding: 8px 16px 4px;
+  font-size: 13px; font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+}
+.s-chevron { font-size: 9px; color: rgba(255,255,255,0.5); }
+
+.ch-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px;
+  margin: 1px 8px;
+  border-radius: 6px;
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ch-item:hover { background: rgba(255,255,255,0.08); }
+.ch-item.active { background: #1264A3; color: white; font-weight: 600; }
+.ch-hash { font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.5); flex-shrink: 0; line-height: 1; }
+.ch-item.active .ch-hash { color: rgba(255,255,255,0.85); }
+
+/* ═══ MESSAGE PANE ═══ */
+.msg-pane {
+  flex: 1;
+  display: flex; flex-direction: column;
+  background: white;
+  overflow: hidden;
+  position: relative;
+}
+
+.ch-header {
+  height: 58px;
+  border-bottom: 1px solid #E8E8E8;
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 6px;
+  flex-shrink: 0;
+}
+.ch-header-hash { font-size: 22px; font-weight: 900; color: #1D1C1D; line-height: 1; }
+.ch-header-name { font-size: 16px; font-weight: 700; color: #1D1C1D; }
+.ch-header-chevron { font-size: 11px; color: #616061; margin-left: 2px; }
+
+/* Scenes */
+.scene {
+  position: absolute;
+  inset: 0;
+  padding: 24px 20px 0;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.scene.visible { opacity: 1; pointer-events: auto; }
+
+/* Messages */
+.msg {
+  display: flex; gap: 12px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.av {
+  width: 40px; height: 40px;
+  border-radius: 6px;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 800; color: #fff;
-  margin-top: 2px;
+  font-size: 14px; font-weight: 700; color: white;
 }
-.av-jacobv { background: linear-gradient(135deg, #4a90d9, #3ecf8e); }
-.av-antimo { background: #e8341c; }
-.av-red    { background: #5e6ad2; }
+.av-client { background: #2563EB; }
+.av-antimo { background: #7C3AED; }
+.av-bot    { background: linear-gradient(145deg, #E8341C, #BF2213); }
 
-.msg-col { min-width: 0; flex: 1; }
-.msg-meta {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+.msg-body { flex: 1; min-width: 0; }
+.msg-head {
+  display: flex; align-items: baseline; gap: 8px;
   margin-bottom: 3px;
 }
-.msg-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-}
-.msg-name.red-name { color: #8b83f7; }
-.msg-time {
-  font-size: 11px;
-  color: rgba(255,255,255,0.28);
-}
-.msg-text {
-  font-size: 15px;
-  color: #d1d2d3;
-  line-height: 1.6;
-}
-.msg-text .mention {
-  color: #70b8ff;
-  background: rgba(112,184,255,0.1);
-  border-radius: 3px;
-  padding: 0 2px;
-}
+.msg-name { font-size: 15px; font-weight: 700; color: #1D1C1D; }
+.msg-name.bot-name { color: #1D1C1D; }
+.msg-ts { font-size: 12px; color: #9E9E9E; }
+.msg-text { font-size: 15px; color: #1D1C1D; line-height: 1.55; }
+
+/* Typing blink cursor */
 .cursor {
   display: inline-block;
-  width: 2px; height: 15px;
-  background: #5e6ad2;
+  width: 2px; height: 16px;
+  background: #1D1C1D;
   margin-left: 1px;
   vertical-align: middle;
-  animation: blink 0.7s step-end infinite;
+  animation: blink 0.85s step-end infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* quote block */
-.slack-quote {
-  border-left: 3px solid rgba(255,255,255,0.22);
-  padding: 6px 11px;
-  margin: 7px 0 5px;
-  background: rgba(255,255,255,0.03);
-  border-radius: 0 4px 4px 0;
+/* Typing dots */
+.dots {
+  display: inline-flex; gap: 4px; align-items: center;
+  height: 22px; padding: 0 2px;
 }
-.slack-quote .q-source {
-  font-size: 11px;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 3px;
-  font-weight: 600;
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #B4B4B4;
+  animation: bounce 1.2s ease-in-out infinite;
 }
-.slack-quote .q-text {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.45;
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.30s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
 }
 
-/* unfurl / card */
-.unfurl {
-  margin-top: 8px;
-  border-left: 3px solid #5e6ad2;
-  background: rgba(94,106,210,0.07);
+/* Forwarded block */
+.fwd {
+  border-left: 3px solid #D8D8D8;
+  padding: 8px 12px;
+  margin: 8px 0;
+  background: #F8F8F8;
   border-radius: 0 6px 6px 0;
-  padding: 11px 14px;
-  max-width: 400px;
 }
-.unfurl-source { font-size: 11px; color: rgba(94,106,210,0.8); margin-bottom: 5px; font-weight: 600; }
-.unfurl-title { font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 7px; }
-.unfurl-fields { display: flex; flex-direction: column; gap: 5px; }
-.unfurl-field { display: flex; gap: 10px; font-size: 12px; }
-.unfurl-key { color: rgba(255,255,255,0.32); min-width: 52px; }
-.unfurl-val { color: rgba(255,255,255,0.65); }
-.unfurl-tag {
-  display: inline-block;
-  font-size: 10px; font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 3px;
-  margin-right: 3px;
-}
-.tag-qualifying { background: rgba(245,158,11,0.15); color: #f59e0b; }
-.tag-created    { background: rgba(16,185,129,0.15); color: #10b981; }
+.fwd-source { font-size: 12px; color: #616061; margin-bottom: 4px; font-weight: 600; }
+.fwd-text { font-size: 14px; color: #1D1C1D; line-height: 1.5; }
 
-/* enrich lines */
-.enrich-block {
-  margin-top: 7px;
-  max-width: 460px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.enrich-line {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.5;
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.4s ease, opacity 0.4s ease;
-  opacity: 0;
-  padding-left: 9px;
-  border-left: 2px solid rgba(255,255,255,0.07);
-}
-.enrich-line.show {
-  max-height: 60px;
-  opacity: 1;
-  color: rgba(255,255,255,0.7);
-  border-left-color: #10b981;
-}
-.enrich-line .etag {
-  color: #10b981;
-  font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.05em;
-  margin-right: 5px;
-}
-
-/* date divider */
-.date-divider {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 0 8px;
-}
-.date-divider span {
-  font-size: 11px; color: rgba(255,255,255,0.28); font-weight: 600; white-space: nowrap;
-}
-.date-divider::before, .date-divider::after {
-  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07);
-}
-
-/* channel transition flash */
-@keyframes channelFlash {
-  0%   { opacity: 1; }
-  35%  { opacity: 0.08; }
-  65%  { opacity: 0.75; }
-  100% { opacity: 1; }
-}
-.channel-transition { animation: channelFlash 0.35s ease forwards; }
-
-/* ── INPUT BAR ── */
-.input-bar {
-  flex-shrink: 0;
-  padding: 8px 18px 13px;
-}
-.input-inner {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.11);
+/* Ticket card */
+.card {
+  border: 1px solid #E8E8E8;
   border-radius: 8px;
-  padding: 9px 13px;
+  padding: 14px 16px;
+  margin-top: 10px;
+  max-width: 500px;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  display: none;
+  animation: fadeUp 0.3s ease forwards;
+}
+.card.show { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-eyebrow {
+  font-size: 11px; font-weight: 700;
+  color: #616061; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 7px;
   display: flex; align-items: center; gap: 8px;
 }
-.input-placeholder {
-  font-size: 14px;
-  color: rgba(255,255,255,0.22);
-  flex: 1;
+.card-id {
+  background: #EDE9FE; color: #5B21B6;
+  padding: 2px 7px; border-radius: 4px;
+  font-size: 11px; font-weight: 700;
+  text-transform: none; letter-spacing: 0;
 }
-.input-icons { display: flex; gap: 10px; }
-.input-icon { font-size: 14px; opacity: 0.25; cursor: pointer; }
+.card-title { font-size: 15px; font-weight: 700; color: #1D1C1D; margin-bottom: 10px; line-height: 1.4; }
+.card-tags { display: flex; gap: 7px; flex-wrap: wrap; }
+.tag {
+  background: #F4F4F4; border: 1px solid #E0E0E0;
+  border-radius: 4px; padding: 2px 9px;
+  font-size: 12px; color: #454545; font-weight: 500;
+}
+.tag.green { background: #E6F7F1; border-color: #A7E3CC; color: #007A5A; }
+.tag.purple { background: #EDE9FE; border-color: #C4B5FD; color: #5B21B6; }
 
-/* ── NAV ── */
-.nav-bar {
+/* Input bar */
+.input-bar {
+  height: 70px; padding: 12px 20px;
   flex-shrink: 0;
-  padding: 5px 18px 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  background: #1a1d21;
+  position: relative; z-index: 2;
+  background: white;
+  border-top: 1px solid #F0F0F0;
 }
-.nav-btn {
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 4px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.15s;
+.input-inner {
+  border: 1px solid #CDCDCD; border-radius: 8px;
+  height: 46px; display: flex; align-items: center;
+  padding: 0 12px; gap: 10px;
 }
-.nav-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.7); }
-.nav-btn.primary {
-  color: #fff;
-  background: rgba(94,106,210,0.25);
-  border-color: rgba(94,106,210,0.5);
+.input-plus {
+  width: 30px; height: 30px;
+  border: 1.5px solid #C9C9C9; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: #616061; font-size: 20px; font-weight: 300;
+  flex-shrink: 0; line-height: 1;
 }
-.nav-btn.primary:hover { background: rgba(94,106,210,0.4); }
-.nav-spacer { flex: 1; }
+.input-ph { flex: 1; font-size: 15px; color: #9E9E9E; }
+.send-group { display: flex; align-items: center; flex-shrink: 0; }
+.send-btn {
+  width: 30px; height: 30px;
+  border-radius: 6px 0 0 6px;
+  background: #007A5A;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 14px;
+}
+.send-caret {
+  width: 20px; height: 30px;
+  background: #007A5A; border-radius: 0 6px 6px 0;
+  border-left: 1px solid rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 9px;
+}
 
-.scene-pill {
-  font-size: 11px;
-  color: rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 3px 10px;
-  border-radius: 99px;
-  letter-spacing: 0.02em;
-  transition: all 0.2s;
+/* Channel flash overlay */
+.ch-flash {
+  position: absolute; inset: 0;
+  background: white; opacity: 0;
+  pointer-events: none; z-index: 5;
+  transition: opacity 0.15s;
 }
-.scene-pill.active {
-  color: rgba(255,255,255,0.8);
-  background: rgba(94,106,210,0.18);
-  border-color: rgba(94,106,210,0.4);
+
+/* Replay button */
+.replay {
+  position: absolute; bottom: 82px; right: 24px;
+  background: #1264A3; color: white;
+  border: none; border-radius: 20px;
+  padding: 9px 22px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s;
+  z-index: 10;
 }
+.replay.show { opacity: 1; pointer-events: auto; }
 </style>
 </head>
 <body>
 
-<div class="slack-app">
+<div class="window">
 
-  <!-- SIDEBAR -->
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="workspace-name">RED</div>
-      <div class="workspace-status">
-        <div class="status-dot"></div>
-        <span class="status-text">Antimo</span>
-      </div>
+  <!-- TITLE BAR -->
+  <div class="title-bar">
+    <div class="traffic">
+      <div class="tl r"></div>
+      <div class="tl y"></div>
+      <div class="tl g"></div>
     </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-label">Channels</div>
-
-      <!-- lobby first, pipeline second -->
-      <div class="sidebar-item active" id="ch-lobby">
-        <span class="ch-hash">#</span>
-        <span class="ch-label">lobby</span>
-        <div class="unread-dot" id="lobby-dot"></div>
-      </div>
-      <div class="sidebar-item" id="ch-pipeline">
-        <span class="ch-hash">#</span>
-        <span class="ch-label">pipeline</span>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
-      <div class="sidebar-item"><span class="ch-hash">#</span><span class="ch-label">general</span></div>
-      <div class="sidebar-item"><span class="ch-hash">#</span><span class="ch-label">ops</span></div>
-      <div class="sidebar-item"><span class="ch-hash">#</span><span class="ch-label">finance</span></div>
+    <div class="nav-arrows">
+      <span class="nav-arrow">&#8249;</span>
+      <span class="nav-arrow">&#8250;</span>
+    </div>
+    <div class="tb-search">
+      <span class="tb-search-icon">&#128269;</span>
+      <span id="tb-search-text">Search RED</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-avatar">A</div>
+      <div class="tb-help">?</div>
     </div>
   </div>
 
-  <!-- MAIN PANEL -->
-  <div class="main" id="main-panel">
-    <div class="channel-header" id="channel-header">
-      <span class="channel-header-name" id="ch-name"># lobby</span>
-      <span class="channel-header-topic" id="ch-topic">inbound · first contact</span>
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- ICON RAIL -->
+    <div class="icon-rail">
+      <div class="ws-icon">R</div>
+      <div class="ri active">
+        <span class="ri-icon">⌂</span>
+        <span class="ri-label">Home</span>
+      </div>
+      <div class="ri">
+        <span class="ri-icon">✉</span>
+        <span class="ri-label">DMs</span>
+      </div>
+      <div class="ri">
+        <span class="ri-icon">🔔</span>
+        <span class="ri-label">Activity</span>
+      </div>
+      <div class="ri">
+        <span class="ri-icon">📄</span>
+        <span class="ri-label">Files</span>
+      </div>
+      <div class="ri">
+        <span class="ri-icon">⚙</span>
+        <span class="ri-label">Tools</span>
+      </div>
+      <div class="ri">
+        <span class="ri-icon">···</span>
+        <span class="ri-label">More</span>
+      </div>
+      <div class="ri-spacer"></div>
+      <div class="ri-avatar">A</div>
     </div>
 
-    <div class="messages" id="messages-area">
-      <div class="date-divider"><span>Today</span></div>
+    <!-- CHANNEL NAV -->
+    <div class="ch-nav">
+      <div class="ws-header">
+        <span class="ws-name">RED</span>
+        <span class="ws-chevron">&#8964;</span>
+      </div>
+      <div class="nav-links">
+        <div class="nav-link">
+          <span class="nav-link-icon">&#9776;</span>
+          <span>Unread messages</span>
+        </div>
+        <div class="nav-link">
+          <span class="nav-link-icon">&#9655;</span>
+          <span>Threads</span>
+        </div>
+        <div class="nav-link">
+          <span class="nav-link-icon">&#10148;</span>
+          <span>Drafts &amp; sent</span>
+        </div>
+      </div>
 
-      <!-- SCENE 1: lobby — client message arrives inline -->
-      <div id="s1-block">
-        <div class="msg-row" id="s1-msg1">
-          <div class="msg-avatar av-jacobv">JV</div>
-          <div class="msg-col">
-            <div class="msg-meta">
-              <span class="msg-name">jacobv.eth</span>
-              <span class="msg-time">12:03 PM</span>
+      <div class="section-head">
+        <span class="s-chevron">&#9660;</span>
+        Starred &#11088;
+      </div>
+      <div class="ch-item active" id="ch-lobby">
+        <span class="ch-hash">#</span>
+        <span>lobby</span>
+      </div>
+      <div class="ch-item" id="ch-pipeline">
+        <span class="ch-hash">#</span>
+        <span>pipeline</span>
+      </div>
+
+      <div class="section-head" style="margin-top:6px;">
+        <span class="s-chevron">&#9660;</span>
+        Channels
+      </div>
+      <div class="ch-item"><span class="ch-hash">#</span><span>announcements</span></div>
+      <div class="ch-item"><span class="ch-hash">#</span><span>general</span></div>
+      <div class="ch-item"><span class="ch-hash">#</span><span>marketing</span></div>
+      <div class="ch-item"><span class="ch-hash">#</span><span>ops</span></div>
+    </div>
+
+    <!-- MESSAGE PANE -->
+    <div class="msg-pane">
+
+      <!-- Channel header -->
+      <div class="ch-header">
+        <span class="ch-header-hash">#</span>
+        <span class="ch-header-name" id="ch-header-name">lobby</span>
+        <span class="ch-header-chevron">&#8964;</span>
+      </div>
+
+      <!-- SCENE: lobby -->
+      <div class="scene visible" id="scene-lobby">
+        <div class="msg">
+          <div class="av av-client">AC</div>
+          <div class="msg-body">
+            <div class="msg-head">
+              <span class="msg-name">Alex Chen</span>
+              <span class="msg-ts">Today at 9:41 AM</span>
             </div>
             <div class="msg-text">
-              <span id="s1-text"></span><span class="cursor" id="s1-cursor"></span>
+              <span id="lobby-text"></span><span class="cursor" id="lobby-cursor"></span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SCENE 2: pipeline — continuous, no frame break -->
-      <div id="s2-block" style="display:none; flex-direction:column; gap:0;">
+      <!-- SCENE: pipeline (continuous — no frame 3 break) -->
+      <div class="scene" id="scene-pipeline">
 
-        <!-- Antimo forwards to pipeline -->
-        <div class="msg-row" id="s2-msg1">
-          <div class="msg-avatar av-antimo">A</div>
-          <div class="msg-col">
-            <div class="msg-meta">
+        <!-- Antimo forwards -->
+        <div class="msg" id="p-msg-antimo" style="opacity:0; transition: opacity 0.3s;">
+          <div class="av av-antimo">A</div>
+          <div class="msg-body">
+            <div class="msg-head">
               <span class="msg-name">Antimo</span>
-              <span class="msg-time">12:04 PM</span>
+              <span class="msg-ts">Today at 9:42 AM</span>
             </div>
             <div class="msg-text">
-              <span class="mention">@Red Claude</span> new prospect. Cross-chain payments dashboard.
-              <div class="slack-quote">
-                <div class="q-source">jacobv.eth · #lobby</div>
-                <div class="q-text">Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?</div>
+              New prospect — routing to pipeline
+              <div class="fwd">
+                <div class="fwd-source">Alex Chen · #lobby</div>
+                <div class="fwd-text">Hi — I'm Alex from ChainFlow. We're looking for an agency to build a cross-chain payment dashboard. Budget is around $40k. Is this something RED handles?</div>
               </div>
-              Make the ticket. OSINT the space.
             </div>
           </div>
         </div>
 
         <!-- Red Claude types response -->
-        <div class="msg-row" id="s2-msg2">
-          <div class="msg-avatar av-red">R</div>
-          <div class="msg-col">
-            <div class="msg-meta">
-              <span class="msg-name red-name">Red Claude</span>
-              <span class="msg-time">12:04 PM</span>
+        <div class="msg" id="p-msg-bot" style="opacity:0; transition: opacity 0.3s;">
+          <div class="av av-bot">R</div>
+          <div class="msg-body">
+            <div class="msg-head">
+              <span class="msg-name bot-name">Red Claude</span>
+              <span class="msg-ts">Today at 9:42 AM</span>
             </div>
             <div class="msg-text">
-              <span id="s2-text"></span><span class="cursor" id="s2-cursor"></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Linear ticket card unfurl -->
-        <div class="msg-row" id="s2-msg3" style="padding-left:50px; opacity:0; transition: opacity 0.3s;">
-          <div class="msg-col">
-            <div class="unfurl" id="unfurl-card" style="opacity:0; transition:opacity 0.4s ease;">
-              <div class="unfurl-source">Linear · CLIENTS-47</div>
-              <div class="unfurl-title">jacobv.eth — cross-chain payments dashboard</div>
-              <div class="unfurl-fields">
-                <div class="unfurl-field">
-                  <span class="unfurl-key">State</span>
-                  <span class="unfurl-val"><span class="unfurl-tag tag-qualifying">Qualifying</span></span>
-                </div>
-                <div class="unfurl-field">
-                  <span class="unfurl-key">Source</span>
-                  <span class="unfurl-val">Farcaster DM</span>
-                </div>
-                <div class="unfurl-field">
-                  <span class="unfurl-key">Created</span>
-                  <span class="unfurl-val"><span class="unfurl-tag tag-created">auto · 12:04 PM</span></span>
+              <!-- Typing dots shown first -->
+              <div class="dots" id="bot-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+              <!-- Then text types in -->
+              <span id="bot-text" style="display:none;"></span><span class="cursor" id="bot-cursor" style="display:none;"></span>
+              <!-- Ticket card unfurls below — no separate frame -->
+              <div class="card" id="ticket-card">
+                <div class="card-eyebrow">Linear issue created <span class="card-id">RED-271</span></div>
+                <div class="card-title">New prospect: Cross-chain payment dashboard — ChainFlow</div>
+                <div class="card-tags">
+                  <span class="tag green">&#10003; Enriched</span>
+                  <span class="tag purple">Web3 / DeFi</span>
+                  <span class="tag">$40k budget</span>
+                  <span class="tag">Inbound</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Red Claude enrichment (flows directly below — no frame break) -->
-        <div class="msg-row" id="s2-msg4">
-          <div class="msg-avatar av-red">R</div>
-          <div class="msg-col">
-            <div class="msg-meta">
-              <span class="msg-name red-name">Red Claude</span>
-              <span class="msg-time">12:04 PM</span>
-            </div>
-            <div class="msg-text">
-              OSINT done. Updating CLIENTS-47 ↗
-              <div class="enrich-block">
-                <div class="enrich-line" id="el1"><span class="etag">Space</span>Cross-chain liquidity aggregation is active — Li.Fi, Socket, deBridge leading infra.</div>
-                <div class="enrich-line" id="el2"><span class="etag">Signal</span>jacobv.eth · 2.1k followers · prev built zkSync tooling. High-intent inbound.</div>
-                <div class="enrich-line" id="el3"><span class="etag">Scope</span>Dashboard product — likely 6–10 week engagement. Design + front-end.</div>
-                <div class="enrich-line" id="el4"><span class="etag">Action</span>Qualify budget + timeline. Schedule intro call.</div>
-              </div>
-            </div>
+      </div>
+
+      <!-- Flash overlay -->
+      <div class="ch-flash" id="ch-flash"></div>
+
+      <!-- Input bar -->
+      <div class="input-bar">
+        <div class="input-inner">
+          <div class="input-plus">+</div>
+          <span class="input-ph" id="input-ph">Message #lobby</span>
+          <div class="send-group">
+            <div class="send-btn">&#9658;</div>
+            <div class="send-caret">&#8964;</div>
           </div>
-        </div>
-
-      </div><!-- end s2-block -->
-    </div><!-- end messages -->
-
-    <!-- INPUT BAR -->
-    <div class="input-bar">
-      <div class="input-inner">
-        <span class="input-placeholder" id="input-placeholder">Message #lobby</span>
-        <div class="input-icons">
-          <span class="input-icon">➕</span>
-          <span class="input-icon">😊</span>
-          <span class="input-icon">@</span>
         </div>
       </div>
-    </div>
 
-    <!-- NAV -->
-    <div class="nav-bar">
-      <span class="scene-pill active" id="pill-lobby">#lobby</span>
-      <span style="font-size:11px; color:rgba(255,255,255,0.15);">→</span>
-      <span class="scene-pill" id="pill-pipeline">#pipeline</span>
-      <div class="nav-spacer"></div>
-      <button class="nav-btn primary" id="btn-replay" style="display:none;" onclick="location.reload()">↺ Replay</button>
-    </div>
-  </div>
+      <!-- Replay -->
+      <button class="replay" id="replay-btn" onclick="startAnim()">&#9654; Replay</button>
 
-</div>
+    </div><!-- /msg-pane -->
+  </div><!-- /body -->
+</div><!-- /window -->
 
 <script>
-function typewrite(el, cursorEl, text, speed, onDone) {
-  let i = 0;
-  function tick() {
-    if (i <= text.length) {
-      el.textContent = text.slice(0, i);
-      i++;
-      setTimeout(tick, speed + Math.random() * 12);
-    } else {
-      if (cursorEl) cursorEl.remove();
-      if (onDone) onDone();
-    }
+let playId = 0;
+
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+async function typeText(el, text, speed, pid) {
+  el.textContent = '';
+  for (let i = 0; i < text.length; i++) {
+    if (playId !== pid) return false;
+    el.textContent = text.slice(0, i + 1);
+    await delay(speed + Math.random() * 10);
   }
-  tick();
+  return true;
 }
 
-function switchToPipeline() {
-  // Sidebar: deactivate lobby, activate pipeline
+async function startAnim() {
+  const pid = ++playId;
+
+  // Reset UI
+  document.getElementById('replay-btn').classList.remove('show');
+
+  // Sidebar
+  document.getElementById('ch-lobby').classList.add('active');
+  document.getElementById('ch-pipeline').classList.remove('active');
+
+  // Header + input
+  document.getElementById('ch-header-name').textContent = 'lobby';
+  document.getElementById('input-ph').textContent = 'Message #lobby';
+
+  // Scenes
+  document.getElementById('scene-lobby').classList.add('visible');
+  document.getElementById('scene-pipeline').classList.remove('visible');
+
+  // Lobby
+  document.getElementById('lobby-text').textContent = '';
+  document.getElementById('lobby-cursor').style.display = 'inline-block';
+
+  // Pipeline
+  document.getElementById('p-msg-antimo').style.opacity = '0';
+  document.getElementById('p-msg-bot').style.opacity = '0';
+  document.getElementById('bot-dots').style.display = 'flex';
+  document.getElementById('bot-text').style.display = 'none';
+  document.getElementById('bot-text').textContent = '';
+  document.getElementById('bot-cursor').style.display = 'none';
+  document.getElementById('ticket-card').classList.remove('show');
+
+  // Flash
+  document.getElementById('ch-flash').style.opacity = '0';
+
+  // ── PHASE 1: client message types in #lobby ──
+  await delay(700);
+  const lobbyMsg = "Hi — I'm Alex from ChainFlow. We're looking for an agency to build a cross-chain payment dashboard. Budget around $40k. Is this something RED handles?";
+  const ok1 = await typeText(document.getElementById('lobby-text'), lobbyMsg, 28, pid);
+  if (!ok1) return;
+  document.getElementById('lobby-cursor').style.display = 'none';
+
+  await delay(900);
+  if (playId !== pid) return;
+
+  // ── TRANSITION: lobby → pipeline ──
+  const flash = document.getElementById('ch-flash');
+  flash.style.transition = 'opacity 0.1s';
+  flash.style.opacity = '0.6';
+  await delay(100);
+  if (playId !== pid) return;
+  flash.style.opacity = '0';
+
+  // Switch sidebar + header
   document.getElementById('ch-lobby').classList.remove('active');
-  const dot = document.getElementById('lobby-dot');
-  if (dot) dot.remove();
   document.getElementById('ch-pipeline').classList.add('active');
+  document.getElementById('ch-header-name').textContent = 'pipeline';
+  document.getElementById('input-ph').textContent = 'Message #pipeline';
 
-  // Channel header flash + update
-  const header = document.getElementById('channel-header');
-  header.classList.add('channel-transition');
-  document.getElementById('ch-name').textContent = '# pipeline';
-  document.getElementById('ch-topic').textContent = 'prospect tracking · auto-intake enabled';
-  document.getElementById('input-placeholder').textContent = 'Message #pipeline';
+  // Switch scenes
+  document.getElementById('scene-lobby').classList.remove('visible');
+  document.getElementById('scene-pipeline').classList.add('visible');
 
-  // Nav pills
-  document.getElementById('pill-lobby').classList.remove('active');
-  document.getElementById('pill-pipeline').classList.add('active');
+  // ── PHASE 2: Antimo's forwarded message appears ──
+  await delay(300);
+  if (playId !== pid) return;
+  document.getElementById('p-msg-antimo').style.opacity = '1';
+
+  await delay(600);
+  if (playId !== pid) return;
+
+  // ── PHASE 3: Red Claude typing dots ──
+  document.getElementById('p-msg-bot').style.opacity = '1';
+  await delay(1600);
+  if (playId !== pid) return;
+
+  // Dots → text
+  document.getElementById('bot-dots').style.display = 'none';
+  document.getElementById('bot-text').style.display = 'inline';
+  document.getElementById('bot-cursor').style.display = 'inline-block';
+
+  const botMsg = "On it — ticket created, lead enriched.";
+  const ok2 = await typeText(document.getElementById('bot-text'), botMsg, 34, pid);
+  if (!ok2) return;
+  document.getElementById('bot-cursor').style.display = 'none';
+
+  await delay(350);
+  if (playId !== pid) return;
+
+  // ── Ticket card unfurls (same scene, flows below) ──
+  document.getElementById('ticket-card').classList.add('show');
+
+  await delay(1400);
+  if (playId !== pid) return;
+
+  document.getElementById('replay-btn').classList.add('show');
 }
 
-function runPipeline() {
-  // Hide lobby scene, show pipeline
-  document.getElementById('s1-block').style.display = 'none';
-  const s2 = document.getElementById('s2-block');
-  s2.style.display = 'flex';
-
-  // Switch channel UI
-  switchToPipeline();
-
-  const m1 = document.getElementById('s2-msg1');
-  const m2 = document.getElementById('s2-msg2');
-  const m3 = document.getElementById('s2-msg3');
-  const m4 = document.getElementById('s2-msg4');
-  const textEl   = document.getElementById('s2-text');
-  const cursorEl = document.getElementById('s2-cursor');
-  const unfurl   = document.getElementById('unfurl-card');
-  const area     = document.getElementById('messages-area');
-
-  // Antimo's forwarded message appears
-  setTimeout(() => {
-    m1.classList.add('show');
-    area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
-  }, 200);
-
-  // Red Claude starts typing
-  setTimeout(() => {
-    m2.classList.add('show');
-    typewrite(textEl, cursorEl,
-      "On it. Creating CLIENTS-47, running OSINT on cross-chain payments space.",
-      24,
-      () => {
-        // Ticket card unfurls
-        setTimeout(() => {
-          m3.style.opacity = '1';
-          m3.classList.add('show');
-          unfurl.style.opacity = '1';
-          area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
-
-          // Enrichment flows directly below — no frame break
-          setTimeout(() => {
-            m4.classList.add('show');
-            area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
-
-            ['el1','el2','el3','el4'].forEach((id, i) => {
-              setTimeout(() => {
-                document.getElementById(id).classList.add('show');
-                area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
-                if (i === 3) {
-                  setTimeout(() => {
-                    document.getElementById('btn-replay').style.display = 'block';
-                  }, 500);
-                }
-              }, 300 + i * 550);
-            });
-          }, 700);
-        }, 350);
-      }
-    );
-  }, 800);
-}
-
-// ── Boot: Scene 1 — lobby ──
-const msg1 = document.getElementById('s1-msg1');
-const el1  = document.getElementById('s1-text');
-const cur1 = document.getElementById('s1-cursor');
-
-setTimeout(() => {
-  msg1.classList.add('show');
-  typewrite(
-    el1, cur1,
-    "Hey, working on a cross-chain payments dashboard — aggregating liquidity across 4–5 chains. Heard RED does this kind of product work. Can you help?",
-    20,
-    () => setTimeout(runPipeline, 1000)
-  );
-}, 400);
+window.addEventListener('load', () => setTimeout(startAnim, 500));
 </script>
 </body>
 </html>
