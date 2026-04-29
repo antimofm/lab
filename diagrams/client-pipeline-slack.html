@@ -12,27 +12,28 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Lato', 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* ═══ WINDOW ═══ */
+/* ═══ WINDOW — 1095×750 matches 2190×1500 @2x reference ═══ */
 .window {
-  width: 1120px;
-  height: 780px;
-  border-radius: 12px;
+  width: 1095px;
+  height: 750px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 48px 140px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-/* ═══ TITLE BAR ═══ */
+/* ═══ TITLE BAR — 36px matches ~72px in ref ═══ */
 .title-bar {
-  height: 52px;
-  background: #350D36;
+  height: 36px;
+  background: #3D1045;
   display: flex;
   align-items: center;
-  padding: 0 18px;
+  padding: 0 14px;
   flex-shrink: 0;
   gap: 0;
   user-select: none;
@@ -40,8 +41,8 @@ body {
 
 .traffic {
   display: flex;
-  gap: 8px;
-  margin-right: 14px;
+  gap: 6px;
+  margin-right: 16px;
   flex-shrink: 0;
 }
 .tl { width: 12px; height: 12px; border-radius: 50%; }
@@ -51,55 +52,74 @@ body {
 
 .nav-arrows {
   display: flex;
-  gap: 2px;
+  gap: 0;
   margin-right: 10px;
   flex-shrink: 0;
+  align-items: center;
 }
 .nav-arrow {
-  color: rgba(255,255,255,0.4);
-  font-size: 16px;
+  color: rgba(255,255,255,0.45);
+  font-size: 18px;
   line-height: 1;
-  padding: 0 3px;
+  padding: 0 4px;
   cursor: default;
+  font-weight: 300;
+}
+
+/* clock icon */
+.nav-clock {
+  color: rgba(255,255,255,0.45);
+  font-size: 13px;
+  margin-right: 12px;
 }
 
 .tb-search {
   flex: 1;
   max-width: 460px;
   margin: 0 auto;
-  height: 28px;
-  background: rgba(255,255,255,0.13);
-  border-radius: 7px;
+  height: 24px;
+  background: rgba(255,255,255,0.14);
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  gap: 8px;
-  color: rgba(255,255,255,0.65);
+  padding: 0 10px;
+  gap: 7px;
+  color: rgba(255,255,255,0.7);
   font-size: 13px;
 }
-.tb-search-icon { font-size: 12px; opacity: 0.8; }
+.tb-search-icon { font-size: 11px; opacity: 0.85; }
 
 .tb-right {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
-.tb-avatar {
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  background: #7C3AED;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: white;
+.tb-avatar-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 2px 6px 2px 3px;
 }
-.tb-help {
+.tb-av {
   width: 22px; height: 22px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.4);
+  background: linear-gradient(135deg, #E8341C, #BF2213);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; color: white;
+  margin-right: 4px;
+}
+.tb-chevron { color: rgba(255,255,255,0.6); font-size: 8px; }
+.tb-help {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.45);
   display: flex; align-items: center; justify-content: center;
   color: rgba(255,255,255,0.7);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -110,15 +130,15 @@ body {
   overflow: hidden;
 }
 
-/* ═══ ICON RAIL ═══ */
+/* ═══ ICON RAIL — 54px matches ~108px in ref ═══ */
 .icon-rail {
-  width: 68px;
+  width: 54px;
   background: #3F0E40;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 14px 0;
-  gap: 4px;
+  padding: 12px 0;
+  gap: 2px;
   flex-shrink: 0;
 }
 
@@ -127,9 +147,8 @@ body {
   border-radius: 8px;
   background: linear-gradient(145deg, #E8341C, #BF2213);
   display: flex; align-items: center; justify-content: center;
-  font-size: 17px; font-weight: 900; color: white;
+  font-size: 16px; font-weight: 900; color: white;
   margin-bottom: 10px;
-  letter-spacing: -1px;
   flex-shrink: 0;
 }
 
@@ -139,90 +158,108 @@ body {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 2px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.55);
   cursor: pointer;
   flex-shrink: 0;
 }
-.ri.active {
-  background: rgba(255,255,255,0.15);
-  color: white;
-}
-.ri-icon { font-size: 18px; line-height: 1; }
-.ri-label { font-size: 9px; color: inherit; }
+.ri.active { color: white; }
+.ri-icon { font-size: 17px; line-height: 1; }
+.ri-label { font-size: 8.5px; color: inherit; }
 .ri-spacer { flex: 1; }
+.ri-plus {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.55);
+  font-size: 20px; font-weight: 300;
+  line-height: 1;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
 .ri-avatar {
-  width: 36px; height: 36px;
+  width: 34px; height: 34px;
   border-radius: 50%;
   background: #7C3AED;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: white;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Ccircle cx='17' cy='17' r='17' fill='%237C3AED'/%3E%3Ctext x='17' y='22' text-anchor='middle' font-size='14' font-weight='700' fill='white' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E");
   position: relative;
   flex-shrink: 0;
 }
 .ri-avatar::after {
   content: '';
-  position: absolute; bottom: 1px; right: 1px;
-  width: 10px; height: 10px;
+  position: absolute; bottom: 0; right: 0;
+  width: 9px; height: 9px;
   border-radius: 50%;
   background: #2BAC76;
   border: 2px solid #3F0E40;
 }
 
-/* ═══ CHANNEL NAV ═══ */
+/* ═══ CHANNEL NAV — 164px matches ~328px in ref ═══ */
 .ch-nav {
-  width: 260px;
+  width: 164px;
   background: #3F0E40;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
+  border-right: 1px solid rgba(0,0,0,0.15);
 }
 
 .ws-header {
-  padding: 14px 16px 10px;
+  padding: 10px 12px 8px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   cursor: pointer;
+  flex-shrink: 0;
 }
-.ws-name { font-size: 16px; font-weight: 800; color: white; }
-.ws-chevron { color: white; font-size: 11px; }
+.ws-name { font-size: 15px; font-weight: 800; color: white; }
+.ws-chevron { color: rgba(255,255,255,0.7); font-size: 10px; }
 
-.nav-links { padding: 0 8px 8px; }
+.nav-links { padding: 0 6px 6px; flex-shrink: 0; }
 .nav-link {
-  display: flex; align-items: center; gap: 10px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  color: rgba(255,255,255,0.8);
-  font-size: 14px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
   cursor: pointer;
 }
-.nav-link:hover { background: rgba(255,255,255,0.08); }
-.nav-link-icon { font-size: 15px; opacity: 0.7; }
+.nav-link-icon { font-size: 13px; opacity: 0.7; flex-shrink: 0; }
 
 .section-head {
-  display: flex; align-items: center; gap: 5px;
-  padding: 8px 16px 4px;
-  font-size: 13px; font-weight: 700;
-  color: rgba(255,255,255,0.85);
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 12px 3px;
+  font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,0.8);
   cursor: pointer;
+  flex-shrink: 0;
 }
-.s-chevron { font-size: 9px; color: rgba(255,255,255,0.5); }
+.s-chevron { font-size: 8px; color: rgba(255,255,255,0.45); }
 
 .ch-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 8px;
-  margin: 1px 8px;
-  border-radius: 6px;
-  color: rgba(255,255,255,0.75);
-  font-size: 14px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 6px;
+  margin: 1px 6px;
+  border-radius: 5px;
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.ch-item:hover { background: rgba(255,255,255,0.08); }
-.ch-item.active { background: #1264A3; color: white; font-weight: 600; }
-.ch-hash { font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.5); flex-shrink: 0; line-height: 1; }
-.ch-item.active .ch-hash { color: rgba(255,255,255,0.85); }
+.ch-item.active {
+  background: #1164A3;
+  color: white;
+  font-weight: 600;
+}
+.ch-hash {
+  font-size: 14px; font-weight: 300;
+  color: rgba(255,255,255,0.45);
+  flex-shrink: 0; line-height: 1;
+}
+.ch-item.active .ch-hash { color: rgba(255,255,255,0.8); }
 
 /* ═══ MESSAGE PANE ═══ */
 .msg-pane {
@@ -234,41 +271,45 @@ body {
 }
 
 .ch-header {
-  height: 58px;
-  border-bottom: 1px solid #E8E8E8;
+  height: 49px;
+  border-bottom: 1px solid #DDDDDD;
   display: flex; align-items: center;
-  padding: 0 20px; gap: 6px;
+  padding: 0 20px; gap: 5px;
   flex-shrink: 0;
+  background: white;
+  position: relative;
+  z-index: 2;
 }
-.ch-header-hash { font-size: 22px; font-weight: 900; color: #1D1C1D; line-height: 1; }
+.ch-header-hash { font-size: 20px; font-weight: 900; color: #1D1C1D; line-height: 1; }
 .ch-header-name { font-size: 16px; font-weight: 700; color: #1D1C1D; }
-.ch-header-chevron { font-size: 11px; color: #616061; margin-left: 2px; }
+.ch-header-chevron { font-size: 10px; color: #616061; margin-left: 1px; }
 
-/* Scenes */
+/* ═══ SCENES ═══ */
 .scene {
   position: absolute;
-  inset: 0;
-  padding: 24px 20px 0;
+  top: 49px; left: 0; right: 0; bottom: 60px;
+  padding: 20px 20px 0;
   overflow-y: auto;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.18s ease;
 }
 .scene.visible { opacity: 1; pointer-events: auto; }
 
-/* Messages */
+/* ═══ MESSAGES ═══ */
 .msg {
-  display: flex; gap: 12px;
-  margin-bottom: 20px;
+  display: flex; gap: 10px;
+  margin-bottom: 18px;
   align-items: flex-start;
 }
 
+/* Avatars — circular 40px to match ref */
 .av {
   width: 40px; height: 40px;
-  border-radius: 6px;
+  border-radius: 50%;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: white;
+  font-size: 13px; font-weight: 700; color: white;
 }
 .av-client { background: #2563EB; }
 .av-antimo { background: #7C3AED; }
@@ -277,17 +318,18 @@ body {
 .msg-body { flex: 1; min-width: 0; }
 .msg-head {
   display: flex; align-items: baseline; gap: 8px;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
+/* Bold sender names — 15px matches ~30px in ref */
 .msg-name { font-size: 15px; font-weight: 700; color: #1D1C1D; }
-.msg-name.bot-name { color: #1D1C1D; }
-.msg-ts { font-size: 12px; color: #9E9E9E; }
-.msg-text { font-size: 15px; color: #1D1C1D; line-height: 1.55; }
+.msg-ts { font-size: 11px; color: #9E9E9E; }
+/* Body text — 14px matches ~28px in ref */
+.msg-text { font-size: 14px; color: #1D1C1D; line-height: 1.55; }
 
 /* Typing blink cursor */
 .cursor {
   display: inline-block;
-  width: 2px; height: 16px;
+  width: 2px; height: 14px;
   background: #1D1C1D;
   margin-left: 1px;
   vertical-align: middle;
@@ -298,7 +340,7 @@ body {
 /* Typing dots */
 .dots {
   display: inline-flex; gap: 4px; align-items: center;
-  height: 22px; padding: 0 2px;
+  height: 20px; padding: 0 2px;
 }
 .dot {
   width: 7px; height: 7px;
@@ -315,109 +357,105 @@ body {
 
 /* Forwarded block */
 .fwd {
-  border-left: 3px solid #D8D8D8;
-  padding: 8px 12px;
-  margin: 8px 0;
+  border-left: 3px solid #CCCCCC;
+  padding: 7px 10px;
+  margin: 7px 0 0;
   background: #F8F8F8;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 5px 5px 0;
 }
-.fwd-source { font-size: 12px; color: #616061; margin-bottom: 4px; font-weight: 600; }
-.fwd-text { font-size: 14px; color: #1D1C1D; line-height: 1.5; }
+.fwd-source { font-size: 11px; color: #616061; margin-bottom: 3px; font-weight: 600; }
+.fwd-text { font-size: 13px; color: #1D1C1D; line-height: 1.5; }
 
 /* Ticket card */
 .card {
-  border: 1px solid #E8E8E8;
-  border-radius: 8px;
-  padding: 14px 16px;
+  border: 1px solid #E0E0E0;
+  border-radius: 7px;
+  padding: 12px 14px;
   margin-top: 10px;
-  max-width: 500px;
+  max-width: 460px;
   background: white;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
   display: none;
   animation: fadeUp 0.3s ease forwards;
 }
 .card.show { display: block; }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(5px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .card-eyebrow {
   font-size: 11px; font-weight: 700;
   color: #616061; text-transform: uppercase;
-  letter-spacing: 0.5px; margin-bottom: 7px;
-  display: flex; align-items: center; gap: 8px;
+  letter-spacing: 0.4px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 7px;
 }
 .card-id {
   background: #EDE9FE; color: #5B21B6;
-  padding: 2px 7px; border-radius: 4px;
-  font-size: 11px; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px;
+  font-size: 10px; font-weight: 700;
   text-transform: none; letter-spacing: 0;
 }
-.card-title { font-size: 15px; font-weight: 700; color: #1D1C1D; margin-bottom: 10px; line-height: 1.4; }
-.card-tags { display: flex; gap: 7px; flex-wrap: wrap; }
+.card-title {
+  font-size: 14px; font-weight: 700;
+  color: #1D1C1D; margin-bottom: 9px;
+  line-height: 1.4;
+}
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .tag {
   background: #F4F4F4; border: 1px solid #E0E0E0;
-  border-radius: 4px; padding: 2px 9px;
-  font-size: 12px; color: #454545; font-weight: 500;
+  border-radius: 4px; padding: 2px 8px;
+  font-size: 11px; color: #454545; font-weight: 500;
 }
 .tag.green { background: #E6F7F1; border-color: #A7E3CC; color: #007A5A; }
 .tag.purple { background: #EDE9FE; border-color: #C4B5FD; color: #5B21B6; }
 
-/* Input bar */
+/* ═══ INPUT BAR ═══ */
 .input-bar {
-  height: 70px; padding: 12px 20px;
+  height: 60px; padding: 10px 16px;
   flex-shrink: 0;
   position: relative; z-index: 2;
   background: white;
-  border-top: 1px solid #F0F0F0;
 }
 .input-inner {
-  border: 1px solid #CDCDCD; border-radius: 8px;
-  height: 46px; display: flex; align-items: center;
-  padding: 0 12px; gap: 10px;
+  border: 1px solid #C9C9C9; border-radius: 8px;
+  height: 40px; display: flex; align-items: center;
+  padding: 0 10px; gap: 8px;
 }
 .input-plus {
-  width: 30px; height: 30px;
-  border: 1.5px solid #C9C9C9; border-radius: 6px;
+  width: 26px; height: 26px;
+  border: 1.5px solid #C0C0C0; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: #616061; font-size: 20px; font-weight: 300;
+  color: #616061; font-size: 18px; font-weight: 300;
   flex-shrink: 0; line-height: 1;
 }
-.input-ph { flex: 1; font-size: 15px; color: #9E9E9E; }
+.input-ph { flex: 1; font-size: 14px; color: #9E9E9E; }
 .send-group { display: flex; align-items: center; flex-shrink: 0; }
 .send-btn {
-  width: 30px; height: 30px;
-  border-radius: 6px 0 0 6px;
-  background: #007A5A;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #CCCCCC;
   display: flex; align-items: center; justify-content: center;
-  color: white; font-size: 14px;
-}
-.send-caret {
-  width: 20px; height: 30px;
-  background: #007A5A; border-radius: 0 6px 6px 0;
-  border-left: 1px solid rgba(255,255,255,0.3);
-  display: flex; align-items: center; justify-content: center;
-  color: white; font-size: 9px;
+  color: white; font-size: 12px;
 }
 
-/* Channel flash overlay */
+/* ═══ CHANNEL FLASH ═══ */
 .ch-flash {
   position: absolute; inset: 0;
   background: white; opacity: 0;
-  pointer-events: none; z-index: 5;
-  transition: opacity 0.15s;
+  pointer-events: none; z-index: 10;
+  transition: opacity 0.12s;
 }
 
-/* Replay button */
+/* ═══ REPLAY ═══ */
 .replay {
-  position: absolute; bottom: 82px; right: 24px;
+  position: absolute; bottom: 68px; right: 20px;
   background: #1264A3; color: white;
   border: none; border-radius: 20px;
-  padding: 9px 22px; font-size: 13px; font-weight: 600;
+  padding: 8px 18px; font-size: 13px; font-weight: 600;
   cursor: pointer; font-family: inherit;
   opacity: 0; pointer-events: none;
   transition: opacity 0.4s;
-  z-index: 10;
+  z-index: 20;
 }
 .replay.show { opacity: 1; pointer-events: auto; }
 </style>
@@ -437,12 +475,16 @@ body {
       <span class="nav-arrow">&#8249;</span>
       <span class="nav-arrow">&#8250;</span>
     </div>
+    <span class="nav-clock">&#128336;</span>
     <div class="tb-search">
       <span class="tb-search-icon">&#128269;</span>
       <span id="tb-search-text">Search RED</span>
     </div>
     <div class="tb-right">
-      <div class="tb-avatar">A</div>
+      <div class="tb-avatar-cluster">
+        <div class="tb-av">R</div>
+        <span class="tb-chevron">&#8964;</span>
+      </div>
       <div class="tb-help">?</div>
     </div>
   </div>
@@ -450,7 +492,7 @@ body {
   <!-- BODY -->
   <div class="body">
 
-    <!-- ICON RAIL -->
+    <!-- ICON RAIL (54px) -->
     <div class="icon-rail">
       <div class="ws-icon">R</div>
       <div class="ri active">
@@ -478,10 +520,11 @@ body {
         <span class="ri-label">More</span>
       </div>
       <div class="ri-spacer"></div>
-      <div class="ri-avatar">A</div>
+      <div class="ri-plus">+</div>
+      <div class="ri-avatar"></div>
     </div>
 
-    <!-- CHANNEL NAV -->
+    <!-- CHANNEL NAV (164px) -->
     <div class="ch-nav">
       <div class="ws-header">
         <span class="ws-name">RED</span>
@@ -515,7 +558,7 @@ body {
         <span>pipeline</span>
       </div>
 
-      <div class="section-head" style="margin-top:6px;">
+      <div class="section-head" style="margin-top:4px;">
         <span class="s-chevron">&#9660;</span>
         Channels
       </div>
@@ -528,7 +571,6 @@ body {
     <!-- MESSAGE PANE -->
     <div class="msg-pane">
 
-      <!-- Channel header -->
       <div class="ch-header">
         <span class="ch-header-hash">#</span>
         <span class="ch-header-name" id="ch-header-name">lobby</span>
@@ -551,10 +593,9 @@ body {
         </div>
       </div>
 
-      <!-- SCENE: pipeline (continuous — no frame 3 break) -->
+      <!-- SCENE: pipeline (one continuous view) -->
       <div class="scene" id="scene-pipeline">
 
-        <!-- Antimo forwards -->
         <div class="msg" id="p-msg-antimo" style="opacity:0; transition: opacity 0.3s;">
           <div class="av av-antimo">A</div>
           <div class="msg-body">
@@ -572,24 +613,20 @@ body {
           </div>
         </div>
 
-        <!-- Red Claude types response -->
         <div class="msg" id="p-msg-bot" style="opacity:0; transition: opacity 0.3s;">
           <div class="av av-bot">R</div>
           <div class="msg-body">
             <div class="msg-head">
-              <span class="msg-name bot-name">Red Claude</span>
+              <span class="msg-name">Red Claude</span>
               <span class="msg-ts">Today at 9:42 AM</span>
             </div>
             <div class="msg-text">
-              <!-- Typing dots shown first -->
               <div class="dots" id="bot-dots">
                 <div class="dot"></div>
                 <div class="dot"></div>
                 <div class="dot"></div>
               </div>
-              <!-- Then text types in -->
               <span id="bot-text" style="display:none;"></span><span class="cursor" id="bot-cursor" style="display:none;"></span>
-              <!-- Ticket card unfurls below — no separate frame -->
               <div class="card" id="ticket-card">
                 <div class="card-eyebrow">Linear issue created <span class="card-id">RED-271</span></div>
                 <div class="card-title">New prospect: Cross-chain payment dashboard — ChainFlow</div>
@@ -616,12 +653,10 @@ body {
           <span class="input-ph" id="input-ph">Message #lobby</span>
           <div class="send-group">
             <div class="send-btn">&#9658;</div>
-            <div class="send-caret">&#8964;</div>
           </div>
         </div>
       </div>
 
-      <!-- Replay -->
       <button class="replay" id="replay-btn" onclick="startAnim()">&#9654; Replay</button>
 
     </div><!-- /msg-pane -->
@@ -648,26 +683,21 @@ async function typeText(el, text, speed, pid) {
 async function startAnim() {
   const pid = ++playId;
 
-  // Reset UI
   document.getElementById('replay-btn').classList.remove('show');
 
-  // Sidebar
+  // Reset sidebar
   document.getElementById('ch-lobby').classList.add('active');
   document.getElementById('ch-pipeline').classList.remove('active');
-
-  // Header + input
   document.getElementById('ch-header-name').textContent = 'lobby';
   document.getElementById('input-ph').textContent = 'Message #lobby';
 
-  // Scenes
+  // Reset scenes
   document.getElementById('scene-lobby').classList.add('visible');
   document.getElementById('scene-pipeline').classList.remove('visible');
-
-  // Lobby
   document.getElementById('lobby-text').textContent = '';
   document.getElementById('lobby-cursor').style.display = 'inline-block';
 
-  // Pipeline
+  // Reset pipeline
   document.getElementById('p-msg-antimo').style.opacity = '0';
   document.getElementById('p-msg-bot').style.opacity = '0';
   document.getElementById('bot-dots').style.display = 'flex';
@@ -675,74 +705,69 @@ async function startAnim() {
   document.getElementById('bot-text').textContent = '';
   document.getElementById('bot-cursor').style.display = 'none';
   document.getElementById('ticket-card').classList.remove('show');
-
-  // Flash
   document.getElementById('ch-flash').style.opacity = '0';
 
-  // ── PHASE 1: client message types in #lobby ──
-  await delay(700);
-  const lobbyMsg = "Hi — I'm Alex from ChainFlow. We're looking for an agency to build a cross-chain payment dashboard. Budget around $40k. Is this something RED handles?";
-  const ok1 = await typeText(document.getElementById('lobby-text'), lobbyMsg, 28, pid);
+  // ── PHASE 1: client types in #lobby ──
+  await delay(600);
+  const lobbyMsg = "Hi — I'm Alex from ChainFlow. We're building a cross-chain payment dashboard and looking for an agency. Budget around $40k. Is this something RED handles?";
+  const ok1 = await typeText(document.getElementById('lobby-text'), lobbyMsg, 26, pid);
   if (!ok1) return;
   document.getElementById('lobby-cursor').style.display = 'none';
 
-  await delay(900);
+  await delay(800);
   if (playId !== pid) return;
 
-  // ── TRANSITION: lobby → pipeline ──
+  // ── TRANSITION: #lobby → #pipeline ──
   const flash = document.getElementById('ch-flash');
-  flash.style.transition = 'opacity 0.1s';
-  flash.style.opacity = '0.6';
-  await delay(100);
+  flash.style.transition = 'opacity 0.08s';
+  flash.style.opacity = '0.7';
+  await delay(80);
   if (playId !== pid) return;
+  flash.style.transition = 'opacity 0.14s';
   flash.style.opacity = '0';
 
-  // Switch sidebar + header
   document.getElementById('ch-lobby').classList.remove('active');
   document.getElementById('ch-pipeline').classList.add('active');
   document.getElementById('ch-header-name').textContent = 'pipeline';
   document.getElementById('input-ph').textContent = 'Message #pipeline';
 
-  // Switch scenes
   document.getElementById('scene-lobby').classList.remove('visible');
   document.getElementById('scene-pipeline').classList.add('visible');
 
-  // ── PHASE 2: Antimo's forwarded message appears ──
-  await delay(300);
+  // ── PHASE 2: Antimo's forwarded message ──
+  await delay(280);
   if (playId !== pid) return;
   document.getElementById('p-msg-antimo').style.opacity = '1';
 
-  await delay(600);
+  await delay(550);
   if (playId !== pid) return;
 
-  // ── PHASE 3: Red Claude typing dots ──
+  // ── PHASE 3: Red Claude types ──
   document.getElementById('p-msg-bot').style.opacity = '1';
-  await delay(1600);
+  await delay(1500);
   if (playId !== pid) return;
 
-  // Dots → text
   document.getElementById('bot-dots').style.display = 'none';
   document.getElementById('bot-text').style.display = 'inline';
   document.getElementById('bot-cursor').style.display = 'inline-block';
 
   const botMsg = "On it — ticket created, lead enriched.";
-  const ok2 = await typeText(document.getElementById('bot-text'), botMsg, 34, pid);
+  const ok2 = await typeText(document.getElementById('bot-text'), botMsg, 32, pid);
   if (!ok2) return;
   document.getElementById('bot-cursor').style.display = 'none';
 
-  await delay(350);
+  await delay(320);
   if (playId !== pid) return;
 
-  // ── Ticket card unfurls (same scene, flows below) ──
   document.getElementById('ticket-card').classList.add('show');
 
-  await delay(1400);
+  await delay(1200);
   if (playId !== pid) return;
 
   document.getElementById('replay-btn').classList.add('show');
 }
 
-window.addEventListener('load', () => setTimeout(startAnim, 500));
+window.addEventListener('load', () => setTimeout(startAnim, 400));
 </script>
 </body>
 </html>
