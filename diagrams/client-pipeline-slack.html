@@ -66,7 +66,6 @@ body {
   font-weight: 300;
 }
 
-/* clock icon */
 .nav-clock {
   color: rgba(255,255,255,0.45);
   font-size: 13px;
@@ -303,7 +302,6 @@ body {
   align-items: flex-start;
 }
 
-/* Avatars — circular 40px to match ref */
 .av {
   width: 40px; height: 40px;
   border-radius: 50%;
@@ -320,13 +318,10 @@ body {
   display: flex; align-items: baseline; gap: 8px;
   margin-bottom: 2px;
 }
-/* Bold sender names — 15px matches ~30px in ref */
 .msg-name { font-size: 15px; font-weight: 700; color: #1D1C1D; }
 .msg-ts { font-size: 11px; color: #9E9E9E; }
-/* Body text — 14px matches ~28px in ref */
 .msg-text { font-size: 14px; color: #1D1C1D; line-height: 1.55; }
 
-/* Typing blink cursor */
 .cursor {
   display: inline-block;
   width: 2px; height: 14px;
@@ -337,7 +332,6 @@ body {
 }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* Typing dots */
 .dots {
   display: inline-flex; gap: 4px; align-items: center;
   height: 20px; padding: 0 2px;
@@ -355,7 +349,6 @@ body {
   30% { transform: translateY(-5px); }
 }
 
-/* Forwarded block */
 .fwd {
   border-left: 3px solid #CCCCCC;
   padding: 7px 10px;
@@ -366,7 +359,6 @@ body {
 .fwd-source { font-size: 11px; color: #616061; margin-bottom: 3px; font-weight: 600; }
 .fwd-text { font-size: 13px; color: #1D1C1D; line-height: 1.5; }
 
-/* Ticket card */
 .card {
   border: 1px solid #E0E0E0;
   border-radius: 7px;
@@ -409,12 +401,14 @@ body {
 .tag.green { background: #E6F7F1; border-color: #A7E3CC; color: #007A5A; }
 .tag.purple { background: #EDE9FE; border-color: #C4B5FD; color: #5B21B6; }
 
-/* ═══ INPUT BAR ═══ */
+/* ═══ INPUT BAR — pinned to bottom via margin-top: auto ═══ */
 .input-bar {
   height: 60px; padding: 10px 16px;
   flex-shrink: 0;
+  margin-top: auto;
   position: relative; z-index: 2;
   background: white;
+  border-top: 1px solid #EBEBEB;
 }
 .input-inner {
   border: 1px solid #C9C9C9; border-radius: 8px;
@@ -646,7 +640,7 @@ body {
       <!-- Flash overlay -->
       <div class="ch-flash" id="ch-flash"></div>
 
-      <!-- Input bar -->
+      <!-- Input bar — margin-top:auto pins it to the bottom -->
       <div class="input-bar">
         <div class="input-inner">
           <div class="input-plus">+</div>
