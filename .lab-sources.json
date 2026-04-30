@@ -1,0 +1,10 @@
+{
+  "_doc": "Mirrored client/bot scratchspaces. Each entry is rsynced into <client>/ on cron by .github/workflows/sync-client-labs.yml. Bots push to their own repo; this lab repo is the publish surface. To onboard a new client: create antimofm/lab-<client>, attach a write deploy key, install on the bot host, then add a one-line entry below.",
+  "sources": [
+    {
+      "client": "taptally",
+      "repo": "antimofm/lab-taptally",
+      "ref": "main"
+    }
+  ]
+}

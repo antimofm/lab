@@ -1,0 +1,73 @@
+name: sync-client-labs
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.lab-sources.json', '.github/workflows/sync-client-labs.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-client-labs
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout lab
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Sync each declared source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          jq -c '.sources[]' .lab-sources.json | while read -r row; do
+            client=$(jq -r '.client' <<<"$row")
+            repo=$(jq -r '.repo' <<<"$row")
+            ref=$(jq -r '.ref' <<<"$row")
+
+            echo "::group::sync $client ($repo@$ref)"
+            tmp=$(mktemp -d)
+            tarball="$tmp/src.tgz"
+
+            gh api "repos/$repo/tarball/$ref" > "$tarball"
+            mkdir -p "$tmp/src"
+            tar -xzf "$tarball" -C "$tmp/src" --strip-components=1
+
+            sha=$(gh api "repos/$repo/commits/$ref" -q .sha)
+            short=${sha:0:7}
+
+            mkdir -p "$client"
+            rsync -a --delete \
+              --exclude='.git' \
+              --exclude='.github' \
+              --exclude='.lab-source' \
+              "$tmp/src/" "$client/"
+
+            cat > "$client/.lab-source" <<EOF
+          source_repo=$repo
+          source_ref=$ref
+          source_sha=$sha
+          synced_at=$(date -u +%FT%TZ)
+          EOF
+            echo "::endgroup::"
+            echo "$client -> $short"
+          done
+
+          if ! git diff --quiet; then
+            git config user.name 'lab-sync'
+            git config user.email 'lab-sync@users.noreply.github.com'
+            git add -A
+            git commit -m "sync: client labs $(date -u +%FT%TZ)"
+            git push
+          else
+            echo "no changes"
+          fi
