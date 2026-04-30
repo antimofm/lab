@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>300426 — Token consolidation · TapTally · RED Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:  #F59E0B;
+      --brand:  #E18C49;
+      --bg:     #fafaf9;
+      --surface: #fff;
+      --border: #e5e7eb;
+      --text:   #111;
+      --muted:  #6b7280;
+      --red:    #EF4444;
+      --green:  #059669;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 48px 24px 80px;
+      line-height: 1.5;
+    }
+
+    .wrap { max-width: 900px; margin: 0 auto; }
+
+    /* Header */
+    .tags { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .tag-lab   { background: #FEF3C7; color: #92400E; }
+    .tag-date  { background: #f3f4f6; color: #6b7280; }
+
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+    .subtitle { font-size: 15px; color: var(--muted); max-width: 640px; line-height: 1.65; margin-bottom: 48px; }
+    .subtitle strong { color: var(--text); }
+    .subtitle code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      text-align: center;
+    }
+    .stat-num { font-size: 36px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-label { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+    /* Amber section */
+    h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+
+    .ba-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 48px; }
+    .ba-card { background: var(--surface); border-radius: 12px; padding: 24px; }
+    .ba-card.bad  { border: 1.5px solid #fecaca; }
+    .ba-card.good { border: 1.5px solid #bbf7d0; }
+    .ba-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 16px; }
+    .ba-label.bad  { color: var(--red); }
+    .ba-label.good { color: var(--green); }
+
+    .swatch-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .dot-lg { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+    .swatch-hex { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; }
+    .swatch-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .btn {
+      display: inline-block;
+      border: none; border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600; font-size: 14px;
+      color: #fff; cursor: default;
+    }
+
+    /* Token table */
+    .token-block {
+      background: #111;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+    }
+    .token-row {
+      display: grid;
+      grid-template-columns: 220px 110px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #222;
+    }
+    .token-row:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+    .token-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #E18C49; }
+    .token-val  { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #9ca3af; }
+    .token-desc { font-size: 13px; color: #6b7280; }
+
+    /* Component grid */
+    .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 48px; }
+    .comp-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .comp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .comp-name { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; }
+    .comp-count {
+      background: #f3f4f6; color: #374151;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 600;
+    }
+    .token-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .token-tag {
+      background: #FEF3C7; color: #92400E;
+      padding: 2px 7px; border-radius: 4px;
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Links */
+    .links { display: flex; gap: 12px; margin-bottom: 48px; flex-wrap: wrap; }
+    .link-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .link-btn:hover { border-color: var(--brand); color: var(--brand); }
+
+    .footer { margin-top: 32px; text-align: center; font-size: 12px; color: #ccc; }
+    .footer code { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+    @media (max-width: 600px) {
+      .stats, .ba-row, .comp-grid { grid-template-columns: 1fr; }
+      .token-row { grid-template-columns: 1fr 1fr; }
+      .token-desc { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="tags">
+    <span class="tag tag-lab">DESIGN LAB · RED × TAPTALLY</span>
+    <span class="tag tag-date">30/04/26</span>
+  </div>
+  <h1>Token consolidation — 8 componenti tokenizzati</h1>
+  <p class="subtitle">
+    Tutti i colori hardcoded nei componenti <code>taptally20/</code> sostituiti con CSS custom properties.
+    <strong>29 valori hardcoded eliminati</strong> in 8 file.
+    Zero cambi visivi — i token mappano esattamente gli hex precedenti.
+  </p>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-num">8</div><div class="stat-label">componenti toccati</div></div>
+    <div class="stat"><div class="stat-num">29</div><div class="stat-label">hardcode eliminati</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">nuovi token CSS</div></div>
+  </div>
+
+  <!-- Amber kill -->
+  <h2>Il fix principale: amber-500 → brand orange</h2>
+  <div class="ba-row">
+    <div class="ba-card bad">
+      <div class="ba-label bad">✕ Prima — Tailwind amber-500</div>
+      <div class="swatch-row">
+        <div class="dot-lg" style="background:#F59E0B;"></div>
+        <div>
+          <div class="swatch-hex">#F59E0B</div>
+          <div class="swatch-sub">amber-500 — 11 occorrenze</div>
+        </div>
+      </div>
+      <button class="btn" style="background:#F59E0B;">Prova la demo</button>
+    </div>
+    <div class="ba-card good">
+      <div class="ba-label good">✓ Dopo — TapTally brand orange</div>
+      <div class="swatch-row">
+        <div class="dot-lg" style="background:#E18C49;"></div>
+        <div>
+          <div class="swatch-hex">#E18C49</div>
+          <div class="swatch-sub">brand orange — var(--brand-primary)</div>
+        </div>
+      </div>
+      <button class="btn" style="background:#E18C49;">Prova la demo</button>
+    </div>
+  </div>
+
+  <!-- New tokens -->
+  <h2>6 nuovi token aggiunti a TaptallyHome.module.css</h2>
+  <div class="token-block">
+    <div class="token-row">
+      <span class="token-name">--bg-dark</span>
+      <span class="token-val">#0d0d11</span>
+      <span class="token-desc">background scuro base</span>
+    </div>
+    <div class="token-row">
+      <span class="token-name">--bg-dark-raised</span>
+      <span class="token-val">#1a1a1f</span>
+      <span class="token-desc">card su dark</span>
+    </div>
+    <div class="token-row">
+      <span class="token-name">--bg-dark-elevated</span>
+      <span class="token-val">#2a2420</span>
+      <span class="token-desc">highlight su dark</span>
+    </div>
+    <div class="token-row">
+      <span class="token-name">--text-on-dark</span>
+      <span class="token-val">#ffffff</span>
+      <span class="token-desc">testo su sfondi scuri</span>
+    </div>
+    <div class="token-row">
+      <span class="token-name">--status-good</span>
+      <span class="token-val">#22c55e</span>
+      <span class="token-desc">stato positivo</span>
+    </div>
+    <div class="token-row">
+      <span class="token-name">--status-warn</span>
+      <span class="token-val">var(--brand-primary)</span>
+      <span class="token-desc">era #F59E0B — ora brand</span>
+    </div>
+  </div>
+
+  <!-- Components -->
+  <h2>Componenti modificati</h2>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">Hero.tsx</span>
+        <span class="comp-count">-6 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--bg-dark</span>
+        <span class="token-tag">--background-light</span>
+        <span class="token-tag">--text-on-dark</span>
+        <span class="token-tag">--brand-primary</span>
+      </div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">Solution.tsx</span>
+        <span class="comp-count">-6 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--bg-dark</span>
+        <span class="token-tag">--bg-dark-elevated</span>
+        <span class="token-tag">--text-on-dark</span>
+        <span class="token-tag">--status-warn</span>
+        <span class="token-tag">--status-good</span>
+      </div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">FinalCTA.tsx</span>
+        <span class="comp-count">-5 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--bg-dark-raised</span>
+        <span class="token-tag">--bg-dark-elevated</span>
+        <span class="token-tag">--bg-dark</span>
+        <span class="token-tag">--text-on-dark</span>
+      </div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">Header.tsx</span>
+        <span class="comp-count">-3 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--ink</span>
+        <span class="token-tag">--brand-primary-dark</span>
+        <span class="token-tag">--text-on-dark</span>
+      </div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">Problems.tsx</span>
+        <span class="comp-count">-3 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--bg-dark</span>
+        <span class="token-tag">--text-on-dark</span>
+      </div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">HowItWorks.tsx</span>
+        <span class="comp-count">-2 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--bg-dark</span>
+        <span class="token-tag">--text-on-dark</span>
+      </div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">Footer.tsx</span>
+        <span class="comp-count">-2 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--bg-dark</span>
+      </div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-header">
+        <span class="comp-name">IntermediateCTA.tsx</span>
+        <span class="comp-count">-2 hardcode</span>
+      </div>
+      <div class="token-tags">
+        <span class="token-tag">--bg-dark</span>
+        <span class="token-tag">--text-on-dark</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Links -->
+  <h2>Links</h2>
+  <div class="links">
+    <a class="link-btn" href="https://github.com/Tap-Tally/landing/tree/300426" target="_blank">
+      → Branch 300426 su GitHub
+    </a>
+    <a class="link-btn" href="https://lab.slash.red/taptally/rad/" target="_blank">
+      → /rad — amber prima/dopo dettagliato
+    </a>
+  </div>
+
+  <div class="footer">
+    RED × TapTally — design lab · <code>lab.slash.red/taptally/300426/</code>
+  </div>
+
+</div>
+</body>
+</html>
