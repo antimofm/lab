@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick win: Amber fix — TapTally · RED Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:  #F59E0B;
+      --brand:  #E18C49;
+      --bg:     #fafaf9;
+      --surface: #fff;
+      --border: #e5e7eb;
+      --text:   #111;
+      --muted:  #6b7280;
+      --red:    #EF4444;
+      --green:  #059669;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 48px 24px 80px;
+      line-height: 1.5;
+    }
+
+    .wrap { max-width: 880px; margin: 0 auto; }
+
+    /* Header */
+    .label {
+      display: inline-block;
+      background: #FEF3C7;
+      color: #92400E;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+    .subtitle { font-size: 15px; color: var(--muted); max-width: 600px; line-height: 1.65; margin-bottom: 48px; }
+    .subtitle strong { color: var(--text); }
+
+    /* Swatches */
+    .swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 48px; }
+    .swatch-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .swatch-card.bad  { border: 1.5px solid #fecaca; }
+    .swatch-card.good { border: 1.5px solid #bbf7d0; }
+    .swatch-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .swatch-label.bad  { color: var(--red); }
+    .swatch-label.good { color: var(--green); }
+    .swatch-row { display: flex; align-items: center; gap: 12px; }
+    .swatch-dot {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.12);
+    }
+    .swatch-hex { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; }
+    .swatch-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* Before/after table */
+    h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .ba-header {
+      padding: 8px 20px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase;
+      border-radius: 8px 8px 0 0;
+    }
+    .ba-header.bad  { background: #fee2e2; color: var(--red); }
+    .ba-header.good { background: #d1fae5; color: var(--green); }
+    .ba-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 22px 22px;
+    }
+    .ba-cell:last-child { border-radius: 0 0 0 8px; }
+    .ba-cell.right:last-child { border-radius: 0 0 8px 0; }
+    .el-label {
+      font-size: 10px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+    }
+
+    /* UI mock elements */
+    .btn {
+      display: inline-block;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+      cursor: default;
+      letter-spacing: .01em;
+    }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge.amber { background: #FEF3C7; color: #92400E; border: 1px solid #F59E0B55; }
+    .badge.brand { background: #FDF0E4; color: #7A4B1E; border: 1px solid #E18C4955; }
+
+    .nav-row { display: flex; gap: 20px; align-items: center; }
+    .nav-item { font-size: 14px; color: #444; }
+    .nav-item.active-amber { font-weight: 700; color: var(--amber); border-bottom: 2px solid var(--amber); padding-bottom: 2px; }
+    .nav-item.active-brand { font-weight: 700; color: var(--brand); border-bottom: 2px solid var(--brand); padding-bottom: 2px; }
+
+    .card-mock {
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #333;
+      max-width: 220px;
+    }
+    .card-mock.amber { border: 1.5px solid var(--amber); }
+    .card-mock.brand { border: 1.5px solid var(--brand); }
+    .card-mock-title { font-weight: 600; margin-bottom: 4px; }
+    .card-mock-sub { color: #666; font-size: 12px; }
+
+    .bullets { display: flex; flex-direction: column; gap: 8px; }
+    .bullet-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #333; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Fix block */
+    .fix-block {
+      margin-top: 48px;
+      background: #111;
+      border-radius: 12px;
+      padding: 28px 32px;
+      color: #e5e7eb;
+    }
+    .fix-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 14px;
+    }
+    pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.75;
+      color: #e5e7eb;
+      white-space: pre-wrap;
+    }
+    .comment { color: #6b7280; }
+    .cmd { color: #93c5fd; }
+    .str { color: #86efac; }
+
+    .footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 12px;
+      color: #ccc;
+    }
+    .footer code { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+    @media (max-width: 600px) {
+      .swatches, .ba-grid { grid-template-columns: 1fr; }
+      .ba-header { border-radius: 8px 8px 0 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="label">DESIGN LAB · RED × TAPTALLY</div>
+  <h1>Quick win: elimina il Tailwind amber</h1>
+  <p class="subtitle">
+    <strong>#F59E0B</strong> è il default di Tailwind amber-500 — presente 11× nella codebase
+    dove dovrebbe esserci il brand orange <strong>#E18C49</strong>. La differenza è sottile
+    ma l'occhio la legge come "non finito". Un search-replace risolve tutto.
+  </p>
+
+  <!-- Swatches -->
+  <div class="swatches">
+    <div class="swatch-card bad">
+      <div class="swatch-label bad">✕ Prima — Tailwind amber-500</div>
+      <div class="swatch-row">
+        <div class="swatch-dot" style="background:#F59E0B;"></div>
+        <div>
+          <div class="swatch-hex">#F59E0B</div>
+          <div class="swatch-sub">amber-500 — 11 occorrenze in prod</div>
+        </div>
+      </div>
+    </div>
+    <div class="swatch-card good">
+      <div class="swatch-label good">✓ Dopo — TapTally brand orange</div>
+      <div class="swatch-row">
+        <div class="swatch-dot" style="background:#E18C49;"></div>
+        <div>
+          <div class="swatch-hex">#E18C49</div>
+          <div class="swatch-sub">brand orange — globals.css, .bg-orange</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Before/after elements -->
+  <h2>Elementi UI interessati</h2>
+  <div class="ba-grid">
+    <div class="ba-header bad">Prima</div>
+    <div class="ba-header good">Dopo</div>
+
+    <!-- CTA Button -->
+    <div class="ba-cell">
+      <div class="el-label">CTA primario</div>
+      <button class="btn" style="background:#F59E0B;">Prova la demo</button>
+    </div>
+    <div class="ba-cell right">
+      <div class="el-label">CTA primario</div>
+      <button class="btn" style="background:#E18C49;">Prova la demo</button>
+    </div>
+
+    <!-- Badge -->
+    <div class="ba-cell">
+      <div class="el-label">Badge categoria</div>
+      <span class="badge amber">Pub Management</span>
+    </div>
+    <div class="ba-cell right">
+      <div class="el-label">Badge categoria</div>
+      <span class="badge brand">Pub Management</span>
+    </div>
+
+    <!-- Nav highlight -->
+    <div class="ba-cell">
+      <div class="el-label">Highlight nav</div>
+      <div class="nav-row">
+        <span class="nav-item">Features</span>
+        <span class="nav-item active-amber">Come funziona</span>
+        <span class="nav-item">Partner</span>
+      </div>
+    </div>
+    <div class="ba-cell right">
+      <div class="el-label">Highlight nav</div>
+      <div class="nav-row">
+        <span class="nav-item">Features</span>
+        <span class="nav-item active-brand">Come funziona</span>
+        <span class="nav-item">Partner</span>
+      </div>
+    </div>
+
+    <!-- Card border -->
+    <div class="ba-cell">
+      <div class="el-label">Bordo card attiva</div>
+      <div class="card-mock amber">
+        <div class="card-mock-title">Fusto attivo</div>
+        <div class="card-mock-sub">Birra Moretti — Linea 3</div>
+      </div>
+    </div>
+    <div class="ba-cell right">
+      <div class="el-label">Bordo card attiva</div>
+      <div class="card-mock brand">
+        <div class="card-mock-title">Fusto attivo</div>
+        <div class="card-mock-sub">Birra Moretti — Linea 3</div>
+      </div>
+    </div>
+
+    <!-- Bullets -->
+    <div class="ba-cell">
+      <div class="el-label">Bullet step</div>
+      <div class="bullets">
+        <div class="bullet-row"><div class="dot" style="background:#F59E0B;"></div>Inventario in tempo reale</div>
+        <div class="bullet-row"><div class="dot" style="background:#F59E0B;"></div>Rotazione fusti</div>
+        <div class="bullet-row"><div class="dot" style="background:#F59E0B;"></div>Analytics vendite</div>
+      </div>
+    </div>
+    <div class="ba-cell right">
+      <div class="el-label">Bullet step</div>
+      <div class="bullets">
+        <div class="bullet-row"><div class="dot" style="background:#E18C49;"></div>Inventario in tempo reale</div>
+        <div class="bullet-row"><div class="dot" style="background:#E18C49;"></div>Rotazione fusti</div>
+        <div class="bullet-row"><div class="dot" style="background:#E18C49;"></div>Analytics vendite</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fix block -->
+  <div class="fix-block">
+    <div class="fix-title">Il fix</div>
+    <pre><span class="comment"># Trova tutti i file con F59E0B</span>
+<span class="cmd">grep</span> -rl <span class="str">"F59E0B\|f59e0b"</span> src/
+
+<span class="comment"># Search-replace in tutti i .tsx/.ts/.css</span>
+<span class="cmd">find</span> src/ -type f \( -name <span class="str">"*.tsx"</span> -o -name <span class="str">"*.ts"</span> -o -name <span class="str">"*.css"</span> \) \
+  -exec sed -i '' <span class="str">'s/F59E0B/E18C49/gi'</span> {} +
+
+<span class="comment"># Verifica — deve tornare vuoto</span>
+<span class="cmd">grep</span> -rl <span class="str">"F59E0B\|f59e0b"</span> src/</pre>
+  </div>
+
+  <div class="footer">
+    RED × TapTally — design lab · <code>lab.slash.red/taptally/rad/</code>
+  </div>
+
+</div>
+</body>
+</html>
