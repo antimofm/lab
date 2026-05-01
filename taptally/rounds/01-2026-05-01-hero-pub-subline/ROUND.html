@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Round 01 — hero-pub-subline · TapTally · RED Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:   #E18C49;
+      --bg:      #fafaf9;
+      --surface: #fff;
+      --border:  #e5e7eb;
+      --text:    #111;
+      --muted:   #6b7280;
+      --red:     #EF4444;
+      --green:   #059669;
+      --ink-light: #f5f5f4;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 48px 24px 80px;
+      line-height: 1.5;
+    }
+
+    .wrap { max-width: 760px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header { margin-bottom: 40px; }
+    .badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--brand);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .meta a { color: var(--muted); text-decoration: underline; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Diff block ── */
+    .diff {
+      border-radius: 8px;
+      overflow: hidden;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .diff-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+    }
+    .diff-before { background: #fff5f5; }
+    .diff-after  { background: #f0fdf4; }
+    .diff-before .diff-label { color: var(--red); background: #fee2e2; }
+    .diff-after  .diff-label { color: var(--green); background: #dcfce7; }
+    .diff-text {
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .diff-before .diff-text { color: #b91c1c; }
+    .diff-after  .diff-text { color: #15803d; }
+
+    /* ── Rationale ── */
+    .rationale p { font-size: 14px; color: #374151; line-height: 1.65; margin-bottom: 10px; }
+    .rationale p:last-child { margin-bottom: 0; }
+
+    strong { font-weight: 600; }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; }
+    .checklist li {
+      font-size: 14px;
+      color: #374151;
+      padding: 5px 0;
+      padding-left: 22px;
+      position: relative;
+    }
+    .checklist li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    /* ── Links ── */
+    .link-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 7px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--ink-light); }
+    .btn.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+    .btn.primary:hover { background: #c57738; border-color: #c57738; }
+
+    /* ── File ref ── */
+    .file-ref {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--ink-light);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #374151;
+    }
+
+    /* ── Status tag ── */
+    .status-live {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="header">
+      <div class="badge">Round 01</div>
+      <h1>hero-pub-subline</h1>
+      <p class="meta">
+        2026-05-01 &nbsp;·&nbsp;
+        Branch: <a href="https://github.com/Tap-Tally/landing/tree/redtt/01-hero-pub-subline" target="_blank">redtt/01-hero-pub-subline</a>
+        &nbsp;·&nbsp; <span class="status-live">live</span>
+      </p>
+    </div>
+
+    <!-- What changed -->
+    <div class="card">
+      <div class="card-title">Cosa è cambiato</div>
+
+      <div class="diff">
+        <div class="diff-before">
+          <div class="diff-label">— Prima</div>
+          <div class="diff-text">L'unico gestionale Italiano che ottimizza il Pub Management.</div>
+        </div>
+        <div class="diff-after">
+          <div class="diff-label">+ Dopo</div>
+          <div class="diff-text">Fusti tracciati, resi automatici, stock sempre aggiornato. Senza fogli Excel, senza chiamate al fornitore.</div>
+        </div>
+      </div>
+
+      <p style="font-size:12px;color:var(--muted);margin-top:12px;font-family:'JetBrains Mono',monospace;">
+        File: <span class="file-ref">src/components/taptally20/components/Hero.tsx</span>
+        &nbsp;·&nbsp; Percorso: <strong>Pub</strong> only (distributori invariato)
+      </p>
+    </div>
+
+    <!-- Rationale -->
+    <div class="card rationale">
+      <div class="card-title">Perché</div>
+      <p>
+        Il sottotitolo precedente era il peggior tipo di copy above-the-fold: <strong>autoreferenziale, vago, e in code-switch</strong> ("Pub Management" in inglese dentro una frase italiana). Un proprietario di pub che arriva sulla pagina non capisce cosa fa concretamente il prodotto.
+      </p>
+      <p>
+        Il nuovo testo nomina tre cose reali che TapTally fa — <strong>tracciamento fusti, resi automatici, stock aggiornato</strong> — e rimuove due attività che il pub owner odia: il foglio Excel e le chiamate al distributore. Nessuna promessa che non sia già in prodotto.
+      </p>
+      <p>
+        L'H1 "Nata per non farti spillare tempo" funziona come hook. Il sottotitolo deve guadagnarsi la scansione successiva — adesso ci riesce.
+      </p>
+    </div>
+
+    <!-- What to review -->
+    <div class="card">
+      <div class="card-title">Cosa guardare nel preview</div>
+      <ul class="checklist">
+        <li>Carica la pagina sul percorso <strong>Pub</strong> (default) e leggi hero headline + subline in sequenza — il ritmo funziona?</li>
+        <li>Passa al percorso <strong>Distributori</strong> — il subline non è cambiato, verifica che nulla si sia rotto.</li>
+        <li>Il tono del nuovo subline è coerente col resto della sezione Problems sotto?</li>
+        <li>La lunghezza del nuovo testo (due frasi) regge su mobile senza spezzarsi male?</li>
+      </ul>
+    </div>
+
+    <!-- Links -->
+    <div class="link-row">
+      <a class="btn primary" href="./index.html">→ Apri il preview</a>
+      <a class="btn" href="https://github.com/Tap-Tally/landing/compare/main...redtt/01-hero-pub-subline" target="_blank">Diff su GitHub</a>
+      <a class="btn" href="https://taptal.ly" target="_blank">Sito live (main)</a>
+    </div>
+
+  </div>
+</body>
+</html>
