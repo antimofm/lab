@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>neynar — lab / slash.red</title>
+  <meta property="og:title" content="neynar — RED lab">
+  <meta property="og:description" content="Neynar / Farcaster prototypes and explorations from RED.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    a { color: #e04040; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header { width: 100%; max-width: 720px; margin-bottom: 2.5rem; }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header p { color: #888; margin-top: 0.5rem; font-size: 0.875rem; line-height: 1.5; }
+    main { width: 100%; max-width: 720px; }
+    .item {
+      display: block;
+      padding: 1rem 0;
+      border-bottom: 1px solid #1a1a1a;
+      color: #e0e0e0;
+    }
+    .item:hover { text-decoration: none; background: #0f0f0f; padding-left: 0.5rem; }
+    .item h2 { font-size: 1rem; font-weight: 500; margin-bottom: 0.25rem; }
+    .item h2 .arrow { color: #444; margin-left: 0.5rem; transition: color 0.15s; }
+    .item:hover h2 .arrow { color: #e04040; }
+    .item p { color: #888; font-size: 0.85rem; line-height: 1.5; }
+    .item .tag { display: inline-block; font-size: 0.7rem; color: #666; background: #1a1a1a; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem; vertical-align: middle; }
+    .empty { color: #555; font-size: 0.85rem; font-style: italic; padding: 2rem 0; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><a href="/">/ lab</a> / neynar</h1>
+    <p>Prototypes, mockups, and explorations for Neynar / Farcaster.</p>
+  </header>
+  <main>
+    <a class="item" href="/neynar-mockup/">
+      <h2>Cast mockup<span class="arrow">→</span><span class="tag">Remotion</span></h2>
+      <p>Animated Farcaster cast — like count eases 0 → 9.5B with cubic easing. 1080×1080 · 6s.</p>
+    </a>
+  </main>
+</body>
+</html>
