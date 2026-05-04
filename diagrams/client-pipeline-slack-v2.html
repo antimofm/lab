@@ -3,7 +3,7 @@
 <head>
   <meta name="robots" content="noindex, nofollow" />
 <meta charset="UTF-8">
-<title>RED — Client Pipeline</title>
+<title>RED — Client Pipeline (v2 — social aspect)</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -13,113 +13,111 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* ═══ WINDOW — 1095×750 matches 2190×1500 @2x reference ═══ */
+/* ═══ WINDOW — 1500×1000 (3:2 social aspect) ═══ */
 .window {
-  width: 1095px;
-  height: 750px;
-  border-radius: 10px;
+  width: 1500px;
+  height: 1000px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 48px 140px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
+  box-shadow: 0 60px 180px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
-/* ═══ TITLE BAR — 36px matches ~72px in ref ═══ */
+/* ═══ TITLE BAR ═══ */
 .title-bar {
-  height: 36px;
+  height: 64px;
   background: #3D1045;
   display: flex;
   align-items: center;
-  padding: 0 14px;
+  padding: 0 24px;
   flex-shrink: 0;
-  gap: 0;
   user-select: none;
 }
 
 .traffic {
   display: flex;
-  gap: 6px;
-  margin-right: 16px;
+  gap: 14px;
+  margin-right: 28px;
   flex-shrink: 0;
 }
-.tl { width: 12px; height: 12px; border-radius: 50%; }
+.tl { width: 24px; height: 24px; border-radius: 50%; }
 .tl.r { background: #FF5F57; }
 .tl.y { background: #FEBC2E; }
 .tl.g { background: #28C840; }
 
 .nav-arrows {
   display: flex;
-  gap: 0;
-  margin-right: 10px;
+  margin-right: 16px;
   flex-shrink: 0;
   align-items: center;
+  gap: 4px;
 }
 .nav-arrow {
-  color: rgba(255,255,255,0.45);
-  font-size: 18px;
+  color: rgba(255,255,255,0.55);
+  font-size: 30px;
   line-height: 1;
-  padding: 0 4px;
+  padding: 0 8px;
   cursor: default;
   font-weight: 300;
 }
-
 .nav-clock {
-  color: rgba(255,255,255,0.45);
-  font-size: 13px;
-  margin-right: 12px;
+  color: rgba(255,255,255,0.55);
+  font-size: 22px;
+  margin: 0 12px 0 4px;
 }
 
 .tb-search {
   flex: 1;
-  max-width: 460px;
+  max-width: 720px;
   margin: 0 auto;
-  height: 24px;
+  height: 42px;
   background: rgba(255,255,255,0.14);
-  border-radius: 6px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  padding: 0 10px;
-  gap: 7px;
-  color: rgba(255,255,255,0.7);
-  font-size: 13px;
+  padding: 0 18px;
+  gap: 12px;
+  color: rgba(255,255,255,0.78);
+  font-size: 22px;
 }
-.tb-search-icon { font-size: 11px; opacity: 0.85; }
+.tb-search-icon { font-size: 18px; opacity: 0.85; }
 
 .tb-right {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
   flex-shrink: 0;
 }
 .tb-avatar-cluster {
   display: flex;
   align-items: center;
-  gap: 0;
   background: rgba(255,255,255,0.12);
-  border-radius: 20px;
-  padding: 2px 6px 2px 3px;
+  border-radius: 32px;
+  padding: 4px 10px 4px 4px;
 }
 .tb-av {
-  width: 22px; height: 22px;
+  width: 36px; height: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, #E8341C, #BF2213);
   display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; color: white;
-  margin-right: 4px;
+  font-size: 14px; font-weight: 800; color: white;
+  margin-right: 8px;
 }
-.tb-chevron { color: rgba(255,255,255,0.6); font-size: 8px; }
+.tb-chevron { color: rgba(255,255,255,0.65); font-size: 12px; }
 .tb-help {
-  width: 20px; height: 20px;
+  width: 32px; height: 32px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.45);
+  border: 2px solid rgba(255,255,255,0.5);
   display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.7);
-  font-size: 11px;
+  color: rgba(255,255,255,0.78);
+  font-size: 17px;
   font-weight: 700;
 }
 
@@ -130,73 +128,79 @@ body {
   overflow: hidden;
 }
 
-/* ═══ ICON RAIL — 54px matches ~108px in ref ═══ */
+/* ═══ ICON RAIL ═══ */
 .icon-rail {
-  width: 54px;
+  width: 100px;
   background: #3F0E40;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0;
-  gap: 2px;
+  padding: 24px 0;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .ws-icon {
-  width: 36px; height: 36px;
-  border-radius: 8px;
+  width: 64px; height: 64px;
+  border-radius: 14px;
   background: linear-gradient(145deg, #E8341C, #BF2213);
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 900; color: white;
-  margin-bottom: 10px;
+  font-size: 28px; font-weight: 900; color: white;
+  margin-bottom: 18px;
   flex-shrink: 0;
 }
 
 .ri {
-  width: 36px; height: 36px;
-  border-radius: 8px;
+  width: 64px; height: 64px;
+  border-radius: 12px;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 2px;
-  color: rgba(255,255,255,0.55);
+  gap: 4px;
+  color: rgba(255,255,255,0.6);
   cursor: pointer;
   flex-shrink: 0;
 }
 .ri.active { color: white; }
-.ri-icon { font-size: 17px; line-height: 1; }
-.ri-label { font-size: 8.5px; color: inherit; }
+.ri.active .ri-icon-box { background: rgba(255,255,255,0.18); }
+.ri-icon-box {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.ri-icon { font-size: 24px; line-height: 1; }
+.ri-label { font-size: 12px; color: inherit; }
 .ri-spacer { flex: 1; }
 .ri-plus {
-  width: 34px; height: 34px;
+  width: 56px; height: 56px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255,255,255,0.3);
   display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.55);
-  font-size: 20px; font-weight: 300;
+  color: rgba(255,255,255,0.6);
+  font-size: 30px; font-weight: 300;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
   flex-shrink: 0;
 }
 .ri-avatar {
-  width: 34px; height: 34px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   background: #7C3AED;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Ccircle cx='17' cy='17' r='17' fill='%237C3AED'/%3E%3Ctext x='17' y='22' text-anchor='middle' font-size='14' font-weight='700' fill='white' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='28' r='28' fill='%237C3AED'/%3E%3Ctext x='28' y='37' text-anchor='middle' font-size='24' font-weight='700' fill='white' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E");
   position: relative;
   flex-shrink: 0;
 }
 .ri-avatar::after {
   content: '';
-  position: absolute; bottom: 0; right: 0;
-  width: 9px; height: 9px;
+  position: absolute; bottom: 0; right: 2px;
+  width: 14px; height: 14px;
   border-radius: 50%;
   background: #2BAC76;
-  border: 2px solid #3F0E40;
+  border: 3px solid #3F0E40;
 }
 
-/* ═══ CHANNEL NAV — 164px matches ~328px in ref ═══ */
+/* ═══ CHANNEL NAV ═══ */
 .ch-nav {
-  width: 164px;
+  width: 360px;
   background: #3F0E40;
   display: flex;
   flex-direction: column;
@@ -206,44 +210,48 @@ body {
 }
 
 .ws-header {
-  padding: 10px 12px 8px;
+  padding: 22px 24px 18px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   cursor: pointer;
   flex-shrink: 0;
 }
-.ws-name { font-size: 15px; font-weight: 800; color: white; }
-.ws-chevron { color: rgba(255,255,255,0.7); font-size: 10px; }
+.ws-name { font-size: 32px; font-weight: 900; color: white; letter-spacing: -0.3px; }
+.ws-chevron { color: rgba(255,255,255,0.75); font-size: 18px; }
 
-.nav-links { padding: 0 6px 6px; flex-shrink: 0; }
+.nav-links { padding: 0 12px 14px; flex-shrink: 0; }
 .nav-link {
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 6px;
-  border-radius: 5px;
-  color: rgba(255,255,255,0.75);
-  font-size: 13px;
+  display: flex; align-items: center; gap: 14px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.78);
+  font-size: 21px;
   cursor: pointer;
 }
-.nav-link-icon { font-size: 13px; opacity: 0.7; flex-shrink: 0; }
+.nav-link-icon {
+  font-size: 20px; opacity: 0.7; flex-shrink: 0;
+  width: 22px; display: flex; justify-content: center;
+}
 
 .section-head {
-  display: flex; align-items: center; gap: 4px;
-  padding: 6px 12px 3px;
-  font-size: 12px; font-weight: 700;
-  color: rgba(255,255,255,0.8);
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 24px 6px;
+  font-size: 20px; font-weight: 700;
+  color: rgba(255,255,255,0.85);
   cursor: pointer;
   flex-shrink: 0;
 }
-.s-chevron { font-size: 8px; color: rgba(255,255,255,0.45); }
+.s-chevron { font-size: 12px; color: rgba(255,255,255,0.55); }
+.section-star { font-size: 20px; }
 
 .ch-item {
-  display: flex; align-items: center; gap: 6px;
-  padding: 4px 6px;
-  margin: 1px 6px;
-  border-radius: 5px;
-  color: rgba(255,255,255,0.7);
-  font-size: 13px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  margin: 2px 12px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.75);
+  font-size: 24px;
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
@@ -255,11 +263,12 @@ body {
   font-weight: 600;
 }
 .ch-hash {
-  font-size: 14px; font-weight: 300;
-  color: rgba(255,255,255,0.45);
+  font-size: 26px; font-weight: 300;
+  color: rgba(255,255,255,0.55);
   flex-shrink: 0; line-height: 1;
+  width: 18px; text-align: center;
 }
-.ch-item.active .ch-hash { color: rgba(255,255,255,0.8); }
+.ch-item.active .ch-hash { color: rgba(255,255,255,0.9); }
 
 /* ═══ MESSAGE PANE ═══ */
 .msg-pane {
@@ -268,27 +277,28 @@ body {
   background: white;
   overflow: hidden;
   position: relative;
+  border-top-left-radius: 14px;
 }
 
 .ch-header {
-  height: 49px;
+  height: 104px;
   border-bottom: 1px solid #DDDDDD;
   display: flex; align-items: center;
-  padding: 0 20px; gap: 5px;
+  padding: 0 40px; gap: 12px;
   flex-shrink: 0;
   background: white;
   position: relative;
   z-index: 2;
 }
-.ch-header-hash { font-size: 20px; font-weight: 900; color: #1D1C1D; line-height: 1; }
-.ch-header-name { font-size: 16px; font-weight: 700; color: #1D1C1D; }
-.ch-header-chevron { font-size: 10px; color: #616061; margin-left: 1px; }
+.ch-header-hash { font-size: 46px; font-weight: 900; color: #1D1C1D; line-height: 1; }
+.ch-header-name { font-size: 38px; font-weight: 900; color: #1D1C1D; letter-spacing: -0.5px; }
+.ch-header-chevron { font-size: 18px; color: #616061; margin-left: 4px; }
 
 /* ═══ SCENES ═══ */
 .scene {
   position: absolute;
-  top: 49px; left: 0; right: 0; bottom: 60px;
-  padding: 20px 20px 0;
+  top: 104px; left: 0; right: 0; bottom: 0;
+  padding: 36px 40px 40px;
   overflow-y: auto;
   opacity: 0;
   pointer-events: none;
@@ -298,17 +308,17 @@ body {
 
 /* ═══ MESSAGES ═══ */
 .msg {
-  display: flex; gap: 10px;
-  margin-bottom: 18px;
+  display: flex; gap: 18px;
+  margin-bottom: 28px;
   align-items: flex-start;
 }
 
 .av {
-  width: 40px; height: 40px;
-  border-radius: 50%;
+  width: 56px; height: 56px;
+  border-radius: 10px;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; color: white;
+  font-size: 20px; font-weight: 700; color: white;
 }
 .av-client { background: #2563EB; }
 .av-antimo { background: #7C3AED; }
@@ -316,29 +326,29 @@ body {
 
 .msg-body { flex: 1; min-width: 0; }
 .msg-head {
-  display: flex; align-items: baseline; gap: 8px;
-  margin-bottom: 2px;
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 4px;
 }
-.msg-name { font-size: 15px; font-weight: 700; color: #1D1C1D; }
-.msg-ts { font-size: 11px; color: #9E9E9E; }
-.msg-text { font-size: 14px; color: #1D1C1D; line-height: 1.55; }
+.msg-name { font-size: 26px; font-weight: 900; color: #1D1C1D; letter-spacing: -0.3px; }
+.msg-ts { font-size: 15px; color: #9E9E9E; }
+.msg-text { font-size: 24px; color: #1D1C1D; line-height: 1.45; }
 
 .cursor {
   display: inline-block;
-  width: 2px; height: 14px;
+  width: 3px; height: 22px;
   background: #1D1C1D;
-  margin-left: 1px;
+  margin-left: 2px;
   vertical-align: middle;
   animation: blink 0.85s step-end infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
 
 .dots {
-  display: inline-flex; gap: 4px; align-items: center;
-  height: 20px; padding: 0 2px;
+  display: inline-flex; gap: 6px; align-items: center;
+  height: 28px; padding: 0 4px;
 }
 .dot {
-  width: 7px; height: 7px;
+  width: 11px; height: 11px;
   border-radius: 50%;
   background: #B4B4B4;
   animation: bounce 1.2s ease-in-out infinite;
@@ -347,64 +357,64 @@ body {
 .dot:nth-child(3) { animation-delay: 0.30s; }
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-5px); }
+  30% { transform: translateY(-7px); }
 }
 
 .fwd {
-  border-left: 3px solid #CCCCCC;
-  padding: 7px 10px;
-  margin: 7px 0 0;
+  border-left: 4px solid #CCCCCC;
+  padding: 12px 16px;
+  margin: 12px 0 0;
   background: #F8F8F8;
-  border-radius: 0 5px 5px 0;
+  border-radius: 0 8px 8px 0;
 }
-.fwd-source { font-size: 11px; color: #616061; margin-bottom: 3px; font-weight: 600; }
-.fwd-text { font-size: 13px; color: #1D1C1D; line-height: 1.5; }
+.fwd-source { font-size: 16px; color: #616061; margin-bottom: 5px; font-weight: 700; }
+.fwd-text { font-size: 22px; color: #1D1C1D; line-height: 1.45; }
 
 .card {
   border: 1px solid #E0E0E0;
-  border-radius: 7px;
-  padding: 12px 14px;
-  margin-top: 10px;
-  max-width: 460px;
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin-top: 14px;
+  max-width: 680px;
   background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
   display: none;
   animation: fadeUp 0.3s ease forwards;
 }
 .card.show { display: block; }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .card-eyebrow {
-  font-size: 11px; font-weight: 700;
+  font-size: 16px; font-weight: 700;
   color: #616061; text-transform: uppercase;
-  letter-spacing: 0.4px; margin-bottom: 6px;
-  display: flex; align-items: center; gap: 7px;
+  letter-spacing: 0.6px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
 }
 .card-id {
   background: #EDE9FE; color: #5B21B6;
-  padding: 1px 6px; border-radius: 4px;
-  font-size: 10px; font-weight: 700;
+  padding: 2px 9px; border-radius: 5px;
+  font-size: 14px; font-weight: 700;
   text-transform: none; letter-spacing: 0;
 }
 .card-title {
-  font-size: 14px; font-weight: 700;
-  color: #1D1C1D; margin-bottom: 9px;
-  line-height: 1.4;
+  font-size: 24px; font-weight: 800;
+  color: #1D1C1D; margin-bottom: 14px;
+  line-height: 1.35;
 }
-.card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.card-tags { display: flex; gap: 9px; flex-wrap: wrap; }
 .tag {
   background: #F4F4F4; border: 1px solid #E0E0E0;
-  border-radius: 4px; padding: 2px 8px;
-  font-size: 11px; color: #454545; font-weight: 500;
+  border-radius: 6px; padding: 4px 12px;
+  font-size: 16px; color: #454545; font-weight: 500;
 }
 .tag.green { background: #E6F7F1; border-color: #A7E3CC; color: #007A5A; }
 .tag.purple { background: #EDE9FE; border-color: #C4B5FD; color: #5B21B6; }
 
-/* ═══ INPUT BAR — pinned to bottom via margin-top: auto ═══ */
+/* ═══ INPUT BAR ═══ */
 .input-bar {
-  height: 60px; padding: 10px 16px;
+  height: 110px; padding: 18px 28px;
   flex-shrink: 0;
   margin-top: auto;
   position: relative; z-index: 2;
@@ -412,25 +422,25 @@ body {
   border-top: 1px solid #EBEBEB;
 }
 .input-inner {
-  border: 1px solid #C9C9C9; border-radius: 8px;
-  height: 40px; display: flex; align-items: center;
-  padding: 0 10px; gap: 8px;
+  border: 1px solid #C9C9C9; border-radius: 12px;
+  height: 74px; display: flex; align-items: center;
+  padding: 0 18px; gap: 14px;
 }
 .input-plus {
-  width: 26px; height: 26px;
-  border: 1.5px solid #C0C0C0; border-radius: 50%;
+  width: 42px; height: 42px;
+  border: 2px solid #C0C0C0; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: #616061; font-size: 18px; font-weight: 300;
+  color: #616061; font-size: 28px; font-weight: 300;
   flex-shrink: 0; line-height: 1;
 }
-.input-ph { flex: 1; font-size: 14px; color: #9E9E9E; }
+.input-ph { flex: 1; font-size: 22px; color: #9E9E9E; }
 .send-group { display: flex; align-items: center; flex-shrink: 0; }
 .send-btn {
-  width: 28px; height: 28px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   background: #CCCCCC;
   display: flex; align-items: center; justify-content: center;
-  color: white; font-size: 12px;
+  color: white; font-size: 18px;
 }
 
 /* ═══ CHANNEL FLASH ═══ */
@@ -443,19 +453,71 @@ body {
 
 /* ═══ REPLAY ═══ */
 .replay {
-  position: absolute; bottom: 68px; right: 20px;
+  position: absolute; bottom: 36px; right: 36px;
   background: #1264A3; color: white;
-  border: none; border-radius: 20px;
-  padding: 8px 18px; font-size: 13px; font-weight: 600;
+  border: none; border-radius: 28px;
+  padding: 12px 26px; font-size: 18px; font-weight: 600;
   cursor: pointer; font-family: inherit;
   opacity: 0; pointer-events: none;
   transition: opacity 0.4s;
   z-index: 20;
 }
 .replay.show { opacity: 1; pointer-events: auto; }
+
+/* ═══ CONTROL PANEL (dev-only, outside the mockup) ═══ */
+.controls {
+  position: fixed;
+  bottom: 16px; right: 16px;
+  background: rgba(20, 20, 30, 0.92);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+.controls-row { display: flex; gap: 6px; align-items: center; }
+.controls-label { font-size: 10px; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.6px; }
+.ctl-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ctl-btn:hover { background: rgba(255,255,255,0.16); }
+.ctl-btn.active {
+  background: #1264A3;
+  border-color: #1264A3;
+  color: white;
+}
+.ctl-btn.play { background: #0F7B3F; border-color: #0F7B3F; color: white; }
+.ctl-btn.play:hover { background: #11944A; }
 </style>
 </head>
 <body>
+
+<!-- Dev controls — not part of the social mockup -->
+<div class="controls">
+  <div class="controls-row">
+    <span class="controls-label">Frame</span>
+  </div>
+  <div class="controls-row">
+    <button class="ctl-btn" data-frame="1" onclick="setFrame(1)">1 · lobby</button>
+    <button class="ctl-btn" data-frame="2" onclick="setFrame(2)">2 · forward</button>
+    <button class="ctl-btn" data-frame="3" onclick="setFrame(3)">3 · final</button>
+  </div>
+  <div class="controls-row">
+    <button class="ctl-btn play" onclick="startAnim()">▶ Animate</button>
+  </div>
+</div>
 
 <div class="window">
 
@@ -466,83 +528,15 @@ body {
       <div class="tl y"></div>
       <div class="tl g"></div>
     </div>
-    <div class="nav-arrows">
-      <span class="nav-arrow">&#8249;</span>
-      <span class="nav-arrow">&#8250;</span>
-    </div>
-    <span class="nav-clock">&#128336;</span>
-    <div class="tb-search">
-      <span class="tb-search-icon">&#128269;</span>
-      <span id="tb-search-text">Search RED</span>
-    </div>
-    <div class="tb-right">
-      <div class="tb-avatar-cluster">
-        <div class="tb-av">R</div>
-        <span class="tb-chevron">&#8964;</span>
-      </div>
-      <div class="tb-help">?</div>
-    </div>
   </div>
 
   <!-- BODY -->
   <div class="body">
 
-    <!-- ICON RAIL (54px) -->
-    <div class="icon-rail">
-      <div class="ws-icon">R</div>
-      <div class="ri active">
-        <span class="ri-icon">⌂</span>
-        <span class="ri-label">Home</span>
-      </div>
-      <div class="ri">
-        <span class="ri-icon">✉</span>
-        <span class="ri-label">DMs</span>
-      </div>
-      <div class="ri">
-        <span class="ri-icon">🔔</span>
-        <span class="ri-label">Activity</span>
-      </div>
-      <div class="ri">
-        <span class="ri-icon">📄</span>
-        <span class="ri-label">Files</span>
-      </div>
-      <div class="ri">
-        <span class="ri-icon">⚙</span>
-        <span class="ri-label">Tools</span>
-      </div>
-      <div class="ri">
-        <span class="ri-icon">···</span>
-        <span class="ri-label">More</span>
-      </div>
-      <div class="ri-spacer"></div>
-      <div class="ri-plus">+</div>
-      <div class="ri-avatar"></div>
-    </div>
-
-    <!-- CHANNEL NAV (164px) -->
+    <!-- CHANNEL NAV -->
     <div class="ch-nav">
       <div class="ws-header">
         <span class="ws-name">RED</span>
-        <span class="ws-chevron">&#8964;</span>
-      </div>
-      <div class="nav-links">
-        <div class="nav-link">
-          <span class="nav-link-icon">&#9776;</span>
-          <span>Unread messages</span>
-        </div>
-        <div class="nav-link">
-          <span class="nav-link-icon">&#9655;</span>
-          <span>Threads</span>
-        </div>
-        <div class="nav-link">
-          <span class="nav-link-icon">&#10148;</span>
-          <span>Drafts &amp; sent</span>
-        </div>
-      </div>
-
-      <div class="section-head">
-        <span class="s-chevron">&#9660;</span>
-        Starred &#11088;
       </div>
       <div class="ch-item active" id="ch-lobby">
         <span class="ch-hash">#</span>
@@ -552,15 +546,6 @@ body {
         <span class="ch-hash">#</span>
         <span>pipeline</span>
       </div>
-
-      <div class="section-head" style="margin-top:4px;">
-        <span class="s-chevron">&#9660;</span>
-        Channels
-      </div>
-      <div class="ch-item"><span class="ch-hash">#</span><span>announcements</span></div>
-      <div class="ch-item"><span class="ch-hash">#</span><span>general</span></div>
-      <div class="ch-item"><span class="ch-hash">#</span><span>marketing</span></div>
-      <div class="ch-item"><span class="ch-hash">#</span><span>ops</span></div>
     </div>
 
     <!-- MESSAGE PANE -->
@@ -569,7 +554,6 @@ body {
       <div class="ch-header">
         <span class="ch-header-hash">#</span>
         <span class="ch-header-name" id="ch-header-name">lobby</span>
-        <span class="ch-header-chevron">&#8964;</span>
       </div>
 
       <!-- SCENE: lobby -->
@@ -579,7 +563,6 @@ body {
           <div class="msg-body">
             <div class="msg-head">
               <span class="msg-name">Alex Chen</span>
-              <span class="msg-ts">Today at 9:41 AM</span>
             </div>
             <div class="msg-text">
               <span id="lobby-text"></span><span class="cursor" id="lobby-cursor"></span>
@@ -588,7 +571,7 @@ body {
         </div>
       </div>
 
-      <!-- SCENE: pipeline (one continuous view) -->
+      <!-- SCENE: pipeline -->
       <div class="scene" id="scene-pipeline">
 
         <div class="msg" id="p-msg-antimo" style="opacity:0; transition: opacity 0.3s;">
@@ -596,12 +579,9 @@ body {
           <div class="msg-body">
             <div class="msg-head">
               <span class="msg-name">Antimo</span>
-              <span class="msg-ts">Today at 9:42 AM</span>
             </div>
             <div class="msg-text">
-              New prospect — routing to pipeline
               <div class="fwd">
-                <div class="fwd-source">Alex Chen · #lobby</div>
                 <div class="fwd-text">Hi — I'm Alex from ChainFlow. We're looking for an agency to build a cross-chain payment dashboard. Budget is around $40k. Is this something RED handles?</div>
               </div>
             </div>
@@ -613,7 +593,6 @@ body {
           <div class="msg-body">
             <div class="msg-head">
               <span class="msg-name">Red Claude</span>
-              <span class="msg-ts">Today at 9:42 AM</span>
             </div>
             <div class="msg-text">
               <div class="dots" id="bot-dots">
@@ -627,9 +606,7 @@ body {
                 <div class="card-title">New prospect: Cross-chain payment dashboard — ChainFlow</div>
                 <div class="card-tags">
                   <span class="tag green">&#10003; Enriched</span>
-                  <span class="tag purple">Web3 / DeFi</span>
                   <span class="tag">$40k budget</span>
-                  <span class="tag">Inbound</span>
                 </div>
               </div>
             </div>
@@ -640,17 +617,6 @@ body {
 
       <!-- Flash overlay -->
       <div class="ch-flash" id="ch-flash"></div>
-
-      <!-- Input bar — margin-top:auto pins it to the bottom -->
-      <div class="input-bar">
-        <div class="input-inner">
-          <div class="input-plus">+</div>
-          <span class="input-ph" id="input-ph">Message #lobby</span>
-          <div class="send-group">
-            <div class="send-btn">&#9658;</div>
-          </div>
-        </div>
-      </div>
 
       <button class="replay" id="replay-btn" onclick="startAnim()">&#9654; Replay</button>
 
@@ -667,10 +633,15 @@ function delay(ms) {
 
 async function typeText(el, text, speed, pid) {
   el.textContent = '';
-  for (let i = 0; i < text.length; i++) {
+  const words = text.split(/(\s+)/); // keep whitespace tokens
+  let acc = '';
+  for (let i = 0; i < words.length; i++) {
     if (playId !== pid) return false;
-    el.textContent = text.slice(0, i + 1);
-    await delay(speed + Math.random() * 10);
+    acc += words[i];
+    el.textContent = acc;
+    if (words[i].trim().length > 0) {
+      await delay(speed + Math.random() * 40);
+    }
   }
   return true;
 }
@@ -678,13 +649,15 @@ async function typeText(el, text, speed, pid) {
 async function startAnim() {
   const pid = ++playId;
 
+  // Clear frame button highlights
+  document.querySelectorAll('.ctl-btn[data-frame]').forEach(b => b.classList.remove('active'));
+
   document.getElementById('replay-btn').classList.remove('show');
 
   // Reset sidebar
   document.getElementById('ch-lobby').classList.add('active');
   document.getElementById('ch-pipeline').classList.remove('active');
   document.getElementById('ch-header-name').textContent = 'lobby';
-  document.getElementById('input-ph').textContent = 'Message #lobby';
 
   // Reset scenes
   document.getElementById('scene-lobby').classList.add('visible');
@@ -702,17 +675,17 @@ async function startAnim() {
   document.getElementById('ticket-card').classList.remove('show');
   document.getElementById('ch-flash').style.opacity = '0';
 
-  // ── PHASE 1: client types in #lobby ──
+  // ── PHASE 1 ──
   await delay(600);
   const lobbyMsg = "Hi — I'm Alex from ChainFlow. We're building a cross-chain payment dashboard and looking for an agency. Budget around $40k. Is this something RED handles?";
-  const ok1 = await typeText(document.getElementById('lobby-text'), lobbyMsg, 26, pid);
+  const ok1 = await typeText(document.getElementById('lobby-text'), lobbyMsg, 130, pid);
   if (!ok1) return;
   document.getElementById('lobby-cursor').style.display = 'none';
 
   await delay(800);
   if (playId !== pid) return;
 
-  // ── TRANSITION: #lobby → #pipeline ──
+  // ── TRANSITION ──
   const flash = document.getElementById('ch-flash');
   flash.style.transition = 'opacity 0.08s';
   flash.style.opacity = '0.7';
@@ -724,12 +697,11 @@ async function startAnim() {
   document.getElementById('ch-lobby').classList.remove('active');
   document.getElementById('ch-pipeline').classList.add('active');
   document.getElementById('ch-header-name').textContent = 'pipeline';
-  document.getElementById('input-ph').textContent = 'Message #pipeline';
 
   document.getElementById('scene-lobby').classList.remove('visible');
   document.getElementById('scene-pipeline').classList.add('visible');
 
-  // ── PHASE 2: Antimo's forwarded message ──
+  // ── PHASE 2 ──
   await delay(280);
   if (playId !== pid) return;
   document.getElementById('p-msg-antimo').style.opacity = '1';
@@ -737,7 +709,7 @@ async function startAnim() {
   await delay(550);
   if (playId !== pid) return;
 
-  // ── PHASE 3: Red Claude types ──
+  // ── PHASE 3 ──
   document.getElementById('p-msg-bot').style.opacity = '1';
   await delay(1500);
   if (playId !== pid) return;
@@ -747,7 +719,7 @@ async function startAnim() {
   document.getElementById('bot-cursor').style.display = 'inline-block';
 
   const botMsg = "On it — ticket created, lead enriched.";
-  const ok2 = await typeText(document.getElementById('bot-text'), botMsg, 32, pid);
+  const ok2 = await typeText(document.getElementById('bot-text'), botMsg, 150, pid);
   if (!ok2) return;
   document.getElementById('bot-cursor').style.display = 'none';
 
@@ -762,7 +734,70 @@ async function startAnim() {
   document.getElementById('replay-btn').classList.add('show');
 }
 
-window.addEventListener('load', () => setTimeout(startAnim, 400));
+/* ───── STATIC FRAME SETTER (no animation) ───── */
+const LOBBY_TEXT = "Hi — I'm Alex from ChainFlow. We're building a cross-chain payment dashboard and looking for an agency. Budget around $40k. Is this something RED handles?";
+const BOT_TEXT   = "On it — ticket created, lead enriched.";
+
+function setFrame(n) {
+  // Cancel any running animation
+  playId++;
+
+  // Highlight active button
+  document.querySelectorAll('.ctl-btn[data-frame]').forEach(b => {
+    b.classList.toggle('active', b.dataset.frame === String(n));
+  });
+
+  // Hide replay, kill flash
+  document.getElementById('replay-btn').classList.remove('show');
+  document.getElementById('ch-flash').style.opacity = '0';
+
+  // Hide cursors everywhere by default
+  document.getElementById('lobby-cursor').style.display = 'none';
+  document.getElementById('bot-cursor').style.display = 'none';
+
+  if (n === 1) {
+    // Lobby — Alex's full message
+    document.getElementById('ch-lobby').classList.add('active');
+    document.getElementById('ch-pipeline').classList.remove('active');
+    document.getElementById('ch-header-name').textContent = 'lobby';
+    document.getElementById('scene-lobby').classList.add('visible');
+    document.getElementById('scene-pipeline').classList.remove('visible');
+    document.getElementById('lobby-text').textContent = LOBBY_TEXT;
+    return;
+  }
+
+  // Frames 2 & 3 are pipeline scene
+  document.getElementById('ch-lobby').classList.remove('active');
+  document.getElementById('ch-pipeline').classList.add('active');
+  document.getElementById('ch-header-name').textContent = 'pipeline';
+  document.getElementById('scene-lobby').classList.remove('visible');
+  document.getElementById('scene-pipeline').classList.add('visible');
+
+  document.getElementById('p-msg-antimo').style.opacity = '1';
+
+  if (n === 2) {
+    // Forward only — bot not yet
+    document.getElementById('p-msg-bot').style.opacity = '0';
+    document.getElementById('bot-dots').style.display = 'flex';
+    document.getElementById('bot-text').style.display = 'none';
+    document.getElementById('bot-text').textContent = '';
+    document.getElementById('ticket-card').classList.remove('show');
+    return;
+  }
+
+  if (n === 3) {
+    // Final — everything
+    document.getElementById('p-msg-bot').style.opacity = '1';
+    document.getElementById('bot-dots').style.display = 'none';
+    document.getElementById('bot-text').style.display = 'inline';
+    document.getElementById('bot-text').textContent = BOT_TEXT;
+    document.getElementById('ticket-card').classList.add('show');
+    return;
+  }
+}
+
+// On load: show frame 1 statically (no auto-play)
+window.addEventListener('load', () => setFrame(1));
 </script>
 </body>
 </html>
