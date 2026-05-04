@@ -91,6 +91,121 @@ code { background: #1a1a1a; padding: 0.1rem 0.4rem; border-radius: 3px; color: #
   color: var(--fg-dim);
   line-height: 1.7;
 }
+.card-f .proscons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.card-f .proscons > div {
+  line-height: 1.5;
+}
+.inspirations {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.brand-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  text-decoration: none !important;
+  border: 1px solid transparent;
+  transition: filter 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.brand-chip:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  text-decoration: none !important;
+}
+.brand-chip:active { transform: translateY(0); }
+
+/* brand colors — bg + fg */
+.brand-wechat   { background: #07C160; color: #fff; }
+.brand-phantom  { background: #AB9FF2; color: #1a0d40; }
+.brand-chrome   { background: linear-gradient(135deg, #4285F4, #34A853 50%, #FBBC05 75%, #EA4335); color: #fff; }
+.brand-zerion   { background: #2962EF; color: #fff; }
+.brand-instagram{ background: linear-gradient(135deg, #f09433, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888); color: #fff; }
+.brand-telegram { background: #0088CC; color: #fff; }
+.brand-apple    { background: #1d1d1f; color: #fff; border-color: #333; }
+.brand-rainbow  { background: linear-gradient(90deg, #ff5e5e, #ffae37 20%, #f4d934 40%, #4ade80 60%, #4ea8ff 80%, #b07cf3); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.brand-warpcast { background: #855DCD; color: #fff; }
+.brand-base     { background: #0052FF; color: #fff; }
+.brand-metamask { background: #f6851b; color: #fff; }
+.brand-coinbase { background: #0052FF; color: #fff; }
+.brand-trust    { background: #0500ff; color: #fff; }
+.brand-uniswap  { background: #FF007A; color: #fff; }
+.brand-x        { background: #000; color: #fff; border-color: #333; }
+.brand-tiktok   { background: #000; color: #25F4EE; border-color: #FE2C55; }
+.brand-snapchat { background: #FFFC00; color: #000; }
+.brand-reddit   { background: #FF4500; color: #fff; }
+.brand-discord  { background: #5865F2; color: #fff; }
+.brand-line     { background: #06C755; color: #fff; }
+.brand-android  { background: #3DDC84; color: #0a0a0a; }
+
+/* inspirations gallery layout */
+.insp-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+.insp-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+}
+.insp-meta {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--fg-faint);
+  letter-spacing: 0.02em;
+}
+.insp-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+.insp-list li {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 1rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.insp-list li > .brand-chip { align-self: flex-start; }
+.insp-list p {
+  font-size: 0.78rem;
+  color: var(--fg);
+  line-height: 1.55;
+  margin: 0;
+}
+.insp-list .insp-note {
+  font-size: 0.72rem;
+  color: var(--fg-dim);
+  font-style: italic;
+  border-left: 2px solid var(--line);
+  padding-left: 0.6rem;
+  margin-top: 0.1rem;
+}
+.insp-list em { font-style: italic; color: var(--fg); }
+
 .card-f .tag {
   display: inline-block;
   font-size: 0.6rem;

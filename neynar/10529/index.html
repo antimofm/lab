@@ -11,7 +11,7 @@
   <header class="page-header">
     <h1><a href="/">/ lab</a> / <a href="/neynar/">neynar</a> / 10529</h1>
     <p>Eight clickable chrome archetypes for Farcaster mini-app + in-app browser. Tap things — they should respond. Goal: shortlist 2–4, port to design shell tangents.</p>
-    <p class="meta">Source: <a href="https://linear.app/neynar/issue/NEYN-10529">NEYN-10529</a> · execution: <a href="https://linear.app/red-channel/issue/CLIENTS-38">CLIENTS-38</a> · build target <code>farcaster-design-shell</code></p>
+    <p class="meta">Source: <a href="https://linear.app/neynar/issue/NEYN-10529">NEYN-10529</a> · execution: <a href="https://linear.app/red-channel/issue/CLIENTS-38">CLIENTS-38</a> · <a href="inspirations.html">full inspirations gallery →</a> · build target <code>farcaster-design-shell</code></p>
   </header>
 
   <main class="grid">
@@ -20,7 +20,7 @@
     <section class="card" data-arch="capsule">
       <header class="card-h">
         <h2>1 · Capsule</h2>
-        <p>WeChat lineage. No URL bar. Floating pill: ⋯ + ×. Title set by app, not bar. Maximum app surface.</p>
+        <p>No URL bar. Floating pill: ⋯ + ×. Title set by app, not bar. Maximum app surface.</p>
       </header>
       <div class="phone">
         <div class="status-bar"><span>9:41</span><span>•••</span></div>
@@ -39,8 +39,13 @@
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> minimum chrome, app-as-app
-        <span class="tag">Cons</span> URL invisible, less browser-like trust
+        <div class="proscons">
+          <div><span class="tag">Pros</span> minimum chrome, app-as-app</div>
+          <div><span class="tag">Cons</span> URL invisible, less browser-like trust</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-wechat" href="https://www.nngroup.com/articles/wechat-mini-programs/" target="_blank" rel="noopener">WeChat Mini Programs ↗</a>
+        </div>
       </footer>
     </section>
 
@@ -48,7 +53,7 @@
     <section class="card" data-arch="minimal">
       <header class="card-h">
         <h2>2 · Minimal single-bar</h2>
-        <p>Phantom / Chrome Custom Tabs. One thin bar: × + title + ⋯. Collapses on scroll. The default-good.</p>
+        <p>One thin bar: × + title + ⋯. Collapses on scroll. The default-good.</p>
       </header>
       <div class="phone">
         <div class="status-bar"><span>9:41</span><span>•••</span></div>
@@ -72,8 +77,14 @@
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> familiar, scroll-aware
-        <span class="tag">Cons</span> generic — no Farcaster identity
+        <div class="proscons">
+          <div><span class="tag">Pros</span> familiar, scroll-aware</div>
+          <div><span class="tag">Cons</span> generic — no Farcaster identity</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-phantom" href="https://phantom.com/" target="_blank" rel="noopener">Phantom ↗</a>
+          <a class="brand-chip brand-chrome" href="https://developer.chrome.com/docs/android/custom-tabs/guide-ui-customization" target="_blank" rel="noopener">Chrome Custom Tabs ↗</a>
+        </div>
       </footer>
     </section>
 
@@ -81,7 +92,7 @@
     <section class="card" data-arch="identity">
       <header class="card-h">
         <h2>3 · Identity-first</h2>
-        <p>Zerion lineage. Cast author / mini-app author leftmost (not nav). Identity is the primary affordance — fits Farcaster's social-graph DNA.</p>
+        <p>Cast author / mini-app author leftmost (not nav). Identity is the primary affordance — fits Farcaster's social-graph DNA.</p>
       </header>
       <div class="phone">
         <div class="status-bar"><span>9:41</span><span>•••</span></div>
@@ -105,8 +116,13 @@
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> Farcaster-native (author = trust), tap-to-profile
-        <span class="tag">Cons</span> wider bar, identity duplicates if cast already showed author
+        <div class="proscons">
+          <div><span class="tag">Pros</span> Farcaster-native (author = trust), tap-to-profile</div>
+          <div><span class="tag">Cons</span> wider bar, identity duplicates if cast already showed author</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-zerion" href="https://zerion.io/blog/what-is-dapp-browser/" target="_blank" rel="noopener">Zerion ↗</a>
+        </div>
       </footer>
     </section>
 
@@ -114,7 +130,7 @@
     <section class="card antipattern" data-arch="chunky">
       <header class="card-h">
         <h2>4 · Two-bar chunky <span class="warn">anti-pattern</span></h2>
-        <p>Instagram. Top: × + stacked title/URL + share. Bottom: back/forward/share/Safari. Chunky on purpose for tracking. The thing to NOT do.</p>
+        <p>Top: × + stacked title/URL + share. Bottom: back/forward/share/Safari. Chunky on purpose for tracking. The thing to NOT do.</p>
       </header>
       <div class="phone">
         <div class="status-bar"><span>9:41</span><span>•••</span></div>
@@ -141,8 +157,13 @@
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> none for Neynar
-        <span class="tag">Cons</span> ~120pt eaten before content, dual chrome
+        <div class="proscons">
+          <div><span class="tag">Pros</span> none for Neynar</div>
+          <div><span class="tag">Cons</span> ~120pt eaten before content, dual chrome</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-instagram" href="https://krausefx.com/blog/ios-privacy-instagram-and-facebook-can-track-anything-you-do-on-any-website-in-their-in-app-browser" target="_blank" rel="noopener">Instagram ↗</a>
+        </div>
       </footer>
     </section>
 
@@ -150,7 +171,7 @@
     <section class="card" data-arch="fullscreen">
       <header class="card-h">
         <h2>5 · Full-screen + edge escape</h2>
-        <p>Telegram Mini Apps 2.0. No persistent chrome. Edge swipe down (or top tap) reveals capsule. Most aggressive minimization.</p>
+        <p>No persistent chrome. Edge swipe down (or top tap) reveals capsule. Most aggressive minimization.</p>
       </header>
       <div class="phone">
         <div class="status-bar transparent"><span>9:41</span><span>•••</span></div>
@@ -172,8 +193,13 @@
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> max app surface, immersive
-        <span class="tag">Cons</span> escape gesture must be discoverable, status-bar collision
+        <div class="proscons">
+          <div><span class="tag">Pros</span> max app surface, immersive</div>
+          <div><span class="tag">Cons</span> escape gesture must be discoverable, status-bar collision</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-telegram" href="https://telegram.org/blog/fullscreen-miniapps-and-more" target="_blank" rel="noopener">Telegram Mini Apps 2.0 ↗</a>
+        </div>
       </footer>
     </section>
 
@@ -181,7 +207,7 @@
     <section class="card" data-arch="system">
       <header class="card-h">
         <h2>6 · System primitive</h2>
-        <p>SFSafariViewController. Done + stacked title/URL + reload/share. Bottom bar: back/forward/share/tabs. The "do nothing" baseline.</p>
+        <p>Done + stacked title/URL + reload/share. Bottom bar: back/forward/share/tabs. The "do nothing" baseline.</p>
       </header>
       <div class="phone">
         <div class="status-bar"><span>9:41</span><span>•••</span></div>
@@ -194,9 +220,11 @@
             </div>
             <button class="ico" data-action="reload">↻</button>
           </div>
-          <div class="content"><div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div>
+          <div class="content">
             <div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div>
-            <div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div></div>
+            <div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div>
+            <div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div>
+          </div>
           <div class="bar bar-system-bottom">
             <button class="ico" data-action="back">‹</button>
             <button class="ico" data-action="forward">›</button>
@@ -206,8 +234,13 @@
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> familiar, free reader/autofill
-        <span class="tag">Cons</span> not a mini-app (it's a webpage), no Farcaster context
+        <div class="proscons">
+          <div><span class="tag">Pros</span> familiar, free reader/autofill</div>
+          <div><span class="tag">Cons</span> not a mini-app (it's a webpage), no Farcaster context</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-apple" href="https://developer.apple.com/documentation/safariservices/sfsafariviewcontroller" target="_blank" rel="noopener">SFSafariViewController ↗</a>
+        </div>
       </footer>
     </section>
 
@@ -215,7 +248,7 @@
     <section class="card" data-arch="discovery">
       <header class="card-h">
         <h2>7 · Discovery-rich</h2>
-        <p>Rainbow. Trending strip above URL. Browser as destination, not transit. Chunky on purpose — discovery is the value.</p>
+        <p>Trending strip above URL. Browser as destination, not transit. Chunky on purpose — discovery is the value.</p>
       </header>
       <div class="phone">
         <div class="status-bar"><span>9:41</span><span>•••</span></div>
@@ -238,8 +271,13 @@
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> mini-app discovery built-in
-        <span class="tag">Cons</span> heaviest chrome here, search-bar weight
+        <div class="proscons">
+          <div><span class="tag">Pros</span> mini-app discovery built-in</div>
+          <div><span class="tag">Cons</span> heaviest chrome here, search-bar weight</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-rainbow" href="https://rainbow.me/support/app/the-rainbow-in-app-browser" target="_blank" rel="noopener">Rainbow ↗</a>
+        </div>
       </footer>
     </section>
 
@@ -247,7 +285,7 @@
     <section class="card baseline" data-arch="baseline">
       <header class="card-h">
         <h2>8 · Current baseline <span class="warn">today's chrome</span></h2>
-        <p>Warpcast / Base App. Host nav stays + mini-app header stacks under. Dual-header. The thing being beaten.</p>
+        <p>Host nav stays + mini-app header stacks under. Dual-header. The thing being beaten.</p>
       </header>
       <div class="phone">
         <div class="status-bar"><span>9:41</span><span>•••</span></div>
@@ -271,13 +309,21 @@
               <button class="ico" data-action="close">✕</button>
             </div>
           </div>
-          <div class="content"><div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div>
-            <div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div></div>
+          <div class="content">
+            <div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div>
+            <div class="skel-row"><div class="skel-circle"></div><div class="skel-lines"><span class="skel-line w50"></span><span class="skel-line w80"></span></div></div>
+          </div>
         </div>
       </div>
       <footer class="card-f">
-        <span class="tag">Pros</span> familiar to current users
-        <span class="tag">Cons</span> dual-header eats space, redundant author display
+        <div class="proscons">
+          <div><span class="tag">Pros</span> familiar to current users</div>
+          <div><span class="tag">Cons</span> dual-header eats space, redundant author display</div>
+        </div>
+        <div class="inspirations">
+          <a class="brand-chip brand-warpcast" href="https://miniapps.farcaster.xyz/docs/specification" target="_blank" rel="noopener">Warpcast ↗</a>
+          <a class="brand-chip brand-base" href="https://blog.base.org/baseapp" target="_blank" rel="noopener">Base App ↗</a>
+        </div>
       </footer>
     </section>
 
