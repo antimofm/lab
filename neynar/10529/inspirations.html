@@ -10,133 +10,237 @@
 <body>
   <header class="page-header">
     <h1><a href="/">/ lab</a> / <a href="/neynar/">neynar</a> / <a href="/neynar/10529/">10529</a> / inspirations</h1>
-    <p>Twenty in-app browser / mini-app chrome references surveyed for the Neynar redesign. The eight archetypes on the <a href="/neynar/10529/">main page</a> are distilled from these. Clicking each chip opens the source.</p>
+    <p>Twenty in-app browser / mini-app chrome references surveyed for the Neynar redesign. The eight archetypes on the <a href="/neynar/10529/">main page</a> are distilled from these. Scroll horizontally inside each section.</p>
     <p class="meta">Source: <a href="https://linear.app/neynar/issue/NEYN-10529">NEYN-10529</a> · execution: <a href="https://linear.app/red-channel/issue/CLIENTS-38">CLIENTS-38</a></p>
   </header>
 
   <main class="insp-wrap">
 
     <section class="insp-section">
-      <h2>Crypto wallets <span class="insp-meta">mini-app + dapp browsers</span></h2>
-      <ul class="insp-list">
-        <li>
+      <h2>Crypto wallets <span class="insp-meta">mini-app + dapp browsers — scroll →</span></h2>
+      <div class="carousel">
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="rainbow">
+            <img src="img/rainbow.jpg" alt="Rainbow in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-rainbow" href="https://rainbow.me/support/app/the-rainbow-in-app-browser" target="_blank" rel="noopener">Rainbow ↗</a>
           <p>Tall multi-row chrome: URL/search field with tab-switcher, plus a horizontal trending-dapps strip above content. Browser as destination, not transit.</p>
-          <p class="insp-note">Anti-reference for Neynar — leans into chunky because the browser <em>is</em> the value. Neynar's brief is the opposite.</p>
-        </li>
-        <li>
+          <p class="insp-note">Anti-reference for Neynar — leans into chunky because the browser <em>is</em> the value.</p>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="metamask">
+            <img src="img/metamask.png" alt="MetaMask in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-metamask" href="https://support.metamask.io/configure/wallet/how-to-use-the-metamask-mobile-browser/" target="_blank" rel="noopener">MetaMask ↗</a>
-          <p>Two-row chrome: account/network selector pill on top, URL/search bar with magnifying glass + tabs + overflow below. Connection state and chain surfaced inline rather than hidden.</p>
+          <p>Two-row: account/network selector pill on top, URL/search bar with tabs + overflow below. Connection state and chain surfaced inline rather than hidden.</p>
           <p class="insp-note">Density-rich; example of how much state a wallet <em>thinks</em> it has to surface.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="coinbase">
+            <img src="img/coinbase.png" alt="Coinbase Wallet in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-coinbase" href="https://www.coinbase.com/blog/making-web3-more-accessible-and-intuitive-meet-the-new-coinbase-wallet-mobile-app" target="_blank" rel="noopener">Coinbase Wallet ↗</a>
-          <p>Single-row top bar: URL/title + secure padlock + tabs + overflow. Tabs treated like Safari (separate carousel). Chain switching happens silently in background, freeing chrome real estate.</p>
+          <p>Single-row: URL/title + padlock + tabs + overflow. Tabs treated like Safari (separate carousel). Chain switching silent.</p>
           <p class="insp-note">Closest ancestor to Base App's chrome.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="trust">
+            <img src="img/trust.png" alt="Trust Wallet in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-trust" href="https://trustwallet.com/blog/web3/exploring-the-dapp-browser-your-gateway-to-web3" target="_blank" rel="noopener">Trust Wallet ↗</a>
-          <p>Standard browser-like: back arrow, URL/title, share, overflow. Multichain selector behind the menu. Generic mobile browser dropped into the app shell.</p>
+          <p>Standard browser-like: back arrow, URL/title, share, overflow. Multichain selector behind the menu. Generic.</p>
           <p class="insp-note">Neutral baseline.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="phantom">
+            <img src="img/phantom.png" alt="Phantom in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-phantom" href="https://phantom.com/" target="_blank" rel="noopener">Phantom ↗</a>
-          <p>Compact single-row: URL/title centered, close (X) on left, share/overflow on right. Network indicator (Solana/EVM/Bitcoin) implicit — no chain pill in chrome. Among the lightest wallet chromes in this set.</p>
-          <p class="insp-note">Strong reference for "minimal wallet chrome" — closest aesthetic to where Neynar likely wants to land.</p>
-        </li>
-        <li>
+          <p>Compact single-row: URL/title centered, × on left, share/⋯ on right. Network indicator implicit — no chain pill in chrome. Among the lightest.</p>
+          <p class="insp-note">Strong reference for "minimal wallet chrome" — closest to where Neynar likely wants to land.</p>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="zerion">
+            <img src="img/zerion.png" alt="Zerion in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-zerion" href="https://zerion.io/blog/what-is-dapp-browser/" target="_blank" rel="noopener">Zerion ↗</a>
-          <p>URL/search bar at top with avatar of active wallet (identicon) on left for fast multi-account switching, bookmark/star, tabs and overflow on right. Identity is the leftmost affordance, not back.</p>
+          <p>URL/search bar with active-wallet identicon on left for fast multi-account switching. Identity is the leftmost affordance, not back.</p>
           <p class="insp-note">Putting identity (not navigation) first is a Farcaster-shaped idea worth borrowing.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="uniswap">
+            <img src="img/uniswap.png" alt="Uniswap Wallet in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-uniswap" href="https://wallet.uniswap.org/" target="_blank" rel="noopener">Uniswap Wallet ↗</a>
-          <p>Lean single-row bar: URL or dapp title, network pill, close. Dapp browser feels like a sub-mode rather than peer surface — chrome stays out of the way.</p>
+          <p>Lean single-row: URL or dapp title, network pill, close. Dapp browser feels like a sub-mode rather than peer surface.</p>
           <p class="insp-note">Good "browser as guest mode" reference.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="base">
+            <img src="img/base.png" alt="Base App mini-app screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-base" href="https://blog.base.org/baseapp" target="_blank" rel="noopener">Base App ↗</a>
-          <p>Mini-app surface: top header with app name + author handle + close (X), bottom-anchored action affordances. Mini-app chrome is minimal but the embedding feed surface adds a thick parent header above it — net visual weight is high.</p>
+          <p>Mini-app surface: top header with app name + author + ×. Mini-app chrome is minimal but the embedding feed surface adds a thick parent header above it — net visual weight is high.</p>
           <p class="insp-note">Direct competitor surface — exactly the chrome Neynar is being compared against.</p>
-        </li>
-      </ul>
+        </article>
+
+      </div>
     </section>
 
     <section class="insp-section">
-      <h2>Social apps <span class="insp-meta">in-app browsers</span></h2>
-      <ul class="insp-list">
-        <li>
+      <h2>Social apps <span class="insp-meta">in-app browsers — scroll →</span></h2>
+      <div class="carousel">
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="x">
+            <img src="img/x.png" alt="X in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-x" href="https://help.x.com/" target="_blank" rel="noopener">X (Twitter) ↗</a>
-          <p>Top bar: done/close + site title + URL stacked + share + overflow. Bottom bar: back/forward/share/Safari-handoff. Two-bar layout — chunky for "just open the link" use case.</p>
+          <p>Top: done/close + site title + URL stacked + share + ⋯. Bottom: back/forward/share/Safari-handoff. Two-bar layout — chunky.</p>
           <p class="insp-note">Anti-pattern: two bars where one would do.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="instagram">
+            <img src="img/instagram.png" alt="Instagram in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-instagram" href="https://krausefx.com/blog/ios-privacy-instagram-and-facebook-can-track-anything-you-do-on-any-website-in-their-in-app-browser" target="_blank" rel="noopener">Instagram ↗</a>
-          <p>Tall double-bar: × + stacked title/URL + open-in-Safari + overflow on top; back/forward/share on bottom. Brand-grey with thick separators. Famously chunky — eats ~120pt before any content shows.</p>
+          <p>Tall double-bar: × + stacked title/URL + open-in-Safari + ⋯ on top; back/forward/share on bottom. Famously chunky — eats ~120pt before any content shows.</p>
           <p class="insp-note">The canonical anti-pattern. Pin to the moodboard as "do not do this."</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="tiktok">
+            <img src="img/tiktok.png" alt="TikTok in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-tiktok" href="https://uiland.design/screens/tiktok/screens/38079b69-6ef6-421f-85e8-39f7cb40a5a8" target="_blank" rel="noopener">TikTok ↗</a>
-          <p>Single top bar: × + truncated title (max 10–20 chars) + overflow with "open in browser" / share. Compact but truncation is aggressive — title often unreadable.</p>
+          <p>Single top bar: × + truncated title (max 10–20 chars) + ⋯. Compact but truncation is aggressive.</p>
           <p class="insp-note">Solves chunkiness by truncating hard. Tradeoff: title legibility.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="snapchat">
+            <img src="img/snapchat.png" alt="Snapchat in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-snapchat" href="https://help.snapchat.com/" target="_blank" rel="noopener">Snapchat ↗</a>
-          <p>Branded yellow accents: × + title + share + overflow on top; back/forward + "open in Safari" on bottom. Less heavy than Instagram but still two-bar.</p>
-        </li>
-        <li>
+          <p>Branded yellow accents: × + title + share + ⋯ on top; back/forward + "open in Safari" on bottom. Less heavy than Instagram but still two-bar.</p>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="reddit">
+            <img src="img/reddit.png" alt="Reddit in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-reddit" href="https://apps.apple.com/us/app/reddit/id1064216828" target="_blank" rel="noopener">Reddit ↗</a>
-          <p>Single top bar: close + title/URL + overflow; sometimes adds a "comments" affordance to jump back to the post. Sticky "view comments" bar returns to thread context — distinctive contextual return path.</p>
+          <p>Single top bar + sticky "view comments" bar that returns to thread context — distinctive contextual return path.</p>
           <p class="insp-note">"Return to context" affordance — mini-apps could borrow this for "return to cast."</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="discord">
+            <img src="img/discord.png" alt="Discord in-app browser screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-discord" href="https://support.discord.com/hc/en-us/community/posts/360038402732-Discord-App-Web-Browser" target="_blank" rel="noopener">Discord ↗</a>
-          <p>Stock WKWebView wrapper on iOS: close + URL + share + open-in-Safari; minimal Discord branding. Generic and forgettable.</p>
+          <p>Stock WKWebView wrapper on iOS: close + URL + share + open-in-Safari; minimal Discord branding. Generic.</p>
           <p class="insp-note">Reference for "lazy webview wrapper" — what NOT to ship if chrome is meant to feel native.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="warpcast">
+            <img src="img/warpcast.png" alt="Warpcast mini-app screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-warpcast" href="https://miniapps.farcaster.xyz/docs/specification" target="_blank" rel="noopener">Warpcast ↗</a>
-          <p>Per spec: header above the mini-app showing app name + author, plus a close (X). In practice the rendered header stacks below Warpcast's own nav, making total vertical chrome ~2 bars. The "too chunky" surface the redesign is targeting.</p>
-          <p class="insp-note">The thing being beaten. Dual-header (host nav + mini-app header) is the core problem.</p>
-        </li>
-      </ul>
+          <p>Per spec: header above the mini-app showing app name + author + ×. Rendered header stacks below Warpcast's nav, making total chrome ~2 bars. The "too chunky" surface the redesign is targeting.</p>
+          <p class="insp-note">The thing being beaten. Dual-header is the core problem.</p>
+        </article>
+
+      </div>
     </section>
 
     <section class="insp-section">
-      <h2>Mini-app paradigms <span class="insp-meta">canonical references</span></h2>
-      <ul class="insp-list">
-        <li>
+      <h2>Mini-app paradigms <span class="insp-meta">canonical references — scroll →</span></h2>
+      <div class="carousel">
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="telegram">
+            <img src="img/telegram.png" alt="Telegram Mini App screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-telegram" href="https://telegram.org/blog/fullscreen-miniapps-and-more" target="_blank" rel="noopener">Telegram Mini Apps ↗</a>
-          <p>Default: thin Telegram header with app title, back/close, overflow menu. Mini Apps 2.0 introduced full-screen mode that hides BOTH Telegram top and bottom bars — most aggressive minimization in this set.</p>
+          <p>Default: thin Telegram header with app title + back/close + ⋯. 2.0 introduced full-screen mode that hides BOTH Telegram top and bottom bars — most aggressive minimization.</p>
           <p class="insp-note">Strongest reference. Full-screen escape hatch is exactly the lever Neynar should consider.</p>
-        </li>
-        <li>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="wechat">
+            <img src="img/wechat.jpg" alt="WeChat mini-program screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-wechat" href="https://www.nngroup.com/articles/wechat-mini-programs/" target="_blank" rel="noopener">WeChat Mini Programs ↗</a>
-          <p>Iconic "capsule" menu: a single floating pill in the top-right with two buttons — overflow (•••) and close (○). No URL bar at all. Title is the page title set by the mini-program.</p>
-          <p class="insp-note">The OG. The capsule pattern is probably the single highest-leverage reference for Neynar — minimum chrome, maximum app surface.</p>
-        </li>
-        <li>
+          <p>Iconic "capsule" menu: floating pill in the top-right with two buttons — ⋯ + ○. No URL bar. Title is the page title set by the mini-program.</p>
+          <p class="insp-note">The OG. Capsule pattern is probably the highest-leverage reference for Neynar — minimum chrome, maximum app surface.</p>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="line">
+            <img src="img/line.png" alt="LINE Mini App screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-line" href="https://developers.line.biz/en/docs/line-mini-app/discover/ui-components/" target="_blank" rel="noopener">LINE Mini Apps ↗</a>
-          <p>Platform-generated header with mandatory action button (cannot be hidden by developer); shows domain (unverified) or App Name + verified badge (verified). Redesigned late 2024 — colors no longer customizable, enforcing visual consistency.</p>
-          <p class="insp-note">Useful precedent for "platform owns the chrome, app cannot override" — a stance Neynar/Farcaster could take.</p>
-        </li>
-      </ul>
+          <p>Platform-generated header with mandatory action button (cannot be hidden by developer); shows domain (unverified) or App Name + verified badge (verified). Redesigned late 2024 — colors no longer customizable.</p>
+          <p class="insp-note">"Platform owns the chrome, app cannot override" — a stance Neynar/Farcaster could take.</p>
+        </article>
+
+      </div>
     </section>
 
     <section class="insp-section">
-      <h2>System primitives <span class="insp-meta">baselines</span></h2>
-      <ul class="insp-list">
-        <li>
+      <h2>System primitives <span class="insp-meta">baselines — scroll →</span></h2>
+      <div class="carousel">
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="apple">
+            <img src="img/apple.png" alt="SFSafariViewController screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
           <a class="brand-chip brand-apple" href="https://developer.apple.com/documentation/safariservices/sfsafariviewcontroller" target="_blank" rel="noopener">SFSafariViewController (iOS) ↗</a>
           <p>Top: Done + site title above small URL with padlock + reload/share. Bottom: back/forward/share/tabs/Safari-handoff. App can tint the bar but not restructure. iOS 14+ adds collapse-on-scroll. Reader mode and AutoFill come free.</p>
           <p class="insp-note">Baseline truth. Anything heavier in a host app is a deliberate (often costly) choice.</p>
-        </li>
-        <li>
-          <a class="brand-chip brand-android" href="https://developer.chrome.com/docs/android/custom-tabs/guide-ui-customization" target="_blank" rel="noopener">Chrome Custom Tabs ↗</a>
-          <p>Single top bar: × + site title (or URL) + optional brand action button + overflow. Toolbar color themable per scheme. <code>setUrlBarHidingEnabled()</code> collapses bar on scroll. Picture-in-picture added 2024.</p>
-          <p class="insp-note">Cleaner than iOS equivalent — single bar, hides on scroll. Strong baseline for what "good default" looks like.</p>
-        </li>
-      </ul>
+        </article>
+
+        <article class="carousel-card">
+          <div class="shot" data-slug="android">
+            <img src="img/android.png" alt="Chrome Custom Tabs screenshot" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+            <div class="shot-fallback">no shot yet</div>
+          </div>
+          <a class="brand-chip brand-android" href="https://developer.chrome.com/docs/android/custom-tabs/guide-ui-customization" target="_blank" rel="noopener">Chrome Custom Tabs (Android) ↗</a>
+          <p>Single top bar: × + site title (or URL) + optional brand action button + ⋯. Toolbar color themable per scheme. <code>setUrlBarHidingEnabled()</code> collapses bar on scroll. Picture-in-picture added 2024.</p>
+          <p class="insp-note">Cleaner than iOS equivalent — single bar, hides on scroll. Strong baseline for "good default."</p>
+        </article>
+
+      </div>
     </section>
 
   </main>
