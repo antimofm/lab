@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>in-app browser archetypes — neynar lab</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="page-header">
+    <h1><a href="/">/ lab</a> / <a href="/neynar/">neynar</a> / in-app browsers</h1>
+    <p>Eight archetype chromes for Farcaster mini-app + in-app browser. Tap things — they should respond. Goal: shortlist 2–4, port to design shell tangents.</p>
+    <p class="meta">Brief: <a href="https://linear.app/red-channel/issue/CLIENTS-38">CLIENTS-38</a> · mirrors NEYN-10529 · build target <code>farcaster-design-shell</code></p>
+  </header>
+
+  <main class="grid">
+
+    <!-- 1. CAPSULE (WeChat) -->
+    <section class="card" data-arch="capsule">
+      <header class="card-h">
+        <h2>1 · Capsule</h2>
+        <p>WeChat lineage. No URL bar. Floating pill: ⋯ + ×. Title set by app, not bar. Maximum app surface.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="frame frame-capsule">
+          <div class="capsule">
+            <button class="cap-btn" data-action="more" aria-label="More">⋯</button>
+            <span class="cap-divider"></span>
+            <button class="cap-btn" data-action="close" aria-label="Close">✕</button>
+          </div>
+          <div class="content">
+            <div class="app-title-overlay">Bracket</div>
+            <article class="cast">
+              <div class="avatar"></div>
+              <div><strong>dwr.eth</strong><br><span>Polls go live next week. Get ready.</span></div>
+            </article>
+            <article class="cast">
+              <div class="avatar"></div>
+              <div><strong>v</strong><br><span>Brackets all the way down.</span></div>
+            </article>
+            <article class="cast"><div class="avatar"></div><div><strong>jacob</strong><br><span>Vote for the winner of the round.</span></div></article>
+          </div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> minimum chrome, app-as-app
+        <span class="tag">Cons</span> URL invisible, less browser-like trust
+      </footer>
+    </section>
+
+    <!-- 2. MINIMAL SINGLE-BAR (Phantom / Chrome Custom Tabs) -->
+    <section class="card" data-arch="minimal">
+      <header class="card-h">
+        <h2>2 · Minimal single-bar</h2>
+        <p>Phantom / Chrome Custom Tabs. One thin bar: × + title + ⋯. Collapses on scroll. The default-good.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="frame frame-minimal" data-collapsible>
+          <div class="bar bar-minimal">
+            <button class="ico" data-action="close" aria-label="Close">✕</button>
+            <div class="title-stack">
+              <span class="t">Bracket</span>
+              <span class="u">bracket.cast</span>
+            </div>
+            <button class="ico" data-action="more" aria-label="More">⋯</button>
+          </div>
+          <div class="content">
+            <article class="cast"><div class="avatar"></div><div><strong>dwr.eth</strong><br><span>Polls go live next week. Get ready.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>v</strong><br><span>Brackets all the way down.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>jacob</strong><br><span>Vote for the winner of the round.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>ted</strong><br><span>Round 3 starting now.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>linda</strong><br><span>I have my pick locked in.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>greg</strong><br><span>Bracket reset incoming?</span></div></article>
+          </div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> familiar, scroll-aware
+        <span class="tag">Cons</span> generic — no Farcaster identity
+      </footer>
+    </section>
+
+    <!-- 3. IDENTITY-FIRST (Zerion) -->
+    <section class="card" data-arch="identity">
+      <header class="card-h">
+        <h2>3 · Identity-first</h2>
+        <p>Zerion lineage. Cast author / mini-app author leftmost (not nav). Identity is the primary affordance — fits Farcaster's social-graph DNA.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="frame">
+          <div class="bar bar-identity">
+            <div class="author-pill" data-action="profile">
+              <div class="avatar small"></div>
+              <span>@dwr</span>
+            </div>
+            <span class="t-mid">Bracket</span>
+            <div class="bar-actions">
+              <button class="ico" data-action="more" aria-label="More">⋯</button>
+              <button class="ico" data-action="close" aria-label="Close">✕</button>
+            </div>
+          </div>
+          <div class="content">
+            <article class="cast"><div class="avatar"></div><div><strong>dwr.eth</strong><br><span>Polls go live next week. Get ready.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>v</strong><br><span>Brackets all the way down.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>jacob</strong><br><span>Vote for the winner of the round.</span></div></article>
+          </div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> Farcaster-native (author = trust), tap-to-profile
+        <span class="tag">Cons</span> wider bar, identity duplicates if cast already showed author
+      </footer>
+    </section>
+
+    <!-- 4. TWO-BAR CHUNKY (Instagram, anti-pattern) -->
+    <section class="card antipattern" data-arch="chunky">
+      <header class="card-h">
+        <h2>4 · Two-bar chunky <span class="warn">anti-pattern</span></h2>
+        <p>Instagram. Top: × + stacked title/URL + share. Bottom: back/forward/share/Safari. Chunky on purpose for tracking. The thing to NOT do.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="frame frame-chunky">
+          <div class="bar bar-chunky-top">
+            <button class="ico big" data-action="close" aria-label="Close">✕</button>
+            <div class="title-stack">
+              <span class="t">Bracket</span>
+              <span class="u">🔒 bracket.cast</span>
+            </div>
+            <button class="ico big" data-action="open-system" aria-label="Open in browser">⤴</button>
+            <button class="ico big" data-action="more" aria-label="More">⋯</button>
+          </div>
+          <div class="content content-squeezed">
+            <article class="cast"><div class="avatar"></div><div><strong>dwr.eth</strong><br><span>Polls go live next week. Get ready.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>v</strong><br><span>Brackets all the way down.</span></div></article>
+          </div>
+          <div class="bar bar-chunky-bottom">
+            <button class="ico" data-action="back" aria-label="Back">‹</button>
+            <button class="ico" data-action="forward" aria-label="Forward">›</button>
+            <button class="ico" data-action="share" aria-label="Share">⤴</button>
+            <button class="ico" data-action="safari" aria-label="Open in Safari">🧭</button>
+          </div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> none for Neynar
+        <span class="tag">Cons</span> ~120pt eaten before content, dual chrome
+      </footer>
+    </section>
+
+    <!-- 5. FULL-SCREEN + EDGE ESCAPE (Telegram Mini Apps 2.0) -->
+    <section class="card" data-arch="fullscreen">
+      <header class="card-h">
+        <h2>5 · Full-screen + edge escape</h2>
+        <p>Telegram Mini Apps 2.0. No persistent chrome. Edge swipe down (or top tap) reveals capsule. Most aggressive minimization.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar transparent"><span>9:41</span><span>•••</span></div>
+        <div class="frame frame-fullscreen" data-fullscreen>
+          <button class="edge-grab" aria-label="Reveal chrome">⌄</button>
+          <div class="floating-chrome">
+            <button class="cap-btn" data-action="more">⋯</button>
+            <span class="cap-divider"></span>
+            <button class="cap-btn" data-action="close">✕</button>
+          </div>
+          <div class="content content-edge">
+            <div class="app-hero">
+              <h3>Bracket</h3>
+              <p class="hero-sub">Round 3 · 47 casters voting</p>
+            </div>
+            <article class="cast"><div class="avatar"></div><div><strong>dwr.eth</strong><br><span>Polls go live next week.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>v</strong><br><span>Brackets all the way down.</span></div></article>
+          </div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> max app surface, immersive
+        <span class="tag">Cons</span> escape gesture must be discoverable, status-bar collision
+      </footer>
+    </section>
+
+    <!-- 6. SYSTEM PRIMITIVE (SFSafariViewController) -->
+    <section class="card" data-arch="system">
+      <header class="card-h">
+        <h2>6 · System primitive</h2>
+        <p>SFSafariViewController. Done + stacked title/URL + reload/share. Bottom bar: back/forward/share/tabs. The "do nothing" baseline.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="frame frame-system">
+          <div class="bar bar-system">
+            <button class="text-btn" data-action="close">Done</button>
+            <div class="title-stack">
+              <span class="t">Bracket</span>
+              <span class="u">🔒 bracket.cast</span>
+            </div>
+            <button class="ico" data-action="reload">↻</button>
+          </div>
+          <div class="content"><article class="cast"><div class="avatar"></div><div><strong>dwr.eth</strong><br><span>Polls go live next week.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>v</strong><br><span>Brackets all the way down.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>jacob</strong><br><span>Vote for the winner.</span></div></article></div>
+          <div class="bar bar-system-bottom">
+            <button class="ico" data-action="back">‹</button>
+            <button class="ico" data-action="forward">›</button>
+            <button class="ico" data-action="share">⤴</button>
+            <button class="ico" data-action="tabs">▢</button>
+          </div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> familiar, free reader/autofill
+        <span class="tag">Cons</span> not a mini-app (it's a webpage), no Farcaster context
+      </footer>
+    </section>
+
+    <!-- 7. DISCOVERY-RICH (Rainbow) -->
+    <section class="card" data-arch="discovery">
+      <header class="card-h">
+        <h2>7 · Discovery-rich</h2>
+        <p>Rainbow. Trending strip above URL. Browser as destination, not transit. Chunky on purpose — discovery is the value.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="frame frame-discovery">
+          <div class="bar bar-discovery-search">
+            <input class="search-input" placeholder="Search apps or URL" />
+            <button class="ico" data-action="tabs">▢</button>
+          </div>
+          <div class="discovery-strip">
+            <span class="chip active">Bracket</span>
+            <span class="chip">Bountycaster</span>
+            <span class="chip">Pinata</span>
+            <span class="chip">Yoink</span>
+            <span class="chip">Frame</span>
+          </div>
+          <div class="content">
+            <article class="cast"><div class="avatar"></div><div><strong>dwr.eth</strong><br><span>Polls go live next week.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>v</strong><br><span>Brackets all the way down.</span></div></article>
+          </div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> mini-app discovery built-in
+        <span class="tag">Cons</span> heaviest chrome here, search-bar weight
+      </footer>
+    </section>
+
+    <!-- 8. CURRENT BASELINE (Warpcast / Base App) -->
+    <section class="card baseline" data-arch="baseline">
+      <header class="card-h">
+        <h2>8 · Current baseline <span class="warn">today's chrome</span></h2>
+        <p>Warpcast / Base App. Host nav stays + mini-app header stacks under. Dual-header. The thing being beaten.</p>
+      </header>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="frame frame-baseline">
+          <div class="bar bar-host">
+            <button class="ico" data-action="back">‹</button>
+            <span class="t-mid">@dwr</span>
+            <button class="ico" data-action="more">⋯</button>
+          </div>
+          <div class="bar bar-miniapp-header">
+            <div class="miniapp-meta">
+              <div class="avatar tiny"></div>
+              <div>
+                <strong>Bracket</strong>
+                <span class="by">by @dwr</span>
+              </div>
+            </div>
+            <div>
+              <button class="ico" data-action="minimize">⌄</button>
+              <button class="ico" data-action="more">⋯</button>
+              <button class="ico" data-action="close">✕</button>
+            </div>
+          </div>
+          <div class="content"><article class="cast"><div class="avatar"></div><div><strong>dwr.eth</strong><br><span>Polls go live next week.</span></div></article>
+            <article class="cast"><div class="avatar"></div><div><strong>v</strong><br><span>Brackets all the way down.</span></div></article></div>
+        </div>
+      </div>
+      <footer class="card-f">
+        <span class="tag">Pros</span> familiar to current users
+        <span class="tag">Cons</span> dual-header eats space, redundant author display
+      </footer>
+    </section>
+
+  </main>
+
+  <aside id="toast" class="toast" hidden></aside>
+
+  <script src="script.js"></script>
+</body>
+</html>
