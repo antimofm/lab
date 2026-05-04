@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEYN-10851 · high price impact alert — neynar lab</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #0f0f0f;
+      --bg-phone: #000;
+      --bg-app: #0c0c10;
+      --bg-row: #15151a;
+      --fg: #e6e6e6;
+      --fg-dim: #888;
+      --fg-faint: #555;
+      --line: #1f1f23;
+      --line-strong: #2a2a30;
+      --accent: #e04040;
+      --warn: #d4a020;
+      --warn-strong: #f0b830;
+      --green: #4caf50;
+      --blue: #5b8def;
+      --r: 12px;
+      --r-sm: 8px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding: 2rem 1.5rem 4rem;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background: #1a1a1a; padding: 0.1rem 0.4rem; border-radius: 3px; color: #aaa; font-size: 0.9em; }
+
+    .page-header { max-width: 1400px; margin: 0 auto 2.5rem; }
+    .page-header h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .page-header p { color: var(--fg-dim); max-width: 720px; }
+    .page-header .meta { font-size: 0.8rem; color: var(--fg-faint); margin-top: 0.5rem; }
+
+    .grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .card.antipattern { border-color: rgba(212, 160, 32, 0.35); }
+    .card.recommended { border-color: rgba(76, 175, 80, 0.35); }
+
+    .card-h h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-h .badge {
+      font-size: 0.62rem;
+      font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-warn { color: var(--warn); background: rgba(212, 160, 32, 0.12); }
+    .badge-good { color: var(--green); background: rgba(76, 175, 80, 0.12); }
+    .card-h p {
+      font-size: 0.82rem;
+      color: var(--fg-dim);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+    }
+
+    /* phone */
+    .phone {
+      background: var(--bg-phone);
+      border-radius: 22px;
+      padding: 8px 8px 12px;
+      border: 1px solid #1c1c1c;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 300px;
+    }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 12px 6px;
+      font-size: 11px;
+      color: #999;
+      font-weight: 600;
+    }
+    .swap {
+      background: var(--bg-app);
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .swap-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 4px;
+    }
+    .swap-h .title { font-size: 13px; font-weight: 600; }
+    .swap-h .x { color: var(--fg-faint); font-size: 16px; }
+
+    .row {
+      background: var(--bg-row);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .row .label { font-size: 11px; color: var(--fg-faint); margin-bottom: 4px; }
+    .row .amt { font-size: 22px; font-weight: 600; }
+    .row .sub { font-size: 11px; color: var(--fg-faint); margin-top: 2px; }
+    .token {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #20202a;
+      padding: 5px 10px 5px 5px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .token .dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: linear-gradient(135deg, #7b3fe4, #4ad6c4);
+      display: inline-block;
+    }
+    .token.eth .dot { background: linear-gradient(135deg, #627eea, #8a92b2); }
+
+    .arrow-down { text-align: center; font-size: 14px; color: var(--fg-faint); margin: -4px 0; }
+
+    .cta {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: auto;
+    }
+    .cta.muted { background: #2a2a32; color: var(--fg-dim); }
+    .cta.calm { background: #1f3a5f; color: #c8d8f0; }
+    .cta.go { background: var(--green); }
+
+    /* alert variants */
+    .alert {
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.45;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .alert .ico { flex-shrink: 0; font-size: 14px; line-height: 1.2; }
+    .alert .body { flex: 1; }
+    .alert .body strong { display: block; margin-bottom: 2px; font-weight: 600; }
+
+    .alert-scary {
+      background: rgba(224, 64, 64, 0.1);
+      border: 1px solid rgba(224, 64, 64, 0.4);
+      color: #f0a0a0;
+    }
+    .alert-scary .ico { color: var(--accent); }
+    .alert-warn {
+      background: rgba(212, 160, 32, 0.08);
+      border: 1px solid rgba(212, 160, 32, 0.3);
+      color: #e8c876;
+    }
+    .alert-warn .ico { color: var(--warn-strong); }
+    .alert-info {
+      background: rgba(91, 141, 239, 0.08);
+      border: 1px solid rgba(91, 141, 239, 0.25);
+      color: #b8c8e8;
+    }
+    .alert-info .ico { color: var(--blue); }
+    .alert-neutral {
+      background: #16161c;
+      border: 1px solid var(--line-strong);
+      color: var(--fg-dim);
+    }
+
+    /* inline detail (slippage-style) */
+    .detail-rows {
+      font-size: 11.5px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 4px 2px;
+      color: var(--fg-dim);
+    }
+    .detail-rows .r { display: flex; justify-content: space-between; }
+    .detail-rows .r .v { color: var(--fg); }
+    .detail-rows .r .v.warn { color: var(--warn-strong); }
+
+    .collapsible {
+      background: #14141a;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 12px;
+    }
+    .collapsible .head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; cursor: pointer;
+    }
+    .collapsible .head .l { color: var(--warn-strong); display: flex; gap: 6px; align-items: center; font-weight: 500; }
+    .collapsible .head .r { color: var(--fg-faint); font-size: 11px; }
+    .collapsible .body {
+      padding: 0 12px 12px;
+      border-top: 1px dashed var(--line);
+      display: none;
+      color: var(--fg-dim);
+      line-height: 1.55;
+    }
+    .collapsible.open .body { display: block; padding-top: 10px; }
+
+    /* range visualization */
+    .range {
+      background: #14141a;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .range .head { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--fg-dim); }
+    .range .head .v { color: var(--fg); font-weight: 600; }
+    .range .bar {
+      height: 6px; border-radius: 3px;
+      background: linear-gradient(to right, #4caf5050 0%, #d4a02080 50%, #e0404090 100%);
+      position: relative;
+    }
+    .range .bar::after {
+      content: ''; position: absolute; left: 32%; right: 18%; top: -2px; height: 10px;
+      background: var(--fg); border-radius: 3px; opacity: 0.85;
+    }
+    .range .ticks { display: flex; justify-content: space-between; font-size: 10px; color: var(--fg-faint); margin-top: 4px; }
+
+    .card-f {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--line);
+      font-size: 0.72rem;
+      color: var(--fg-dim);
+      line-height: 1.7;
+    }
+    .card-f .proscons { display: flex; flex-direction: column; gap: 0.4rem; }
+    .tag {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 600;
+      padding: 0.05rem 0.35rem;
+      border-radius: 3px;
+      background: #1a1a1a;
+      color: #888;
+      margin-right: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tag.pro { color: var(--green); background: rgba(76, 175, 80, 0.1); }
+    .tag.con { color: var(--accent); background: rgba(224, 64, 64, 0.1); }
+
+    .footer-note {
+      max-width: 1400px; margin: 3rem auto 0;
+      font-size: 0.78rem; color: var(--fg-faint);
+      border-top: 1px solid var(--line); padding-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1><a href="/">/ lab</a> / <a href="/neynar/">neynar</a> / 10851</h1>
+    <p>Six options for the high-price-impact alert when buying into fresh clankers. Goal: keep the signal, lose the leverage-trade panic. Shortlist 1–2, port to design shell.</p>
+    <p class="meta">Source: <a href="https://linear.app/neynar/issue/NEYN-10851">NEYN-10851</a> · execution: <a href="https://linear.app/red-channel/issue/CLIENTS-39">CLIENTS-39</a> · build target <code>farcaster-design-shell</code></p>
+  </header>
+
+  <main class="grid">
+
+    <!-- 1. CURRENT (BASELINE / ANTIPATTERN) -->
+    <section class="card antipattern">
+      <div class="card-h">
+        <h2>1 · Current <span class="badge badge-warn">baseline</span></h2>
+        <p>Loss-language framing — "might lose over $X". Manan's read: feels like a leverage trade.</p>
+      </div>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="swap">
+          <div class="swap-h"><span class="title">Swap</span><span class="x">×</span></div>
+          <div class="row">
+            <div><div class="label">You pay</div><div class="amt">$1.00</div></div>
+            <span class="token eth"><span class="dot"></span>USDC</span>
+          </div>
+          <div class="arrow-down">↓</div>
+          <div class="row">
+            <div><div class="label">You receive</div><div class="amt">~3,000</div><div class="sub">$GRAPPA</div></div>
+            <span class="token"><span class="dot"></span>GRAPPA</span>
+          </div>
+          <div class="alert alert-scary">
+            <span class="ico">⚠</span>
+            <div class="body">
+              <strong>High price impact</strong>
+              You may lose more than $1.00 on this trade. Proceed with caution.
+            </div>
+          </div>
+          <button class="cta">Swap</button>
+        </div>
+      </div>
+      <div class="card-f">
+        <div class="proscons">
+          <div><span class="tag con">issue</span> "lose more than $X" implies leverage / margin risk that doesn't exist for spot.</div>
+          <div><span class="tag con">issue</span> Red + ⚠ + bold suggests catastrophic outcome on every fresh clanker.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MARKET-STATE -->
+    <section class="card recommended">
+      <div class="card-h">
+        <h2>2 · Market-state <span class="badge badge-good">manan's direction</span></h2>
+        <p>Reframe from loss → liquidity. Tells the user what's true about the market, not what they might lose.</p>
+      </div>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="swap">
+          <div class="swap-h"><span class="title">Swap</span><span class="x">×</span></div>
+          <div class="row">
+            <div><div class="label">You pay</div><div class="amt">$1.00</div></div>
+            <span class="token eth"><span class="dot"></span>USDC</span>
+          </div>
+          <div class="arrow-down">↓</div>
+          <div class="row">
+            <div><div class="label">You receive</div><div class="amt">~3,000</div><div class="sub">$GRAPPA · est.</div></div>
+            <span class="token"><span class="dot"></span>GRAPPA</span>
+          </div>
+          <div class="alert alert-warn">
+            <span class="ico">●</span>
+            <div class="body">
+              <strong>Inactive market</strong>
+              You may receive much less than 3,000 $GRAPPA at execution.
+            </div>
+          </div>
+          <button class="cta">Swap</button>
+        </div>
+      </div>
+      <div class="card-f">
+        <div class="proscons">
+          <div><span class="tag pro">good</span> Honest about what's actually uncertain (the receive amount).</div>
+          <div><span class="tag pro">good</span> No loss-language. Doesn't read as leverage.</div>
+          <div><span class="tag con">watch</span> "Inactive market" may not be true for *all* high-impact cases — needs a second variant for "thin liquidity".</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. RECEIVE-RANGE -->
+    <section class="card">
+      <div class="card-h">
+        <h2>3 · Receive-range</h2>
+        <p>Quantitative honesty. Replace estimate with a range; user sees the variance directly.</p>
+      </div>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="swap">
+          <div class="swap-h"><span class="title">Swap</span><span class="x">×</span></div>
+          <div class="row">
+            <div><div class="label">You pay</div><div class="amt">$1.00</div></div>
+            <span class="token eth"><span class="dot"></span>USDC</span>
+          </div>
+          <div class="arrow-down">↓</div>
+          <div class="row">
+            <div><div class="label">You receive</div><div class="amt">2,400 – 3,100</div><div class="sub">$GRAPPA · range</div></div>
+            <span class="token"><span class="dot"></span>GRAPPA</span>
+          </div>
+          <div class="range">
+            <div class="head"><span>Likely fill</span><span class="v">2,400 – 3,100</span></div>
+            <div class="bar"></div>
+            <div class="ticks"><span>2,000</span><span>3,500</span></div>
+          </div>
+          <button class="cta">Swap</button>
+        </div>
+      </div>
+      <div class="card-f">
+        <div class="proscons">
+          <div><span class="tag pro">good</span> No alert at all — variance is just shown as data.</div>
+          <div><span class="tag pro">good</span> Educates by showing, not by warning.</div>
+          <div><span class="tag con">watch</span> Range needs a real model from quote engine; can't fake.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. CALM ADVISORY -->
+    <section class="card">
+      <div class="card-h">
+        <h2>4 · Calm advisory</h2>
+        <p>Neutral tone, neutral colour. States the fact, doesn't dramatize. Trusts the user.</p>
+      </div>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="swap">
+          <div class="swap-h"><span class="title">Swap</span><span class="x">×</span></div>
+          <div class="row">
+            <div><div class="label">You pay</div><div class="amt">$1.00</div></div>
+            <span class="token eth"><span class="dot"></span>USDC</span>
+          </div>
+          <div class="arrow-down">↓</div>
+          <div class="row">
+            <div><div class="label">You receive</div><div class="amt">~3,000</div><div class="sub">$GRAPPA</div></div>
+            <span class="token"><span class="dot"></span>GRAPPA</span>
+          </div>
+          <div class="alert alert-neutral">
+            <span class="ico">ⓘ</span>
+            <div class="body">
+              New token, low liquidity. Price may move during your swap.
+            </div>
+          </div>
+          <button class="cta">Swap</button>
+        </div>
+      </div>
+      <div class="card-f">
+        <div class="proscons">
+          <div><span class="tag pro">good</span> Reads as a footnote, not a stop-sign.</div>
+          <div><span class="tag pro">good</span> Easiest to ship — copy-only change.</div>
+          <div><span class="tag con">watch</span> Some users may want a stronger nudge for genuinely thin pools.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. SLIPPAGE-AS-FEE -->
+    <section class="card">
+      <div class="card-h">
+        <h2>5 · Slippage-as-fee</h2>
+        <p>Frame price impact as a known cost, not a risk event. Shows the math inline.</p>
+      </div>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="swap">
+          <div class="swap-h"><span class="title">Swap</span><span class="x">×</span></div>
+          <div class="row">
+            <div><div class="label">You pay</div><div class="amt">$1.00</div></div>
+            <span class="token eth"><span class="dot"></span>USDC</span>
+          </div>
+          <div class="arrow-down">↓</div>
+          <div class="row">
+            <div><div class="label">You receive (est.)</div><div class="amt">~$0.88</div><div class="sub">in $GRAPPA</div></div>
+            <span class="token"><span class="dot"></span>GRAPPA</span>
+          </div>
+          <div class="detail-rows">
+            <div class="r"><span>Price impact</span><span class="v warn">−12%</span></div>
+            <div class="r"><span>Network fee</span><span class="v">$0.01</span></div>
+            <div class="r"><span>Effective rate</span><span class="v">$1 → $0.88</span></div>
+          </div>
+          <button class="cta">Swap</button>
+        </div>
+      </div>
+      <div class="card-f">
+        <div class="proscons">
+          <div><span class="tag pro">good</span> Re-anchors expectation: $1 in → ~$0.88 out is the *deal*, not a risk.</div>
+          <div><span class="tag pro">good</span> Same paradigm as gas / network fees — already understood.</div>
+          <div><span class="tag con">watch</span> Hides the variance — pairs well with #3 if needed.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. COLLAPSED-BY-DEFAULT -->
+    <section class="card">
+      <div class="card-h">
+        <h2>6 · Collapsed by default</h2>
+        <p>Quiet inline chip; expands on tap. Default-state reduces visual panic; details one tap away.</p>
+      </div>
+      <div class="phone">
+        <div class="status-bar"><span>9:41</span><span>•••</span></div>
+        <div class="swap">
+          <div class="swap-h"><span class="title">Swap</span><span class="x">×</span></div>
+          <div class="row">
+            <div><div class="label">You pay</div><div class="amt">$1.00</div></div>
+            <span class="token eth"><span class="dot"></span>USDC</span>
+          </div>
+          <div class="arrow-down">↓</div>
+          <div class="row">
+            <div><div class="label">You receive</div><div class="amt">~3,000</div><div class="sub">$GRAPPA</div></div>
+            <span class="token"><span class="dot"></span>GRAPPA</span>
+          </div>
+          <div class="collapsible" id="c6">
+            <div class="head" onclick="document.getElementById('c6').classList.toggle('open')">
+              <span class="l">● Low liquidity</span>
+              <span class="r">tap for details ›</span>
+            </div>
+            <div class="body">
+              Price impact is ~12%. You may receive between 2,400 and 3,100 $GRAPPA depending on fill. New tokens trade thin — the rate moves fast.
+            </div>
+          </div>
+          <button class="cta">Swap</button>
+        </div>
+      </div>
+      <div class="card-f">
+        <div class="proscons">
+          <div><span class="tag pro">good</span> Calm default. Curious users get the math; everyone else just sees a chip.</div>
+          <div><span class="tag pro">good</span> Single component, scales to any severity (just changes copy in head + body).</div>
+          <div><span class="tag con">watch</span> One extra tap to read the warning — possibly too quiet for real edge cases.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer-note">
+    Open question still pending: Manan's "invert the trade" intent — clarify before any final pass.
+    <br>Recommendation: ship #2 (market-state) as copy-fix today, follow with #5 (slippage-as-fee) as the structural reframe in a v2 sweep.
+  </footer>
+</body>
+</html>
