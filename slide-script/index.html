@@ -113,6 +113,20 @@ body {
 }
 #upload-btn:hover { opacity: 0.85; }
 
+#reset-btn {
+  padding: 5px 13px;
+  background: transparent;
+  color: #999;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+#reset-btn:hover { border-color: #ff3b30; color: #ff3b30; }
+
 .shortcut-hint {
   font-size: 11px;
   color: #bbb;
@@ -369,6 +383,7 @@ body.drag-over::after {
   </div>
 
   <button id="upload-btn" onclick="triggerUpload()">+ Slides</button>
+  <button id="reset-btn" onclick="resetPresentation()">Reset</button>
   <span class="shortcut-hint">⌘P present</span>
 </div>
 
@@ -413,6 +428,24 @@ function load() {
     const raw = localStorage.getItem('slidescript_v1');
     if (raw) state = JSON.parse(raw);
   } catch(e) {}
+}
+
+function resetPresentation() {
+  if (!confirm('Reset everything? This will clear all text and slides.')) return;
+  state = {
+    nodes: [{ id: 'n1', type: 'text', content: '' }],
+    slides: [],
+    density: 20,
+    mode: 'script',
+    selectedSlide: null,
+    _next: 2
+  };
+  document.getElementById('density-slider').value = 20;
+  applyDensity(20);
+  if (document.body.classList.contains('present-mode')) setMode('script');
+  save();
+  render();
+  renderTray();
 }
 
 let _saveTimer;
