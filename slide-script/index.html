@@ -229,6 +229,7 @@ const STORAGE_KEY = 'ss3';
 const DEFAULT_HTML = 'This is text';
 
 let insertRange = null;
+let pendingRange = null;
 let _n = 1;
 let pinLeaveTimer = null;
 let saveTimer = null;
@@ -357,6 +358,7 @@ slotPin.addEventListener('mouseleave', () => { pinLeaveTimer = setTimeout(hidePi
 
 slotPin.addEventListener('click', () => {
   if (!insertRange) return;
+  pendingRange = insertRange.cloneRange();
   fileInput.click();
 });
 
@@ -390,9 +392,10 @@ function insertFiles(files) {
       // Zero-width space gives the cursor a text node to land on either side
       const zws = document.createTextNode('​');
 
-      if (insertRange) {
-        insertRange.insertNode(zws);
-        insertRange.insertNode(span);
+      const target = pendingRange || insertRange;
+      if (target) {
+        target.insertNode(zws);
+        target.insertNode(span);
         const after = document.createRange();
         after.setStartAfter(zws);
         after.collapse(true);
@@ -403,6 +406,7 @@ function insertFiles(files) {
         editor.appendChild(span);
         editor.appendChild(zws);
       }
+      pendingRange = null;
 
       hidePin();
       save();
