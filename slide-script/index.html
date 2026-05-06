@@ -387,16 +387,21 @@ function insertFiles(files) {
       span.contentEditable = 'false';
       span.innerHTML = `<img src="${ev.target.result}"><button class="del-btn">×</button>`;
 
+      // Zero-width space gives the cursor a text node to land on either side
+      const zws = document.createTextNode('​');
+
       if (insertRange) {
+        insertRange.insertNode(zws);
         insertRange.insertNode(span);
         const after = document.createRange();
-        after.setStartAfter(span);
+        after.setStartAfter(zws);
         after.collapse(true);
         const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(after);
       } else {
         editor.appendChild(span);
+        editor.appendChild(zws);
       }
 
       hidePin();
