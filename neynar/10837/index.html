@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEYN-10837 · Network Agent UX</title>
+<style>
+  :root {
+    --bg: #0a0910;
+    --surface: #13111e;
+    --surface-2: #1c1930;
+    --surface-3: #231e3a;
+    --border: rgba(255,255,255,0.07);
+    --border-purple: rgba(139,92,246,0.18);
+    --purple: #8B5CF6;
+    --purple-dim: rgba(139,92,246,0.12);
+    --purple-bright: #A78BFA;
+    --purple-glow: rgba(139,92,246,0.25);
+    --text: #F0EDF8;
+    --text-2: #9189B0;
+    --text-3: #5C5375;
+    --green: #34D399;
+    --red: #F87171;
+    --gold: #FBBF24;
+    --phone-bg: #100E1C;
+    --phone-surface: #18152A;
+    --phone-surface-2: #211D35;
+    --phone-border: rgba(255,255,255,0.06);
+    --phone-text: #EDE9FA;
+    --phone-text-2: #8177A6;
+    --phone-text-3: #4E4870;
+    --phone-purple: #7C3AED;
+    --phone-purple-card: rgba(124,58,237,0.1);
+    --phone-purple-border: rgba(124,58,237,0.22);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ── Page layout ── */
+  .page { max-width: 1280px; margin: 0 auto; padding: 0 48px 120px; }
+
+  /* ── Header ── */
+  .header {
+    padding: 48px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .header-meta {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 12px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .header-meta span { color: var(--purple); }
+  .header h1 {
+    font-size: 36px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.2;
+    max-width: 680px;
+    margin-bottom: 16px;
+  }
+  .header p {
+    font-size: 15px;
+    color: var(--text-2);
+    max-width: 560px;
+    line-height: 1.6;
+  }
+
+  /* ── Scope box ── */
+  .scope-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 64px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .scope-item label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .scope-item p {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 80px;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .direction-tag {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--purple-dim);
+    color: var(--purple-bright);
+    border: 1px solid var(--border-purple);
+  }
+  .rec-tag {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(52,211,153,0.08);
+    color: var(--green);
+    border: 1px solid rgba(52,211,153,0.2);
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .section-desc {
+    font-size: 14px;
+    color: var(--text-2);
+    max-width: 600px;
+    line-height: 1.65;
+    margin-bottom: 36px;
+  }
+
+  /* ── Direction overview cards ── */
+  .direction-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 72px;
+  }
+  .dir-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .dir-card:hover { border-color: var(--border-purple); }
+  .dir-card.recommended { border-color: var(--border-purple); background: var(--surface-2); }
+  .dir-card-id {
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .dir-card h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .dir-card p {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+  .dir-card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--surface-3);
+    color: var(--text-3);
+    border: 1px solid var(--border);
+  }
+  .tag.good { color: var(--green); background: rgba(52,211,153,0.06); border-color: rgba(52,211,153,0.15); }
+  .tag.warn { color: var(--gold); background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.15); }
+
+  /* ── Phones row ── */
+  .phones-row {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .phone-label {
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+
+  /* ── Phone frame ── */
+  .phone {
+    width: 320px;
+    height: 660px;
+    background: var(--phone-bg);
+    border-radius: 42px;
+    border: 1.5px solid rgba(255,255,255,0.09);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 24px 64px rgba(0,0,0,0.6), 0 0 80px rgba(124,58,237,0.06);
+  }
+
+  /* status bar */
+  .p-status {
+    height: 44px;
+    padding: 14px 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .p-status-time { font-size: 14px; font-weight: 600; color: var(--phone-text); }
+  .p-status-icons { display: flex; gap: 5px; align-items: center; }
+  .p-status-dot { width: 14px; height: 7px; background: var(--phone-text); border-radius: 2px; opacity: 0.8; }
+  .p-status-dot.small { width: 9px; }
+  .p-signal { display: flex; gap: 2px; align-items: flex-end; }
+  .p-signal-bar { width: 3px; background: var(--phone-text); border-radius: 1px; opacity: 0.8; }
+
+  /* nav bar */
+  .p-nav {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--phone-border);
+    flex-shrink: 0;
+  }
+  .p-nav-back { color: var(--phone-purple); font-size: 13px; display: flex; align-items: center; gap: 4px; }
+  .p-nav-title { font-size: 15px; font-weight: 600; color: var(--phone-text); }
+  .p-nav-action { color: var(--phone-text-2); font-size: 20px; }
+
+  /* tab bar for home */
+  .p-tab-bar {
+    height: 44px;
+    border-bottom: 1px solid var(--phone-border);
+    display: flex;
+    flex-shrink: 0;
+  }
+  .p-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--phone-text-2);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .p-tab.active { color: var(--phone-text); border-bottom-color: var(--phone-purple); }
+
+  /* content */
+  .p-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .p-scroll {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .p-scroll::-webkit-scrollbar { display: none; }
+
+  /* bottom nav */
+  .p-bottom {
+    height: 60px;
+    border-top: 1px solid var(--phone-border);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .p-bottom-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 100%;
+    cursor: pointer;
+  }
+  .p-bottom-icon { font-size: 20px; opacity: 0.4; }
+  .p-bottom-icon.active { opacity: 1; }
+  .p-bottom-icon.purple { color: var(--phone-purple); opacity: 1; }
+  .p-bottom-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--phone-purple); opacity: 0; }
+  .p-bottom-dot.active { opacity: 1; }
+
+  /* cast card */
+  .cast {
+    padding: 14px 14px 12px;
+    border-bottom: 1px solid var(--phone-border);
+    display: flex;
+    gap: 10px;
+  }
+  .cast-dim { opacity: 0.45; }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+  }
+  .av-purple { background: linear-gradient(135deg, #7C3AED, #5B21B6); }
+  .av-blue { background: linear-gradient(135deg, #2563EB, #1D4ED8); }
+  .av-green { background: linear-gradient(135deg, #059669, #047857); }
+  .av-pink { background: linear-gradient(135deg, #DB2777, #BE185D); }
+  .av-orange { background: linear-gradient(135deg, #D97706, #B45309); }
+  .av-teal { background: linear-gradient(135deg, #0891B2, #0E7490); }
+  .av-agent {
+    background: linear-gradient(135deg, #6D28D9, #4C1D95);
+    border: 1.5px solid rgba(139,92,246,0.4);
+  }
+  .cast-body { flex: 1; min-width: 0; }
+  .cast-meta { display: flex; gap: 5px; align-items: baseline; margin-bottom: 3px; }
+  .cast-name { font-size: 13px; font-weight: 600; color: var(--phone-text); }
+  .cast-handle { font-size: 12px; color: var(--phone-text-3); }
+  .cast-time { font-size: 11px; color: var(--phone-text-3); margin-left: auto; }
+  .cast-text { font-size: 13px; color: var(--phone-text); line-height: 1.45; }
+  .cast-actions {
+    display: flex;
+    gap: 18px;
+    margin-top: 10px;
+    color: var(--phone-text-3);
+    font-size: 12px;
+    align-items: center;
+  }
+  .cast-action { display: flex; align-items: center; gap: 4px; }
+
+  /* agent cards */
+  .agent-card {
+    margin: 10px 12px;
+    padding: 12px 14px;
+    background: var(--phone-purple-card);
+    border: 1px solid var(--phone-purple-border);
+    border-radius: 12px;
+  }
+  .agent-card-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+  .agent-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--purple-bright);
+  }
+  .agent-card-label {
+    font-size: 11px;
+    color: var(--purple-bright);
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  .agent-card-text {
+    font-size: 13px;
+    color: var(--phone-text);
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+  .agent-card-sub {
+    font-size: 12px;
+    color: var(--phone-text-2);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .agent-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .agent-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .agent-btn-primary { background: var(--phone-purple); color: white; }
+  .agent-btn-ghost { background: rgba(255,255,255,0.06); color: var(--phone-text-2); border: 1px solid var(--phone-border); }
+
+  /* reply suggestion */
+  .reply-suggestion {
+    margin: 0 12px 10px;
+    padding: 11px 14px;
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 10px;
+  }
+  .reply-suggestion-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--purple-bright);
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+  .reply-suggestion-text {
+    font-size: 13px;
+    color: var(--phone-text);
+    line-height: 1.4;
+    margin-bottom: 10px;
+    font-style: italic;
+    opacity: 0.85;
+  }
+  .reply-suggestion-sub {
+    font-size: 11px;
+    color: var(--phone-text-2);
+    margin-bottom: 10px;
+  }
+
+  /* follow card */
+  .follow-card {
+    margin: 8px 12px;
+    padding: 13px 14px;
+    background: var(--phone-surface);
+    border: 1px solid var(--phone-border);
+    border-radius: 12px;
+  }
+  .follow-card-label {
+    font-size: 11px;
+    color: var(--phone-text-2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .follow-row { display: flex; gap: -4px; margin-bottom: 8px; }
+  .follow-avatar-group { display: flex; }
+  .follow-avatar-group .avatar {
+    width: 28px; height: 28px; font-size: 10px;
+    border: 1.5px solid var(--phone-bg);
+    margin-right: -6px;
+  }
+  .follow-card-text { font-size: 13px; color: var(--phone-text); margin-bottom: 10px; line-height: 1.4; }
+  .follow-card-sub { font-size: 11px; color: var(--phone-text-2); margin-bottom: 10px; }
+
+  /* onboarding card */
+  .onboarding-card {
+    margin: 20px 16px;
+    padding: 20px;
+    background: var(--phone-surface);
+    border: 1px solid rgba(124,58,237,0.15);
+    border-radius: 16px;
+    text-align: center;
+  }
+  .onboarding-card .avatar {
+    width: 48px; height: 48px; font-size: 18px;
+    margin: 0 auto 14px;
+  }
+  .onboarding-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--phone-text);
+    margin-bottom: 6px;
+  }
+  .onboarding-sub {
+    font-size: 13px;
+    color: var(--phone-text-2);
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+  .interest-chips { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-bottom: 16px; }
+  .interest-chip {
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--phone-border);
+    color: var(--phone-text-2);
+    cursor: pointer;
+  }
+  .interest-chip.selected {
+    background: var(--phone-purple-card);
+    border-color: var(--phone-purple-border);
+    color: var(--purple-bright);
+  }
+
+  /* copilot surfaces */
+  .copilot-section { padding: 14px 14px 8px; }
+  .copilot-section-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--phone-text-3);
+    margin-bottom: 10px;
+  }
+  .priority-card {
+    padding: 13px 14px;
+    background: var(--phone-surface);
+    border: 1px solid var(--phone-border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .priority-card-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .priority-card h4 { font-size: 13px; font-weight: 600; color: var(--phone-text); margin-bottom: 3px; }
+  .priority-card p { font-size: 12px; color: var(--phone-text-2); line-height: 1.4; }
+  .priority-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .priority-icon.purple { background: var(--phone-purple-card); }
+  .priority-icon.green { background: rgba(52,211,153,0.08); }
+  .priority-icon.gold { background: rgba(251,191,36,0.08); }
+
+  /* intro card */
+  .intro-card {
+    padding: 13px 14px;
+    background: var(--phone-surface);
+    border: 1px solid var(--phone-border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .intro-pair { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .intro-connector { font-size: 14px; color: var(--phone-text-3); }
+  .intro-card h4 { font-size: 13px; font-weight: 600; color: var(--phone-text); margin-bottom: 3px; }
+  .intro-card p { font-size: 12px; color: var(--phone-text-2); line-height: 1.4; }
+  .intro-reasons { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+  .reason-chip {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--phone-surface-2);
+    color: var(--phone-text-2);
+    border: 1px solid var(--phone-border);
+  }
+
+  /* event card */
+  .event-card {
+    padding: 13px 14px;
+    background: var(--phone-surface);
+    border: 1px solid var(--phone-border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+  }
+  .event-date-block {
+    width: 40px; flex-shrink: 0;
+    background: var(--phone-purple-card);
+    border: 1px solid var(--phone-purple-border);
+    border-radius: 8px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 6px;
+  }
+  .event-month { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--purple-bright); }
+  .event-day { font-size: 18px; font-weight: 700; color: var(--phone-text); line-height: 1; }
+  .event-body { flex: 1; }
+  .event-name { font-size: 13px; font-weight: 600; color: var(--phone-text); margin-bottom: 2px; }
+  .event-location { font-size: 11px; color: var(--phone-text-2); margin-bottom: 5px; }
+  .event-social { font-size: 11px; color: var(--phone-text-2); margin-bottom: 8px; }
+
+  /* drawer */
+  .drawer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    z-index: 10;
+  }
+  .drawer {
+    background: var(--phone-surface);
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid rgba(124,58,237,0.2);
+    padding: 14px;
+  }
+  .drawer-handle {
+    width: 36px; height: 3px;
+    background: var(--phone-border);
+    border-radius: 2px;
+    margin: 0 auto 14px;
+  }
+  .drawer-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .drawer-title { font-size: 14px; font-weight: 600; color: var(--phone-text); }
+  .drawer-message {
+    background: var(--phone-surface-2);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .drawer-message p { font-size: 13px; color: var(--phone-text); line-height: 1.45; }
+  .drawer-message .highlight { color: var(--purple-bright); }
+  .drawer-response {
+    background: var(--phone-purple-card);
+    border: 1px solid var(--phone-purple-border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .drawer-response p { font-size: 13px; color: var(--phone-text); line-height: 1.45; margin-bottom: 8px; }
+  .drawer-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--phone-surface-2);
+    border-radius: 24px;
+    border: 1px solid var(--phone-border);
+  }
+  .drawer-input-text { font-size: 13px; color: var(--phone-text-3); flex: 1; }
+  .drawer-send {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--phone-purple);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* fab */
+  .fab {
+    position: absolute;
+    bottom: 72px;
+    right: 16px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--phone-purple);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+    z-index: 5;
+  }
+  .fab-badge {
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 14px; height: 14px;
+    background: #EF4444;
+    border-radius: 50%;
+    border: 2px solid var(--phone-bg);
+    font-size: 8px;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+
+  /* rec panel card */
+  .drawer-people-card {
+    background: var(--phone-surface-2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .drawer-people-card .avatar { width: 30px; height: 30px; font-size: 11px; }
+  .drawer-people-meta { flex: 1; }
+  .drawer-people-name { font-size: 13px; font-weight: 600; color: var(--phone-text); }
+  .drawer-people-desc { font-size: 11px; color: var(--phone-text-2); }
+  .drawer-connect-btn {
+    font-size: 11px; padding: 4px 10px;
+    border-radius: 12px;
+    background: var(--phone-purple);
+    color: white; border: none; cursor: pointer;
+  }
+
+  /* ── Architecture section ── */
+  .arch-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0 32px;
+  }
+  .arch-table th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .arch-table th:not(:first-child) { text-align: center; }
+  .arch-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-2);
+  }
+  .arch-table td:first-child { color: var(--text); font-weight: 500; }
+  .arch-table td:not(:first-child) { text-align: center; }
+  .arch-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cell-good { color: var(--green); }
+  .cell-warn { color: var(--gold); }
+  .cell-bad { color: var(--red); }
+
+  /* ── Recommendation box ── */
+  .rec-box {
+    background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(88,28,220,0.06));
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 32px 0;
+  }
+  .rec-box h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .rec-box p {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.65;
+    max-width: 680px;
+  }
+  .rec-box p + p { margin-top: 10px; }
+
+  /* ── Evolution timeline ── */
+  .timeline { display: flex; gap: 0; margin: 32px 0; position: relative; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .timeline-phase { flex: 1; position: relative; z-index: 1; }
+  .timeline-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    border: 2px solid var(--border);
+    margin: 18px auto 16px;
+  }
+  .timeline-dot.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    box-shadow: 0 0 0 4px var(--purple-dim);
+  }
+  .timeline-phase-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--purple);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .timeline-phase h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .timeline-phase ul {
+    list-style: none;
+    padding: 0 16px;
+  }
+  .timeline-phase li {
+    font-size: 12px;
+    color: var(--text-3);
+    padding: 2px 0;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: var(--border); margin: 56px 0; }
+
+  /* ── Tradeoffs ── */
+  .tradeoffs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .tradeoff-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .tradeoff-col h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tradeoff-col ul { list-style: none; }
+  .tradeoff-col li {
+    font-size: 13px;
+    color: var(--text-2);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+  }
+  .tradeoff-col li:last-child { border-bottom: none; }
+  .tradeoff-col li::before { content: '—'; color: var(--text-3); flex-shrink: 0; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .phones-row { gap: 16px; }
+    .phone { width: 280px; }
+  }
+  @media (max-width: 900px) {
+    .page { padding: 0 24px 80px; }
+    .direction-cards { grid-template-columns: 1fr; }
+    .phones-row { flex-direction: column; }
+    .scope-box { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="header-meta">
+      <span>RED × Farcaster</span>
+      <span style="color:var(--text-3)">NEYN-10837</span>
+      <span style="color:var(--text-3)">Agent UX Exploration</span>
+      <span style="color:var(--text-3); margin-left:auto">May 2026</span>
+    </div>
+    <h1>Network Agent UX</h1>
+    <p>Three UX directions for an agent that helps users grow and navigate their Farcaster network — from ambient inline nudges to a dedicated copilot surface.</p>
+  </div>
+
+  <!-- ── Scope ── -->
+  <div class="scope-box">
+    <div class="scope-item">
+      <label>Surface scope</label>
+      <p>Farcaster client (mobile + web). Casts, threads, feed, channels.</p>
+    </div>
+    <div class="scope-item">
+      <label>Agent model</label>
+      <p>Global agent (shared), not personal-per-user agents.</p>
+    </div>
+    <div class="scope-item">
+      <label>Out of scope</label>
+      <p>Protocol-level agent comms. Warpcast-specific chrome. Backend architecture.</p>
+    </div>
+    <div class="scope-item">
+      <label>Principle</label>
+      <p>Native, not bolted on. Contextual at moment of action.</p>
+    </div>
+  </div>
+
+  <!-- ── Direction cards overview ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Overview</span>
+    </div>
+    <h2>Three directions</h2>
+    <p class="section-desc">Each direction takes a different position on where the agent lives — from invisible (ambient) to explicit (tab) to conversational (drawer). The right answer may combine elements from each.</p>
+    <div class="direction-cards">
+      <div class="dir-card">
+        <div class="dir-card-id">Direction A</div>
+        <h3>Ambient Intelligence</h3>
+        <p>The agent has no home — it shows up inline within the existing feed and thread experience. Suggestions appear at the moment of relevance, then disappear. No new surface.</p>
+        <div class="dir-card-tags">
+          <span class="tag good">Most native</span>
+          <span class="tag good">Zero friction</span>
+          <span class="tag warn">Harder to discover</span>
+          <span class="tag warn">Low agency feel</span>
+        </div>
+      </div>
+      <div class="dir-card recommended">
+        <div class="dir-card-id">Direction B <span class="rec-tag" style="margin-left:6px">Recommended primary</span></div>
+        <h3>Network Copilot Tab</h3>
+        <p>A dedicated fifth tab acts as the agent's home — a network dashboard with daily picks, intros, events, and group chats. Ambient nudges still appear inline. Best of both.</p>
+        <div class="dir-card-tags">
+          <span class="tag good">Discoverable</span>
+          <span class="tag good">High agency</span>
+          <span class="tag good">Permission-friendly</span>
+          <span class="tag warn">Adds chrome</span>
+        </div>
+      </div>
+      <div class="dir-card">
+        <div class="dir-card-id">Direction C</div>
+        <h3>Conversational Drawer</h3>
+        <p>A persistent floating button opens a slide-up chat drawer. Context-aware: the agent knows what screen you're on. Flexible but risks feeling like a support widget.</p>
+        <div class="dir-card-tags">
+          <span class="tag good">Flexible</span>
+          <span class="tag good">Conversational</span>
+          <span class="tag warn">Intrusive</span>
+          <span class="tag warn">Less native feel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════════════════════════════════
+       DIRECTION A — AMBIENT INTELLIGENCE
+  ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Direction A</span>
+      <span class="direction-tag">Ambient</span>
+    </div>
+    <h2>Ambient Intelligence</h2>
+    <p class="section-desc">The agent lives entirely within existing surfaces. It surfaces a suggestion when the context is right and disappears when it isn't. Onboarding happens as a cast from the agent's FID. Thread-level nudges appear as an inline card between replies. Discovery cards appear in the feed like promoted content, but earned.</p>
+
+    <div class="phones-row">
+
+      <!-- A1: Onboarding -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span></span>
+            <span class="p-nav-title">Home</span>
+            <span class="p-nav-action" style="font-size:16px">✏️</span>
+          </div>
+          <div class="p-tab-bar">
+            <div class="p-tab active">Following</div>
+            <div class="p-tab">For you</div>
+          </div>
+          <div class="p-content">
+            <div class="p-scroll">
+              <!-- Onboarding card as first cast in empty feed -->
+              <div class="cast">
+                <div class="avatar av-agent">✦</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">Farcaster</span>
+                    <span class="cast-handle">@farcaster</span>
+                    <span class="cast-time">now</span>
+                  </div>
+                  <div class="cast-text" style="margin-bottom:12px">Hey @username — I'm your network guide. I can surface people worth following, threads worth replying to, and events worth showing up for.
+                  <br><br>Tell me what you're into:</div>
+                  <div class="interest-chips" style="justify-content:flex-start">
+                    <span class="interest-chip selected">DeFi</span>
+                    <span class="interest-chip selected">Consumer apps</span>
+                    <span class="interest-chip">AI/ML</span>
+                    <span class="interest-chip">Creator tools</span>
+                    <span class="interest-chip">DAOs</span>
+                    <span class="interest-chip">Gaming</span>
+                  </div>
+                  <div class="agent-actions" style="margin-top:4px">
+                    <button class="agent-btn agent-btn-primary">Continue →</button>
+                    <button class="agent-btn agent-btn-ghost">Skip for now</button>
+                  </div>
+                </div>
+              </div>
+              <div class="cast cast-dim">
+                <div class="avatar av-blue">V</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">vitalik</span>
+                    <span class="cast-handle">@vitalik.eth</span>
+                    <span class="cast-time">2m</span>
+                  </div>
+                  <div class="cast-text">The scaling bottleneck isn't computation, it's coordination...</div>
+                  <div class="cast-actions">
+                    <span class="cast-action">↩ 41</span>
+                    <span class="cast-action">♡ 812</span>
+                    <span class="cast-action">⟳ 234</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item">
+              <span class="p-bottom-icon active">⊞</span>
+              <div class="p-bottom-dot active"></div>
+            </div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+          </div>
+        </div>
+        <div class="phone-label">A1 — Onboarding<br>Agent as first cast in empty feed</div>
+      </div>
+
+      <!-- A2: Thread with reply suggestion -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span class="p-nav-back">‹ Back</span>
+            <span class="p-nav-title">Thread</span>
+            <span class="p-nav-action">···</span>
+          </div>
+          <div class="p-content">
+            <div class="p-scroll">
+              <!-- Root cast -->
+              <div class="cast">
+                <div class="avatar av-purple">P</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">priya</span>
+                    <span class="cast-handle">@priya</span>
+                    <span class="cast-time">14m</span>
+                  </div>
+                  <div class="cast-text">Anyone actually building in DeFi who gets the consumer UX problem? Working on something and want a second opinion from someone who's shipped before</div>
+                  <div class="cast-actions">
+                    <span class="cast-action">↩ 8</span>
+                    <span class="cast-action">♡ 47</span>
+                    <span class="cast-action">⟳ 12</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Thread divider + agent suggestion -->
+              <div class="reply-suggestion">
+                <div class="reply-suggestion-label">✦ Reply opportunity</div>
+                <div class="reply-suggestion-text">"I shipped a DeFi consumer app last year — the gap between protocol capability and what users actually want is real. Happy to take a look at what you're building."</div>
+                <div class="reply-suggestion-sub">Relevant to your work on wallet UX · 3 mutual follows with @priya</div>
+                <div class="agent-actions">
+                  <button class="agent-btn agent-btn-primary">Reply with this</button>
+                  <button class="agent-btn agent-btn-ghost">Edit first</button>
+                  <button class="agent-btn agent-btn-ghost">Dismiss</button>
+                </div>
+              </div>
+              <!-- Replies -->
+              <div class="cast">
+                <div class="avatar av-green">A</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">alice</span>
+                    <span class="cast-handle">@aliceweb3</span>
+                    <span class="cast-time">11m</span>
+                  </div>
+                  <div class="cast-text">Following this — the liquidity abstraction layer is where UX goes to die</div>
+                  <div class="cast-actions">
+                    <span class="cast-action">↩ 2</span>
+                    <span class="cast-action">♡ 14</span>
+                    <span class="cast-action">⟳ 3</span>
+                  </div>
+                </div>
+              </div>
+              <div class="cast">
+                <div class="avatar av-orange">M</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">marcus</span>
+                    <span class="cast-handle">@marcusbuilds</span>
+                    <span class="cast-time">8m</span>
+                  </div>
+                  <div class="cast-text">The onboarding to first transaction friction is brutal. Send me a DM if you want to compare notes</div>
+                  <div class="cast-actions">
+                    <span class="cast-action">↩ 1</span>
+                    <span class="cast-action">♡ 8</span>
+                    <span class="cast-action">⟳ 2</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Reply input -->
+            <div style="padding:10px 12px; border-top:1px solid var(--phone-border)">
+              <div class="drawer-input">
+                <span class="drawer-input-text">Reply to @priya...</span>
+                <div class="drawer-send">↑</div>
+              </div>
+            </div>
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item"><span class="p-bottom-icon active">⊞</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+          </div>
+        </div>
+        <div class="phone-label">A2 — Thread view<br>Inline "reply here" suggestion</div>
+      </div>
+
+      <!-- A3: Feed with discovery card -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span></span>
+            <span class="p-nav-title">Home</span>
+            <span class="p-nav-action" style="font-size:16px">✏️</span>
+          </div>
+          <div class="p-tab-bar">
+            <div class="p-tab active">Following</div>
+            <div class="p-tab">For you</div>
+          </div>
+          <div class="p-content">
+            <div class="p-scroll">
+              <div class="cast">
+                <div class="avatar av-blue">V</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">vitalik</span>
+                    <span class="cast-handle">@vitalik.eth</span>
+                    <span class="cast-time">3m</span>
+                  </div>
+                  <div class="cast-text">Decentralization is not just about removing single points of failure — it's about removing single points of power</div>
+                  <div class="cast-actions">
+                    <span class="cast-action">↩ 92</span>
+                    <span class="cast-action">♡ 1.4k</span>
+                    <span class="cast-action">⟳ 312</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inline discovery card -->
+              <div class="follow-card">
+                <div class="follow-card-label">
+                  <span style="color:var(--purple-bright)">✦</span>
+                  People worth following
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom:10px">
+                  <div style="text-align:center; flex:1">
+                    <div class="avatar av-teal" style="margin:0 auto 5px; width:32px;height:32px;font-size:12px">K</div>
+                    <div style="font-size:11px; color:var(--phone-text); font-weight:600">@kaylee</div>
+                    <div style="font-size:10px; color:var(--phone-text-3)">DeFi · consumer</div>
+                  </div>
+                  <div style="text-align:center; flex:1">
+                    <div class="avatar av-orange" style="margin:0 auto 5px; width:32px;height:32px;font-size:12px">M</div>
+                    <div style="font-size:11px; color:var(--phone-text); font-weight:600">@marcusbuilds</div>
+                    <div style="font-size:10px; color:var(--phone-text-3)">Infra · UX</div>
+                  </div>
+                  <div style="text-align:center; flex:1">
+                    <div class="avatar av-pink" style="margin:0 auto 5px; width:32px;height:32px;font-size:12px">R</div>
+                    <div style="font-size:11px; color:var(--phone-text); font-weight:600">@ramona</div>
+                    <div style="font-size:10px; color:var(--phone-text-3)">Consumer · B2C</div>
+                  </div>
+                </div>
+                <div class="follow-card-sub">All 3 followed by people you already follow · aligned with DeFi + consumer</div>
+                <div class="agent-actions">
+                  <button class="agent-btn agent-btn-primary">Follow all</button>
+                  <button class="agent-btn agent-btn-ghost">See profiles</button>
+                  <button class="agent-btn agent-btn-ghost">Not now</button>
+                </div>
+              </div>
+
+              <div class="cast">
+                <div class="avatar av-green">J</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">jesse</span>
+                    <span class="cast-handle">@jesse</span>
+                    <span class="cast-time">12m</span>
+                  </div>
+                  <div class="cast-text">There's a version of crypto where onboarding takes 30 seconds and most people never see a seed phrase</div>
+                  <div class="cast-actions">
+                    <span class="cast-action">↩ 38</span>
+                    <span class="cast-action">♡ 291</span>
+                    <span class="cast-action">⟳ 87</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group chat recommendation -->
+              <div class="agent-card">
+                <div class="agent-card-header">
+                  <div class="agent-dot"></div>
+                  <span class="agent-card-label">Group chat match</span>
+                </div>
+                <div class="agent-card-text">DeFi Builders London</div>
+                <div class="agent-card-sub">14 people you follow are in this group · Active this week · London-based</div>
+                <div class="agent-actions">
+                  <button class="agent-btn agent-btn-primary">Request to join</button>
+                  <button class="agent-btn agent-btn-ghost">Preview</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item">
+              <span class="p-bottom-icon active">⊞</span>
+              <div class="p-bottom-dot active"></div>
+            </div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+          </div>
+        </div>
+        <div class="phone-label">A3 — Feed<br>Inline discovery + group chat cards</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════════════════════════════════
+       DIRECTION B — NETWORK COPILOT TAB
+  ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Direction B</span>
+      <span class="direction-tag">Copilot tab</span>
+      <span class="rec-tag">Recommended primary</span>
+    </div>
+    <h2>Network Copilot Tab</h2>
+    <p class="section-desc">A dedicated fifth tab gives the agent a home — a structured network dashboard with four views: Today (priority actions), Discover (who to follow + channels), Intros, and Events. Ambient nudges still appear inline in the feed and threads, linking back here. This model justifies deeper permissions (calendar, wallet) because the agent has an explicit, legible surface — you know where it lives.</p>
+
+    <div class="phones-row">
+
+      <!-- B1: Today tab -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span></span>
+            <span class="p-nav-title">Network</span>
+            <span class="p-nav-action" style="font-size:14px; color:var(--phone-purple)">Settings</span>
+          </div>
+          <div class="p-tab-bar" style="font-size:12px">
+            <div class="p-tab active">Today</div>
+            <div class="p-tab">Discover</div>
+            <div class="p-tab">Intros</div>
+            <div class="p-tab">Events</div>
+          </div>
+          <div class="p-content">
+            <div class="p-scroll">
+              <div class="copilot-section">
+                <div class="copilot-section-label">Priority</div>
+
+                <div class="priority-card">
+                  <div class="priority-card-top">
+                    <div class="priority-icon purple">💬</div>
+                    <div>
+                      <h4>Reply opportunity</h4>
+                      <p>@priya asked about consumer DeFi UX. Your work on wallet flows is directly relevant.</p>
+                    </div>
+                  </div>
+                  <div class="agent-actions">
+                    <button class="agent-btn agent-btn-primary">View thread</button>
+                    <button class="agent-btn agent-btn-ghost">Suggest reply</button>
+                  </div>
+                </div>
+
+                <div class="priority-card">
+                  <div class="priority-card-top">
+                    <div class="priority-icon green">🤝</div>
+                    <div>
+                      <h4>Intro ready</h4>
+                      <p>@marcus and you share 4 mutual interests. He's open to intros this week.</p>
+                    </div>
+                  </div>
+                  <div class="agent-actions">
+                    <button class="agent-btn agent-btn-primary">Send intro</button>
+                    <button class="agent-btn agent-btn-ghost">See why</button>
+                  </div>
+                </div>
+
+                <div class="priority-card">
+                  <div class="priority-card-top">
+                    <div class="priority-icon gold">📅</div>
+                    <div>
+                      <h4>Event this week</h4>
+                      <p>ETHLondon on Friday. 14 people you follow are going. Add to calendar?</p>
+                    </div>
+                  </div>
+                  <div class="agent-actions">
+                    <button class="agent-btn agent-btn-primary">I'm going</button>
+                    <button class="agent-btn agent-btn-ghost">More info</button>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="copilot-section" style="border-top:1px solid var(--phone-border); padding-top:12px">
+                <div class="copilot-section-label">Quick picks · Who to follow</div>
+                <div class="priority-card">
+                  <div class="priority-card-top">
+                    <div class="avatar av-teal" style="width:32px;height:32px;font-size:12px">K</div>
+                    <div>
+                      <h4>@kaylee</h4>
+                      <p>DeFi + consumer · followed by @vitalik, @jesse, @priya</p>
+                    </div>
+                    <button class="agent-btn agent-btn-primary" style="margin-left:auto;white-space:nowrap">+ Follow</button>
+                  </div>
+                </div>
+                <div class="priority-card">
+                  <div class="priority-card-top">
+                    <div class="avatar av-pink" style="width:32px;height:32px;font-size:12px">R</div>
+                    <div>
+                      <h4>@ramona</h4>
+                      <p>Consumer apps · B2C · 3 mutual follows</p>
+                    </div>
+                    <button class="agent-btn agent-btn-primary" style="margin-left:auto;white-space:nowrap">+ Follow</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊞</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+            <div class="p-bottom-item">
+              <span class="p-bottom-icon purple">✦</span>
+              <div class="p-bottom-dot active"></div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">B1 — Today view<br>Priority actions + quick picks</div>
+      </div>
+
+      <!-- B2: Intros -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span></span>
+            <span class="p-nav-title">Network</span>
+            <span class="p-nav-action" style="font-size:14px; color:var(--phone-purple)">Settings</span>
+          </div>
+          <div class="p-tab-bar" style="font-size:12px">
+            <div class="p-tab">Today</div>
+            <div class="p-tab">Discover</div>
+            <div class="p-tab active">Intros</div>
+            <div class="p-tab">Events</div>
+          </div>
+          <div class="p-content">
+            <div class="p-scroll">
+              <div class="copilot-section">
+                <div class="copilot-section-label">Pending (1)</div>
+                <div class="intro-card">
+                  <div class="intro-pair">
+                    <div class="avatar av-purple" style="width:30px;height:30px;font-size:11px">Y</div>
+                    <span class="intro-connector">⟷</span>
+                    <div class="avatar av-teal" style="width:30px;height:30px;font-size:11px">K</div>
+                    <div style="margin-left:6px">
+                      <div style="font-size:12px; font-weight:600; color:var(--phone-text)">You ↔ @kaylee</div>
+                      <div style="font-size:11px; color:var(--phone-text-2)">Sent 2 days ago</div>
+                    </div>
+                  </div>
+                  <p style="font-size:12px; color:var(--phone-text-2)">"She's been thinking about the same wallet UX problem — worth a quick DM."</p>
+                  <div class="agent-actions" style="margin-top:8px">
+                    <button class="agent-btn agent-btn-ghost">View DM</button>
+                    <button class="agent-btn agent-btn-ghost">Follow up</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="copilot-section" style="border-top:1px solid var(--phone-border);padding-top:12px">
+                <div class="copilot-section-label">Ready to send (2)</div>
+
+                <div class="intro-card">
+                  <div class="intro-pair">
+                    <div class="avatar av-orange" style="width:30px;height:30px;font-size:11px">M</div>
+                    <div style="margin-left:8px; flex:1">
+                      <div style="font-size:13px; font-weight:600; color:var(--phone-text)">@marcusbuilds</div>
+                      <div style="font-size:11px; color:var(--phone-text-2); margin-bottom:6px">DeFi infrastructure · 4 mutual follows</div>
+                    </div>
+                  </div>
+                  <div class="intro-reasons">
+                    <span class="reason-chip">Consumer UX</span>
+                    <span class="reason-chip">DeFi infra</span>
+                    <span class="reason-chip">London-based</span>
+                    <span class="reason-chip">Both building</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--phone-text-2); margin-bottom:8px">"Marcus is working on the same abstraction layer problem you wrote about last month."</p>
+                  <div class="agent-actions">
+                    <button class="agent-btn agent-btn-primary">Send intro</button>
+                    <button class="agent-btn agent-btn-ghost">Preview message</button>
+                  </div>
+                </div>
+
+                <div class="intro-card">
+                  <div class="intro-pair">
+                    <div class="avatar av-pink" style="width:30px;height:30px;font-size:11px">R</div>
+                    <div style="margin-left:8px; flex:1">
+                      <div style="font-size:13px; font-weight:600; color:var(--phone-text)">@ramona</div>
+                      <div style="font-size:11px; color:var(--phone-text-2); margin-bottom:6px">Consumer apps · B2C growth · 3 mutual follows</div>
+                    </div>
+                  </div>
+                  <div class="intro-reasons">
+                    <span class="reason-chip">B2C launch</span>
+                    <span class="reason-chip">Consumer design</span>
+                    <span class="reason-chip">Recently active</span>
+                  </div>
+                  <div class="agent-actions" style="margin-top:8px">
+                    <button class="agent-btn agent-btn-primary">Send intro</button>
+                    <button class="agent-btn agent-btn-ghost">Preview message</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊞</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+            <div class="p-bottom-item">
+              <span class="p-bottom-icon purple">✦</span>
+              <div class="p-bottom-dot active"></div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">B2 — Intros<br>Pending + ready to send</div>
+      </div>
+
+      <!-- B3: Events -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span></span>
+            <span class="p-nav-title">Network</span>
+            <span class="p-nav-action" style="font-size:14px; color:var(--phone-purple)">Settings</span>
+          </div>
+          <div class="p-tab-bar" style="font-size:12px">
+            <div class="p-tab">Today</div>
+            <div class="p-tab">Discover</div>
+            <div class="p-tab">Intros</div>
+            <div class="p-tab active">Events</div>
+          </div>
+          <div class="p-content">
+            <div class="p-scroll">
+              <div class="copilot-section">
+                <div class="copilot-section-label">Near you · London, UK</div>
+
+                <div class="event-card">
+                  <div class="event-date-block">
+                    <div class="event-month">MAY</div>
+                    <div class="event-day">16</div>
+                  </div>
+                  <div class="event-body">
+                    <div class="event-name">ETHLondon Hackathon</div>
+                    <div class="event-location">Shoreditch, London</div>
+                    <div class="event-social">14 people you follow going</div>
+                    <div class="agent-actions">
+                      <button class="agent-btn agent-btn-primary">I'm going</button>
+                      <button class="agent-btn agent-btn-ghost">More info</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="event-card">
+                  <div class="event-date-block">
+                    <div class="event-month">MAY</div>
+                    <div class="event-day">22</div>
+                  </div>
+                  <div class="event-body">
+                    <div class="event-name">Farcaster IRL London</div>
+                    <div class="event-location">East London</div>
+                    <div class="event-social">6 people you follow going</div>
+                    <div class="agent-actions">
+                      <button class="agent-btn agent-btn-primary">I'm going</button>
+                      <button class="agent-btn agent-btn-ghost">More info</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="copilot-section-label" style="margin-top:8px">Online this month</div>
+
+                <div class="event-card">
+                  <div class="event-date-block">
+                    <div class="event-month">JUN</div>
+                    <div class="event-day">3</div>
+                  </div>
+                  <div class="event-body">
+                    <div class="event-name">Consumer DeFi Roundtable</div>
+                    <div class="event-location">Online · Farcaster Space</div>
+                    <div class="event-social">@priya organising · 9 going</div>
+                    <div class="agent-actions">
+                      <button class="agent-btn agent-btn-primary">RSVP</button>
+                      <button class="agent-btn agent-btn-ghost">More info</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊞</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+            <div class="p-bottom-item">
+              <span class="p-bottom-icon purple">✦</span>
+              <div class="p-bottom-dot active"></div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">B3 — Events<br>Location-aware event discovery</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════════════════════════════════
+       DIRECTION C — CONVERSATIONAL DRAWER
+  ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Direction C</span>
+      <span class="direction-tag">Drawer</span>
+    </div>
+    <h2>Conversational Drawer</h2>
+    <p class="section-desc">A persistent floating button, always visible. Tapping it opens a slide-up drawer with a conversational agent that knows what screen you're on. The agent can push structured cards into the conversation — people, events, thread suggestions. Most flexible for power users; may feel support-widget-like for casual users. Better as a secondary entry point than a primary one.</p>
+
+    <div class="phones-row">
+
+      <!-- C1: Feed with FAB + context trigger -->
+      <div class="phone-wrap">
+        <div class="phone" style="position:relative; overflow:hidden">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span class="p-nav-back">‹ Back</span>
+            <span class="p-nav-title">Thread</span>
+            <span class="p-nav-action">···</span>
+          </div>
+          <div class="p-content" style="position:relative">
+            <div class="p-scroll" style="opacity:0.35; filter:blur(1px)">
+              <div class="cast">
+                <div class="avatar av-purple">P</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">priya</span>
+                    <span class="cast-handle">@priya</span>
+                    <span class="cast-time">14m</span>
+                  </div>
+                  <div class="cast-text">Anyone actually building in DeFi who gets the consumer UX problem?</div>
+                </div>
+              </div>
+              <div class="cast">
+                <div class="avatar av-green">A</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">alice</span>
+                    <span class="cast-handle">@aliceweb3</span>
+                    <span class="cast-time">11m</span>
+                  </div>
+                  <div class="cast-text">The liquidity abstraction layer is where UX goes to die</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Drawer overlay -->
+            <div class="drawer-overlay">
+              <div class="drawer">
+                <div class="drawer-handle"></div>
+                <div class="drawer-header">
+                  <div class="avatar av-agent" style="width:28px;height:28px;font-size:11px">✦</div>
+                  <span class="drawer-title">Network guide</span>
+                  <span style="margin-left:auto; font-size:11px; color:var(--phone-text-3); cursor:pointer">✕</span>
+                </div>
+                <div class="drawer-message">
+                  <p><span class="highlight">@priya</span> just asked about consumer DeFi UX — your wheelhouse. 3 mutual follows, she's active in /defi.</p>
+                </div>
+                <div class="drawer-response">
+                  <p>Suggested reply based on your recent work:</p>
+                  <p style="font-style:italic; opacity:0.8; font-size:12px">"I shipped a DeFi consumer app last year — the gap between protocol capability and user expectations is real. Happy to compare notes."</p>
+                  <div class="agent-actions">
+                    <button class="agent-btn agent-btn-primary">Reply with this</button>
+                    <button class="agent-btn agent-btn-ghost">Edit</button>
+                  </div>
+                </div>
+                <div class="drawer-input">
+                  <span class="drawer-input-text">Ask something else...</span>
+                  <div class="drawer-send">↑</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item"><span class="p-bottom-icon active">⊞</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+          </div>
+        </div>
+        <div class="phone-label">C1 — Contextual trigger<br>Drawer surfaced proactively in thread</div>
+      </div>
+
+      <!-- C2: People recommendations as structured cards -->
+      <div class="phone-wrap">
+        <div class="phone" style="position:relative; overflow:hidden">
+          <div class="p-status">
+            <span class="p-status-time">9:41</span>
+            <div class="p-status-icons">
+              <div class="p-signal">
+                <div class="p-signal-bar" style="height:4px"></div>
+                <div class="p-signal-bar" style="height:6px"></div>
+                <div class="p-signal-bar" style="height:9px"></div>
+                <div class="p-signal-bar" style="height:11px"></div>
+              </div>
+              <div class="p-status-dot small"></div>
+              <div class="p-status-dot"></div>
+            </div>
+          </div>
+          <div class="p-nav">
+            <span></span>
+            <span class="p-nav-title">Home</span>
+            <span class="p-nav-action" style="font-size:16px">✏️</span>
+          </div>
+          <div class="p-content" style="position:relative">
+            <div class="p-scroll" style="opacity:0.3; filter:blur(1px)">
+              <div class="cast">
+                <div class="avatar av-blue">V</div>
+                <div class="cast-body">
+                  <div class="cast-meta">
+                    <span class="cast-name">vitalik</span>
+                    <span class="cast-handle">@vitalik.eth</span>
+                  </div>
+                  <div class="cast-text">The scaling bottleneck isn't computation, it's coordination...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="drawer-overlay">
+              <div class="drawer">
+                <div class="drawer-handle"></div>
+                <div class="drawer-header">
+                  <div class="avatar av-agent" style="width:28px;height:28px;font-size:11px">✦</div>
+                  <span class="drawer-title">Network guide</span>
+                  <span style="margin-left:auto; font-size:11px; color:var(--phone-text-3)">✕</span>
+                </div>
+
+                <!-- Conversation history -->
+                <div style="margin-bottom:10px">
+                  <div style="text-align:right; margin-bottom:8px">
+                    <span style="display:inline-block; font-size:12px; padding:8px 12px; background:var(--phone-purple); color:white; border-radius:16px 16px 4px 16px; max-width:80%">who should i be talking to this week?</span>
+                  </div>
+                  <div style="font-size:12px; color:var(--phone-text-2); margin-bottom:10px; padding-left:4px">Based on your interests and recent activity:</div>
+                </div>
+
+                <div class="drawer-people-card">
+                  <div class="avatar av-orange" style="width:30px;height:30px;font-size:11px">M</div>
+                  <div class="drawer-people-meta">
+                    <div class="drawer-people-name">@marcusbuilds</div>
+                    <div class="drawer-people-desc">DeFi infra · same problem space</div>
+                  </div>
+                  <button class="drawer-connect-btn">Connect</button>
+                </div>
+                <div class="drawer-people-card">
+                  <div class="avatar av-teal" style="width:30px;height:30px;font-size:11px">K</div>
+                  <div class="drawer-people-meta">
+                    <div class="drawer-people-name">@kaylee</div>
+                    <div class="drawer-people-desc">Consumer apps · 4 mutual follows</div>
+                  </div>
+                  <button class="drawer-connect-btn">Connect</button>
+                </div>
+                <div class="drawer-people-card">
+                  <div class="avatar av-purple" style="width:30px;height:30px;font-size:11px">P</div>
+                  <div class="drawer-people-meta">
+                    <div class="drawer-people-name">@priya</div>
+                    <div class="drawer-people-desc">You're already in the same thread ↑</div>
+                  </div>
+                  <button class="drawer-connect-btn" style="background:rgba(255,255,255,0.08); color:var(--phone-text-2)">Reply</button>
+                </div>
+
+                <div class="drawer-input" style="margin-top:10px">
+                  <span class="drawer-input-text">Ask something else...</span>
+                  <div class="drawer-send">↑</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="p-bottom">
+            <div class="p-bottom-item"><span class="p-bottom-icon active">⊞</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">⊙</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">🔔</span></div>
+            <div class="p-bottom-item"><span class="p-bottom-icon">◯</span></div>
+          </div>
+        </div>
+        <div class="phone-label">C2 — Conversational<br>Structured people cards in chat</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════════════════════════════════
+       ARCHITECTURE: GLOBAL VS PERSONAL
+  ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Architecture decision</span>
+    </div>
+    <h2>Global agent vs Personal agents</h2>
+    <p class="section-desc">The brief leans global. Below is the full tradeoff matrix — then the recommendation.</p>
+
+    <table class="arch-table">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>Global agent</th>
+          <th>Personal agents (P2P)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Implementation complexity</td>
+          <td class="cell-good">Low — one model, one surface</td>
+          <td class="cell-bad">High — agent-to-agent protocol, trust, handoffs</td>
+        </tr>
+        <tr>
+          <td>Personalisation feel</td>
+          <td class="cell-warn">Medium — shared model, per-user context</td>
+          <td class="cell-good">High — owned by each user</td>
+        </tr>
+        <tr>
+          <td>Trust / permission model</td>
+          <td class="cell-good">Simple — one entity, clear permissions surface</td>
+          <td class="cell-bad">Complex — who does my agent trust? What can theirs read?</td>
+        </tr>
+        <tr>
+          <td>Intro brokering</td>
+          <td class="cell-good">Direct — single agent sees both users</td>
+          <td class="cell-warn">Indirect — requires agent negotiation, latency</td>
+        </tr>
+        <tr>
+          <td>Permission justification</td>
+          <td class="cell-good">Easy — feels like granting access to "your assistant"</td>
+          <td class="cell-bad">Confusing — why does a third party need my calendar?</td>
+        </tr>
+        <tr>
+          <td>Failure modes</td>
+          <td class="cell-warn">Single point of failure, but recoverable</td>
+          <td class="cell-bad">Cascade failures; message loss across agent boundary</td>
+        </tr>
+        <tr>
+          <td>Creepiness ceiling</td>
+          <td class="cell-warn">Moderate — "who told it that?"</td>
+          <td class="cell-bad">High — "your agent told my agent what?"</td>
+        </tr>
+        <tr>
+          <td>Alignment with "Meta glasses" vision</td>
+          <td class="cell-good">Strong — one ambient intelligence</td>
+          <td class="cell-bad">Weak — agents talking to each other feels mechanical</td>
+        </tr>
+        <tr>
+          <td>Scale to millions of users</td>
+          <td class="cell-good">Standard API scaling</td>
+          <td class="cell-bad">Exponential agent-to-agent communication surface</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tradeoffs">
+      <div class="tradeoff-col">
+        <h4>✓ Global agent — strengths</h4>
+        <ul>
+          <li>One model with full network visibility brokers intros faster and more accurately</li>
+          <li>Permission surfaces are legible: you're granting access to "your guide", not a third-party agent</li>
+          <li>Feels personal because it's contextualised to you, even though it's shared</li>
+          <li>Matches existing user mental model (like having a well-connected friend)</li>
+          <li>Simpler to build, test, and iterate</li>
+        </ul>
+      </div>
+      <div class="tradeoff-col">
+        <h4>Personal agents — when it might matter</h4>
+        <ul>
+          <li>If users want strong data ownership (agent only knows what I told it)</li>
+          <li>If the protocol moves toward verifiable agent credentials</li>
+          <li>For power users who want to configure their own agent behavior</li>
+          <li>Long-term: personal agents could be wallets that negotiate access</li>
+          <li>Could be a v3 feature, not a v1 architecture constraint</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── Recommendation ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Recommendation</span>
+    </div>
+    <h2>Primary direction</h2>
+    <div class="rec-box">
+      <h3>Direction B (Copilot Tab) with Direction A inline ambient layer — backed by a Global agent</h3>
+      <p>The copilot tab gives the agent a legible home — somewhere users can go intentionally, review suggestions, and understand what the agent has access to. This is critical for trust and for justifying deeper permissions like calendar and wallet. The tab answers "where does this live?" clearly: it has its own space in the nav, it's always there when you need it.</p>
+      <p>The ambient layer (Direction A) runs on top of this — thread-level reply suggestions and feed-level discovery cards appear at the moment of relevance. They don't require the user to go looking. These feed back into the copilot tab when dismissed, so nothing is lost.</p>
+      <p>Direction C (drawer) works best as a secondary power-user entry point, not the primary surface. It can live inside the copilot tab as a chat mode for when someone wants to ask the agent something directly.</p>
+      <p>The global agent model is the clear choice at this stage. It's lower complexity, more legible for permissions, and matches the "personal assistant with a giant network" metaphor better than agents negotiating with each other. Personal agents can be explored as a v3 trajectory if user ownership becomes a product differentiator.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── Evolution arc ── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-label">Evolution</span>
+    </div>
+    <h2>From onboarding help to ambient intelligence</h2>
+    <p class="section-desc">The brief asks how this evolves over time. Three phases — each unlockable, each additive.</p>
+
+    <div class="timeline">
+      <div class="timeline-phase">
+        <div class="timeline-dot active"></div>
+        <div class="timeline-phase-label">Phase 1 · Now</div>
+        <h4>Network starter</h4>
+        <ul>
+          <li>Onboarding interest capture</li>
+          <li>Who to follow recommendations</li>
+          <li>Thread reply suggestions</li>
+          <li>Basic event discovery</li>
+          <li>No permissions required</li>
+        </ul>
+      </div>
+      <div class="timeline-phase">
+        <div class="timeline-dot"></div>
+        <div class="timeline-phase-label">Phase 2 · +Permissions</div>
+        <h4>Active copilot</h4>
+        <ul>
+          <li>Intro facilitation (opt-in)</li>
+          <li>Calendar integration</li>
+          <li>Event organisation</li>
+          <li>Group chat matching</li>
+          <li>Wallet-gated group access</li>
+        </ul>
+      </div>
+      <div class="timeline-phase">
+        <div class="timeline-dot"></div>
+        <div class="timeline-phase-label">Phase 3 · Ambient</div>
+        <h4>Real-time guidance</h4>
+        <ul>
+          <li>Proactive contextual nudges</li>
+          <li>In-thread live suggestions</li>
+          <li>Event organisation from the product</li>
+          <li>Network health score</li>
+          <li>"Meta glasses" ambient layer</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding-top:40px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-size:12px; color:var(--text-3)">RED × Farcaster — NEYN-10837 · Agent UX Exploration · May 2026</div>
+    <div style="font-size:12px; color:var(--text-3)">lab.slash.red/neynar/10837</div>
+  </div>
+
+</div>
+</body>
+</html>
