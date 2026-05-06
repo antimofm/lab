@@ -9,7 +9,7 @@
 
 :root {
   --font-size: 60px;
-  --slide-w: 8.5em;
+  --slide-w: 2.75em;
   --accent: #2E86FF;
 }
 
@@ -238,7 +238,7 @@ let saveTimer = null;
 function applyDensity(d) {
   const fs = 20 + d * 0.8; // 20→100px
   document.documentElement.style.setProperty('--font-size', fs.toFixed(1) + 'px');
-  document.documentElement.style.setProperty('--slide-w', (3 + d * 0.115).toFixed(1) + 'em');
+  document.documentElement.style.setProperty('--slide-w', (1.5 + d * 0.025).toFixed(2) + 'em');
   label.textContent = Math.round(fs) + 'pt';
 }
 
