@@ -67,6 +67,9 @@ body {
   border-radius: 6px;
   display: block;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 .slide-inline .del-btn {
@@ -362,15 +365,11 @@ slotPin.addEventListener('click', () => {
   fileInput.click();
 });
 
-// Drag & drop onto stage
-document.addEventListener('dragover', e => {
-  if (e.dataTransfer.types.includes('Files')) e.preventDefault();
-});
+// Drag & drop onto stage — always prevent default to stop browser opening images
+document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => {
-  if (e.dataTransfer.files.length) {
-    e.preventDefault();
-    insertFiles(Array.from(e.dataTransfer.files));
-  }
+  e.preventDefault();
+  if (e.dataTransfer.files.length) insertFiles(Array.from(e.dataTransfer.files));
 });
 
 fileInput.addEventListener('change', () => {
@@ -387,7 +386,8 @@ function insertFiles(files) {
       span.className = 'slide-inline';
       span.dataset.id = id;
       span.contentEditable = 'false';
-      span.innerHTML = `<img src="${ev.target.result}"><button class="del-btn">×</button>`;
+      span.draggable = false;
+      span.innerHTML = `<img src="${ev.target.result}" draggable="false"><button class="del-btn">×</button>`;
 
       // Zero-width space gives the cursor a text node to land on either side
       const zws = document.createTextNode('​');
