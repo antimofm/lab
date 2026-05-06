@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slide Script</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font-size: 17px;
+  --slide-width: 170px;
+  --bg: #f8f8f8;
+  --surface: #fff;
+  --text: #111;
+  --muted: #888;
+  --border: #e4e4e4;
+  --accent: #2563eb;
+  --tray-w: 172px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Toolbar ── */
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+#toolbar .logo {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 2px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.mode-btn {
+  padding: 4px 13px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 12.5px;
+  cursor: pointer;
+  color: var(--muted);
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.mode-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.density-control {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+}
+
+.density-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  user-select: none;
+}
+
+#density-slider {
+  width: 130px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+#upload-btn {
+  padding: 5px 13px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: opacity 0.12s;
+}
+#upload-btn:hover { opacity: 0.85; }
+
+.shortcut-hint {
+  font-size: 11px;
+  color: #bbb;
+  white-space: nowrap;
+}
+
+/* ── Main layout ── */
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Slide tray ── */
+#tray {
+  width: var(--tray-w);
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  overflow-y: auto;
+  flex-shrink: 0;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  transition: width 0.2s;
+}
+
+#tray.hidden {
+  display: none;
+}
+
+.tray-label {
+  font-size: 11px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 4px 2px;
+  font-weight: 600;
+}
+
+.tray-slide {
+  position: relative;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.12s, transform 0.1s;
+  aspect-ratio: 16 / 9;
+  background: #f0f0f0;
+  flex-shrink: 0;
+}
+
+.tray-slide:hover { transform: scale(1.02); border-color: #c0d0f0; }
+.tray-slide.selected { border-color: var(--accent); }
+
+.tray-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.tray-slide .slide-num {
+  position: absolute;
+  bottom: 3px;
+  right: 5px;
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0,0,0,0.45);
+  padding: 1px 5px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.tray-empty {
+  font-size: 12px;
+  color: #bbb;
+  text-align: center;
+  padding: 16px 8px;
+  line-height: 1.6;
+}
+
+/* ── Document scroll ── */
+#doc-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#doc-scroll::-webkit-scrollbar { width: 5px; }
+#doc-scroll::-webkit-scrollbar-track { background: transparent; }
+#doc-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+/* ── Document ── */
+#document {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 52px 48px 240px;
+  font-size: var(--font-size);
+  line-height: 1.65;
+  transition: font-size 0.1s;
+}
+
+/* ── Text nodes ── */
+.text-node {
+  outline: none;
+  padding: 2px 0;
+  min-height: 1.65em;
+  white-space: pre-wrap;
+  word-break: break-word;
+  caret-color: var(--accent);
+}
+
+.text-node:focus {
+  background: #fafbff;
+  border-radius: 4px;
+  margin: 0 -6px;
+  padding: 2px 6px;
+}
+
+.text-node:empty::before {
+  content: attr(data-placeholder);
+  color: #ccc;
+  pointer-events: none;
+}
+
+/* ── Insert points ── */
+.insert-point {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+}
+
+.insert-point:hover {
+  opacity: 1;
+}
+
+.insert-point::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.25;
+}
+
+.insert-btn {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 10px;
+  position: relative;
+  z-index: 1;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* ── Slide nodes ── */
+.slide-node {
+  margin: 6px 0;
+  position: relative;
+  display: inline-block;
+}
+
+.slide-node img {
+  width: var(--slide-width);
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 7px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.1);
+  transition: width 0.1s;
+}
+
+.delete-slide-btn {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ff3b30;
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.12s;
+  font-family: inherit;
+}
+
+.slide-node:hover .delete-slide-btn { opacity: 1; }
+
+/* ── Present mode ── */
+body.present-mode #document {
+  padding: 40px 40px 200px;
+}
+
+body.present-mode .slide-node {
+  margin: 20px 0;
+}
+
+body.present-mode .text-node:focus {
+  background: transparent;
+  margin: 0;
+  padding: 2px 0;
+}
+
+/* ── Drag overlay ── */
+body.drag-over::after {
+  content: 'Drop slides here';
+  position: fixed;
+  inset: 0;
+  background: rgba(37, 99, 235, 0.08);
+  border: 3px dashed var(--accent);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  z-index: 100;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <span class="logo">Slide Script</span>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-script" onclick="setMode('script')">Script</button>
+    <button class="mode-btn" id="btn-present" onclick="setMode('present')">Present</button>
+  </div>
+
+  <div class="density-control">
+    <span class="density-label">Density</span>
+    <input type="range" id="density-slider" min="0" max="100" value="20"
+      oninput="setDensity(+this.value)">
+  </div>
+
+  <button id="upload-btn" onclick="triggerUpload()">+ Slides</button>
+  <span class="shortcut-hint">⌘P present</span>
+</div>
+
+<input type="file" id="file-input" multiple accept="image/*"
+  style="display:none" onchange="handleFiles(this.files)">
+
+<div id="main">
+  <div id="tray">
+    <div class="tray-label">Slides</div>
+    <div id="tray-slides">
+      <div class="tray-empty">Upload slides, select one, then click + to insert.</div>
+    </div>
+  </div>
+
+  <div id="doc-scroll">
+    <div id="document"></div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+
+let state = {
+  nodes: [{ id: 'n1', type: 'text', content: '' }],
+  slides: [],       // [{id, src, name}]
+  density: 20,
+  mode: 'script',
+  selectedSlide: null,
+  _next: 2
+};
+
+function uid(p = 'n') { return p + (state._next++); }
+
+// ── Persistence ──────────────────────────────────────────────────────────────
+
+function save() {
+  try { localStorage.setItem('slidescript_v1', JSON.stringify(state)); } catch(e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('slidescript_v1');
+    if (raw) state = JSON.parse(raw);
+  } catch(e) {}
+}
+
+let _saveTimer;
+function debouncedSave() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(save, 600);
+}
+
+// ── Density / scale ──────────────────────────────────────────────────────────
+
+function applyDensity(d) {
+  // font: 14px → 60px
+  const fontSize = 14 + d * 0.46;
+  // slide width coupled to font size (×10), capped at content width
+  const slideWidth = Math.min(fontSize * 10, window.innerWidth * 0.72);
+  const root = document.documentElement;
+  root.style.setProperty('--font-size', fontSize.toFixed(1) + 'px');
+  root.style.setProperty('--slide-width', slideWidth.toFixed(0) + 'px');
+}
+
+function setDensity(d) {
+  state.density = d;
+  applyDensity(d);
+  debouncedSave();
+}
+
+// ── Mode ─────────────────────────────────────────────────────────────────────
+
+function setMode(mode) {
+  state.mode = mode;
+  const isPresent = mode === 'present';
+  document.body.classList.toggle('present-mode', isPresent);
+  document.getElementById('tray').classList.toggle('hidden', isPresent);
+  document.getElementById('btn-script').classList.toggle('active', !isPresent);
+  document.getElementById('btn-present').classList.toggle('active', isPresent);
+  render();
+  save();
+}
+
+// ── Slide upload ─────────────────────────────────────────────────────────────
+
+function triggerUpload() {
+  document.getElementById('file-input').click();
+}
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const slide = { id: uid('s'), src: e.target.result, name: file.name };
+      state.slides.push(slide);
+      state.selectedSlide = slide.id;
+      renderTray();
+      debouncedSave();
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('file-input').value = '';
+}
+
+// Drag and drop anywhere on page
+document.addEventListener('dragover', e => {
+  if (e.dataTransfer.types.includes('Files')) {
+    e.preventDefault();
+    document.body.classList.add('drag-over');
+  }
+});
+document.addEventListener('dragleave', e => {
+  if (!e.relatedTarget) document.body.classList.remove('drag-over');
+});
+document.addEventListener('drop', e => {
+  document.body.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) {
+    e.preventDefault();
+    handleFiles(e.dataTransfer.files);
+  }
+});
+
+function selectSlide(id) {
+  state.selectedSlide = id;
+  renderTray();
+}
+
+// ── Document model ────────────────────────────────────────────────────────────
+
+function captureText() {
+  document.querySelectorAll('.text-node[data-id]').forEach(el => {
+    const node = state.nodes.find(n => n.id === el.dataset.id);
+    if (node) node.content = el.innerHTML;
+  });
+}
+
+function insertSlideAt(afterNodeId) {
+  captureText();
+
+  if (!state.selectedSlide) {
+    if (state.slides.length === 0) { triggerUpload(); return; }
+    state.selectedSlide = state.slides[0].id;
+  }
+
+  const idx = state.nodes.findIndex(n => n.id === afterNodeId);
+  if (idx === -1) return;
+
+  const newSlide = { id: uid('n'), type: 'slide', slideId: state.selectedSlide };
+  state.nodes.splice(idx + 1, 0, newSlide);
+
+  // Ensure there's a text node after the slide
+  const next = state.nodes[idx + 2];
+  if (!next || next.type !== 'text') {
+    state.nodes.splice(idx + 2, 0, { id: uid('n'), type: 'text', content: '' });
+  }
+
+  render();
+  save();
+}
+
+function deleteNode(id) {
+  captureText();
+  state.nodes = state.nodes.filter(n => n.id !== id);
+  if (!state.nodes.some(n => n.type === 'text')) {
+    state.nodes.push({ id: uid('n'), type: 'text', content: '' });
+  }
+  render();
+  save();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function render() {
+  const docEl = document.getElementById('document');
+  const isScript = state.mode === 'script';
+  let html = '';
+
+  state.nodes.forEach((node, i) => {
+    if (node.type === 'text') {
+      const ph = i === 0 ? 'Start writing your script…' : '';
+      html += `<p class="text-node" contenteditable="${isScript}"
+        data-id="${node.id}" data-placeholder="${ph}">${node.content}</p>`;
+    } else if (node.type === 'slide') {
+      const slide = state.slides.find(s => s.id === node.slideId);
+      if (slide) {
+        html += `<div class="slide-node" data-id="${node.id}">
+          <img src="${slide.src}" alt="${slide.name}">
+          ${isScript ? `<button class="delete-slide-btn" onclick="deleteNode('${node.id}')" title="Remove">×</button>` : ''}
+        </div>`;
+      }
+    }
+
+    // Insert point after each node (script mode only)
+    if (isScript) {
+      html += `<div class="insert-point" onclick="insertSlideAt('${node.id}')">
+        <span class="insert-btn">+ slide</span>
+      </div>`;
+    }
+  });
+
+  docEl.innerHTML = html;
+
+  // Attach input listeners to text nodes
+  docEl.querySelectorAll('.text-node[data-id]').forEach(el => {
+    el.addEventListener('input', () => {
+      const node = state.nodes.find(n => n.id === el.dataset.id);
+      if (node) node.content = el.innerHTML;
+      debouncedSave();
+    });
+  });
+}
+
+function renderTray() {
+  const trayEl = document.getElementById('tray-slides');
+  if (!state.slides.length) {
+    trayEl.innerHTML = '<div class="tray-empty">Upload slides, select one, then click + to insert.</div>';
+    return;
+  }
+  trayEl.innerHTML = state.slides.map((slide, i) => `
+    <div class="tray-slide ${state.selectedSlide === slide.id ? 'selected' : ''}"
+         onclick="selectSlide('${slide.id}')" title="${slide.name}">
+      <img src="${slide.src}" alt="${slide.name}">
+      <span class="slide-num">${i + 1}</span>
+    </div>
+  `).join('');
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+
+document.addEventListener('keydown', e => {
+  // ⌘P — toggle mode
+  if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+    e.preventDefault();
+    setMode(state.mode === 'script' ? 'present' : 'script');
+    return;
+  }
+
+  // Arrow keys in present mode — jump between slides
+  if (state.mode === 'present') {
+    const slides = [...document.querySelectorAll('.slide-node')];
+    if (!slides.length) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = slides.find(s => s.getBoundingClientRect().top > 40);
+      (next || slides[0]).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const above = [...slides].reverse().find(s => s.getBoundingClientRect().top < -10);
+      (above || slides[slides.length - 1]).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+load();
+applyDensity(state.density);
+document.getElementById('density-slider').value = state.density;
+
+if (state.mode === 'present') {
+  document.body.classList.add('present-mode');
+  document.getElementById('tray').classList.add('hidden');
+  document.getElementById('btn-script').classList.remove('active');
+  document.getElementById('btn-present').classList.add('active');
+}
+
+render();
+renderTray();
+</script>
+</body>
+</html>
