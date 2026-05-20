@@ -1,0 +1,3 @@
+.DS_Store
+*.enc.json
+node_modules/
